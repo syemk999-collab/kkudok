@@ -120,7 +120,7 @@ export function useSubscriptions({ currentRoute = "home" } = {}) {
 
   // Check past-due renewal for current month on home route
   useEffect(() => {
-    if (currentRoute !== "home") return;
+    if (currentRoute !== "home" || profile?.provider === "Contest") return;
     const currentMonth = getMonthKey();
     const pastDue = subscriptions.find((subscription) =>
       isPastDueThisCycle(subscription) && subscription.renewalReviewedFor !== currentMonth
@@ -128,7 +128,7 @@ export function useSubscriptions({ currentRoute = "home" } = {}) {
     if (pastDue) {
       setRenewalTarget(pastDue.subscriptionId);
     }
-  }, [currentRoute, subscriptions]);
+  }, [currentRoute, subscriptions, profile?.provider]);
 
   const renewalSubscription = useMemo(
     () => subscriptions.find((subscription) => subscription.subscriptionId === renewalTarget) || null,
