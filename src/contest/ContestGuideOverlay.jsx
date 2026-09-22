@@ -151,8 +151,28 @@ export function ContestGuideOverlay({ flow, onStep, onExit }) {
     }
 
     let frame;
+    let scrollTimer;
+    let hasAutoScrolled = false;
+
     const update = () => {
-      frame = requestAnimationFrame(() => setRect(measureTarget(guide.target)));
+      frame = requestAnimationFrame(() => {
+        const element = document.querySelector(`[data-contest-target="${guide.target}"]`);
+        if (element && !hasAutoScrolled) {
+          const bounds = element.getBoundingClientRect();
+          const topSafe = 72;
+          const bottomSafe = window.innerHeight - 210;
+          if (bounds.top < topSafe || bounds.bottom > bottomSafe) {
+            hasAutoScrolled = true;
+            element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
+            scrollTimer = window.setTimeout(() => {
+              setRect(measureTarget(guide.target));
+            }, 280);
+          } else {
+            hasAutoScrolled = true;
+          }
+        }
+        setRect(measureTarget(guide.target));
+      });
     };
 
     update();
@@ -163,6 +183,7 @@ export function ContestGuideOverlay({ flow, onStep, onExit }) {
 
     return () => {
       cancelAnimationFrame(frame);
+      if (scrollTimer) window.clearTimeout(scrollTimer);
       observer.disconnect();
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
