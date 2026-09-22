@@ -1,0 +1,365 @@
+import { useEffect, useState, useMemo } from "react";
+import { Check, CheckCircle2, ExternalLink, ShieldCheck, Layers, Sparkles, Globe } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
+import { App } from "@capacitor/app";
+import { BottomSheet, Button, ServiceMark } from "./ui";
+import { formatWon } from "../lib/dates";
+import { CancelBrowserModal } from "./CancelBrowserModal";
+import { serviceCatalog } from "../data/subscriptionData";
+import {
+  openCancelBrowser,
+  checkOverlayPermission,
+  requestOverlayPermission,
+  startFloatingGuide,
+  stopFloatingGuide,
+} from "../lib/cancelBrowser";
+
+const baseSteps = [
+  "서비스 계정으로 로그인하기",
+  "멤버십 또는 구독 관리 메뉴 열기",
+  "해지 신청 후 완료 화면 확인하기",
+];
+
+export function CancelModal({ subscription: rawSub, promotion, autoOpen = false, onClose, onComplete, onToast }) {
+  // DB 구독 데이터에 guideSteps나 cancelUrl이 누락되어도 serviceCatalog에서 100% 매칭 보강
+  const subscription = useMemo(() => {
+    const targetName = (rawSub.name || "").toLowerCase().replace(/\s+/g, "");
+    const targetId = (rawSub.id || rawSub.subscriptionId || "").toLowerCase();
+    const matched = serviceCatalog.find((s) => {
+      const sId = (s.id || "").toLowerCase();
+      const sName = (s.name || "").toLowerCase().replace(/\s+/g, "");
+      return sId === targetId || sName === targetName || targetId.includes(sId) || targetName.includes(sName);
+    });
+
+    return {
+      ...rawSub,
+      cancelUrl: rawSub.cancelUrl || matched?.cancelUrl || "",
+      guideSteps: (rawSub.guideSteps && rawSub.guideSteps.length > 0) ? rawSub.guideSteps : (matched?.guideSteps || []),
+    };
+  }, [rawSub]);
+
+  const steps = (subscription.guideSteps && subscription.guideSteps.length > 0)
+    ? subscription.guideSteps.map((s) => ({ title: s.title, description: s.description }))
+    : baseSteps.map((s) => ({ title: "", description: s }));
+
+  const [checked, setChecked] = useState(() => new Array(steps.length).fill(false));
+  const [celebrating, setCelebrating] = useState(false);
+  const [showBrowserModal, setShowBrowserModal] = useState(() => Boolean(autoOpen && rawSub.cancelUrl));
+  const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
+  const [cancelSessionActive, setCancelSessionActive] = useState(false);
+
+  useEffect(() => {
+    let listenerPromise;
+    if (Capacitor.isNativePlatform()) {
+      listenerPromise = App.addListener("appStateChange", (state) => {
+        if (state.isActive && cancelSessionActive) {
+          onToast?.("해지를 완료하셨다면 아래 '해지 완료했습니다' 버튼을 눌러주세요.");
+        }
+      });
+    }
+    return () => {
+      listenerPromise?.then((h) => h.remove());
+    };
+  }, [cancelSessionActive, onToast]);
+
+  const goToCancel = async () => {
+    if (!subscription.cancelUrl) return;
+
+    setCancelSessionActive(true);
+    if (!Capacitor.isNativePlatform()) {
+      window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
+      setShowBrowserModal(true);
+      return;
+    }
+
+    const res = await openCancelBrowser({
+      serviceId: subscription.id,
+      serviceName: subscription.name,
+      cancelUrl: subscription.cancelUrl,
+      guideSteps: subscription.guideSteps,
+    });
+
+    if (res?.action === "COMPLETED") {
+      complete();
+      return;
+    }
+
+    if (res?.action === "FALLBACK_WEB") {
+      window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
+      setShowBrowserModal(true);
+      return;
+    }
+
+    setChecked((current) => [true, ...current.slice(1)]);
+  };
+
+  const openInSystemBrowser = () => {
+    if (!subscription.cancelUrl) return;
+    setCancelSessionActive(true);
+    window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
+    onToast?.(`${subscription.name} 해지 페이지를 기본 브라우저(Chrome)에서 열었어요.`);
+    setChecked((current) => [true, ...current.slice(1)]);
+  };
+
+  const proceedWithoutOverlay = async () => {
+    setShowPermissionPrompt(false);
+    setCancelSessionActive(true);
+    const res = await openCancelBrowser({
+      serviceId: subscription.id,
+      serviceName: subscription.name,
+      cancelUrl: subscription.cancelUrl,
+      guideSteps: subscription.guideSteps,
+    });
+    if (res?.action === "COMPLETED") {
+      complete();
+      return;
+    }
+    if (res?.action === "FALLBACK_WEB") {
+      setShowBrowserModal(true);
+      return;
+    }
+    window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
+    onToast?.(`${subscription.name} 해지 페이지를 브라우저에서 열었어요.`);
+    setChecked((current) => [true, ...current.slice(1)]);
+  };
+
+  const handleRequestPermission = async () => {
+    setShowPermissionPrompt(false);
+    await requestOverlayPermission();
+    onToast?.("권한을 켠 후 다시 [해지 페이지로 바로 이동]을 눌러주세요.");
+  };
+
+  const complete = () => {
+    stopFloatingGuide();
+    setCelebrating(true);
+  };
+
+  if (celebrating) {
+    return (
+      <BottomSheet
+        onClose={() => {
+          onComplete?.(subscription.subscriptionId, subscription.amount);
+          onClose();
+        }}
+        label="해지 완료"
+      >
+        <div className="flex flex-col items-center px-2 pb-5 pt-3 text-center">
+          <span className="grid h-16 w-16 place-items-center rounded-3xl bg-[#191F28] text-white shadow-md"><CheckCircle2 size={31} /></span>
+          <h2 className="mt-5 text-[22px] font-extrabold tracking-tight text-[#191F28]">월 {formatWon(subscription.amount)}<br />절약 성공!</h2>
+          <p className="mt-2 text-[14px] font-semibold text-[#3182F6]">☕ 커피 4잔 / 🍗 1년이면 치킨 10마리 값을 아꼈어요!</p>
+          <p className="mt-2 text-[13px] leading-relaxed text-[#6B7684]">{subscription.name}을 구독 목록에서 정리했어요. 절약한 금액은 통계에서 계속 확인할 수 있어요.</p>
+          {promotion && (
+            <div className="mt-4 w-full rounded-2xl border border-[#FFE8CC] bg-[#FFF9F2] p-3.5 text-left">
+              <span className="rounded bg-[#FFE8CC] px-1.5 py-0.5 text-[10px] font-bold text-[#FF6F0F]">추천 혜택</span>
+              <p className="mt-1 text-[13px] font-bold text-[#191F28]">{promotion.title}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  if (promotion.link) window.open(promotion.link, "_blank", "noopener,noreferrer");
+                }}
+                className="mt-2 inline-flex items-center gap-1 text-[12px] font-bold text-[#FF6F0F] underline"
+              >
+                혜택 자세히 보기 <ExternalLink size={12} />
+              </button>
+            </div>
+          )}
+          <Button
+            size="large"
+            fullWidth
+            className="mt-6"
+            onClick={() => {
+              onComplete?.(subscription.subscriptionId, subscription.amount);
+              onClose();
+            }}
+          >
+            확인 및 완료
+          </Button>
+        </div>
+      </BottomSheet>
+    );
+  }
+
+  if (showPermissionPrompt) {
+    return (
+      <BottomSheet onClose={() => setShowPermissionPrompt(false)} label="플로팅 가이드 안내">
+        <div className="flex flex-col items-center px-1 pb-4 pt-2 text-center">
+          <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[#EFF6FF] text-[#3182F6] shadow-2xs mb-3">
+            <Layers size={28} />
+          </span>
+          <h3 className="text-[18px] font-bold tracking-tight text-[#191F28]">
+            화면 위에 가이드를 띄울까요?
+          </h3>
+          <p className="mt-2 text-[13px] leading-relaxed text-[#6B7684] max-w-[280px]">
+            공식 사이트에서 로그인 및 해지하는 동안, 화면 구석에 단계별 팁이 담긴 <span className="font-semibold text-[#191F28]">미니 버블</span>을 띄워 드려요.
+          </p>
+          <div className="mt-4 w-full rounded-xl bg-[#F9FAFB] p-3.5 text-left border border-[#E5E8EB]">
+            <p className="text-[12px] font-bold text-[#191F28] flex items-center gap-1.5">
+              <Sparkles size={14} className="text-[#3182F6]" /> '다른 앱 위에 표시' 권한 필요
+            </p>
+            <p className="mt-1 text-[11px] text-[#8B95A1] leading-relaxed">
+              설정 화면으로 이동하여 꾸독 권한을 켜주시면 즉시 플로팅 가이드가 활성화됩니다.
+            </p>
+          </div>
+          <Button size="large" fullWidth className="mt-5" onClick={handleRequestPermission}>
+            권한 설정하고 가이드 띄우기
+          </Button>
+          <button
+            type="button"
+            onClick={proceedWithoutOverlay}
+            className="mt-3.5 text-[12px] font-semibold text-[#6B7684] hover:text-[#191F28] active:scale-95 transition-all"
+          >
+            권한 없이 일반 브라우저로 이동하기
+          </button>
+        </div>
+      </BottomSheet>
+    );
+  }
+
+  if (showBrowserModal) {
+    return (
+      <CancelBrowserModal
+        subscription={subscription}
+        autoOpened={autoOpen}
+        onClose={() => {
+          setShowBrowserModal(false);
+          onToast("해지 화면을 닫았어요. 해지를 완료하셨다면 아래 완료 버튼을 눌러주세요.");
+        }}
+        onComplete={complete}
+      />
+    );
+  }
+
+  return (
+    <BottomSheet onClose={onClose} label="구독 해지 가이드">
+      <div className="flex items-start gap-3">
+        <ServiceMark
+          serviceId={subscription.id}
+          name={subscription.name}
+          monogram={subscription.monogram}
+          image={subscription.image || subscription.attachments?.[0]}
+          category={subscription.category}
+          className="h-12 w-12 rounded-2xl text-[14px] shadow-2xs"
+        />
+        <div className="min-w-0"><h2 className="truncate text-[20px] font-extrabold tracking-tight text-[#191F28]">{subscription.name} 해지하기</h2><p className="mt-0.5 text-[12px] font-medium text-[#6B7684]">직접 해지 페이지와 단계별 안내를 준비했어요.</p></div>
+      </div>
+
+      {/* 연간 절약 예상액 헤더 배너 */}
+      <div className="rounded-2xl bg-[#F2F4F6] p-4 text-center mt-4">
+        <p className="text-[12px] font-semibold text-[#6B7684]">지금 해지하면 1년에</p>
+        <h3 className="mt-0.5 text-[24px] font-extrabold tracking-tight text-[#3182F6]">
+          {formatWon(subscription.amount * 12)}
+          <span className="text-[16px] font-bold text-[#191F28]"> 절약돼요</span>
+        </h3>
+        <p className="mt-0.5 text-[11px] text-[#8B95A1]">
+          월 {formatWon(subscription.amount)}씩 고정 지출을 줄일 수 있어요
+        </p>
+      </div>
+
+      {promotion && (
+        <div className="mt-4 flex items-center justify-between rounded-2xl border border-[#FFD8A8] bg-[#FFF9F2] p-3.5 shadow-2xs">
+          <div className="min-w-0 pr-2">
+            <span className="inline-block rounded-md bg-[#FFE8CC] px-1.5 py-0.5 text-[10px] font-bold text-[#FF6F0F]">
+              추천 환승 혜택
+            </span>
+            <h4 className="mt-1 truncate text-[13px] font-bold text-[#191F28]">{promotion.title}</h4>
+            <p className="text-[11px] text-[#8B95A1] truncate">더 알뜰한 요금제로 갈아타기</p>
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              if (promotion.link) window.open(promotion.link, "_blank", "noopener,noreferrer");
+            }}
+            className="shrink-0 rounded-xl bg-[#FF6F0F] px-3 py-1.5 text-[12px] font-bold text-white shadow-xs active:scale-95 transition-all cursor-pointer"
+          >
+            혜택 보기
+          </button>
+        </div>
+      )}
+
+      {cancelSessionActive ? (
+        <div className="mt-5 space-y-2">
+          <Button
+            size="large"
+            fullWidth
+            className="bg-[#3182F6] hover:bg-[#1B64DA] text-white shadow-md font-bold"
+            onClick={complete}
+          >
+            ✓ 방금 해지를 완료했어요
+          </Button>
+          <Button
+            size="large"
+            fullWidth
+            variant="secondary"
+            onClick={goToCancel}
+            prefixIcon={<ExternalLink size={16} />}
+          >
+            해지 페이지 다시 열기
+          </Button>
+        </div>
+      ) : (
+        <div className="mt-5 space-y-2">
+          <Button
+            size="large"
+            fullWidth
+            disabled={!subscription.cancelUrl}
+            onClick={goToCancel}
+            prefixIcon={<ExternalLink size={17} />}
+          >
+            {subscription.cancelUrl ? "해지 페이지로 바로 이동 (가이드 포함)" : "해지 링크를 찾지 못했어요"}
+          </Button>
+          <Button
+            size="large"
+            fullWidth
+            variant="secondary"
+            onClick={complete}
+          >
+            이미 해지 완료하셨나요? 목록에서 정리
+          </Button>
+        </div>
+      )}
+      {!subscription.cancelUrl && <p className="mt-2 text-center text-[12px] font-medium text-[#FF4D4D]">이 서비스의 해지 URL이 DB에 등록되어 있지 않습니다.</p>}
+
+      {subscription.cancelUrl && (
+        <button
+          type="button"
+          onClick={openInSystemBrowser}
+          className="mt-2.5 w-full flex items-center justify-center gap-1.5 py-1 text-[12px] font-semibold text-[#6B7684] hover:text-[#191F28] active:scale-98 transition-all"
+        >
+          <Globe size={13} className="text-[#8B95A1]" /> 로그인 세션이 유지된 기본 브라우저(Chrome)로 열기
+        </button>
+      )}
+
+      <section className="mt-5">
+        <div className="flex items-center justify-between"><h3 className="text-[15px] font-bold text-[#191F28]">해지 가이드</h3><span className="text-[12px] font-semibold text-[#8B95A1]">Step 1–{steps.length}</span></div>
+        <ol className="mt-3 space-y-2">
+          {steps.map((step, index) => (
+            <li key={index}>
+              <button
+                type="button"
+                onClick={() => setChecked((current) => current.map((value, itemIndex) => itemIndex === index ? !value : value))}
+                className={"flex w-full items-start gap-3 rounded-2xl border p-3.5 text-left transition-all active:scale-[0.99] " + (checked[index] ? "border-[#191F28] bg-[#F9FAFB] shadow-2xs" : "border-[#E5E8EB] bg-white hover:border-[#D1D6DB]")}
+              >
+                <span className={"grid h-6 w-6 shrink-0 place-items-center rounded-full text-[11px] font-bold mt-0.5 " + (checked[index] ? "bg-[#191F28] text-white" : "bg-[#F2F4F6] text-[#8B95A1]")}>
+                  {checked[index] ? <Check size={14} strokeWidth={3} /> : index + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  {step.title && (
+                    <span className={"block text-[11px] font-bold mb-0.5 " + (checked[index] ? "text-[#191F28]" : "text-[#8B95A1]")}>
+                      {step.title}
+                    </span>
+                  )}
+                  <span className={"text-[13px] leading-snug " + (checked[index] ? "font-bold text-[#191F28]" : "font-medium text-[#6B7684]")}>
+                    {step.description}
+                  </span>
+                </div>
+              </button>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <div className="mt-6 rounded-2xl border border-[#E5E8EB] bg-[#F9FAFB] p-4"><div className="flex gap-2.5"><ShieldCheck className="shrink-0 text-[#6B7684]" size={18} /><p className="text-[12px] leading-relaxed text-[#6B7684]">꾸독은 해지를 대행하지 않아요. 해지 완료 여부는 서비스 화면에서 확인한 뒤 아래 버튼을 눌러주세요.</p></div></div>
+      <Button size="large" fullWidth variant="secondary" className="mt-4" onClick={complete}>해지 완료했습니다</Button>
+    </BottomSheet>
+  );
+}
