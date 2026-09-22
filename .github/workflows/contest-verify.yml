@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/contest-landing
+      - main
   workflow_dispatch:
 
 concurrency:
@@ -62,22 +63,28 @@ jobs:
       - name: Responsive and scenario smoke test
         run: timeout 90s node scripts/contest-smoke.cjs
 
-      - name: Wait for Vercel preview
+      - name: Resolve Vercel deployment target
         run: |
-          PREVIEW_URL="https://kkudok-git-feature-contest-landing-remix33.vercel.app"
-          for i in {1..40}; do
-            if curl -LfsS "$PREVIEW_URL/" > /dev/null; then
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            TARGET_URL="https://kkudok-kohl.vercel.app"
+          else
+            TARGET_URL="https://kkudok-git-feature-contest-landing-remix33.vercel.app"
+          fi
+          echo "TARGET_URL=$TARGET_URL" >> "$GITHUB_ENV"
+
+      - name: Wait for Vercel deployment
+        run: |
+          for i in {1..60}; do
+            if curl -LfsS "$TARGET_URL/" > /dev/null; then
               exit 0
             fi
             sleep 3
           done
-          echo "Vercel preview did not become publicly reachable in time."
+          echo "Vercel deployment did not become publicly reachable in time: $TARGET_URL"
           exit 1
 
-      - name: Vercel preview smoke test
-        env:
-          CONTEST_BASE_URL: https://kkudok-git-feature-contest-landing-remix33.vercel.app
-        run: timeout 90s node scripts/contest-smoke.cjs
+      - name: Vercel deployed-site smoke test
+        run: CONTEST_BASE_URL="$TARGET_URL" timeout 90s node scripts/contest-smoke.cjs
 
       - name: Upload contest verification screenshots
         if: always()
