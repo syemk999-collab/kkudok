@@ -81,8 +81,23 @@ async function verifyLanding(page, label) {
 
   const heroQr = page.locator(".contest-hero-experience img");
   await heroQr.waitFor();
-  const qrParentTag = await heroQr.evaluate((node) => node.parentElement?.tagName || "");
-  assert.notEqual(qrParentTag, "A", "QR itself must not act as a desktop hyperlink");
+  const qrState = await heroQr.evaluate((node) => ({
+    parentTag: node.parentElement?.tagName || "",
+    src: node.getAttribute("src") || "",
+    complete: node.complete,
+    naturalWidth: node.naturalWidth,
+  }));
+  assert.notEqual(qrState.parentTag, "A", "QR itself must not act as a desktop hyperlink");
+  assert.equal(qrState.src, "/assets/contest/contest-experience-qr.svg");
+  assert.equal(qrState.complete, true);
+  assert.ok(qrState.naturalWidth > 0, "contest QR failed to render");
+
+  const qrResponse = await fetch(new URL(qrState.src, baseURL));
+  assert.equal(qrResponse.status, 200, "contest QR request did not return 200");
+  assert.ok(
+    (qrResponse.headers.get("content-type") || "").includes("image/svg+xml"),
+    "contest QR did not return SVG"
+  );
 
   const browserCta = page.locator('a[href="/#/contest"]').filter({ hasText: "이 브라우저에서 체험하기" }).first();
   await browserCta.waitFor();
@@ -154,7 +169,7 @@ async function runScenarioA(page) {
 
   await page.locator('[data-contest-target="nav-promotions"]').click();
   await page.waitForURL(/#\/promotions$/);
-  await page.getByText("Netflix과 직접 연결되는 혜택이에요.", { exact: true }).waitFor();
+  await page.getByText("등록한 Netflix 기준으로 확인할 수 있는 혜택이에요.", { exact: true }).waitFor();
   await page.getByText("네이버플러스 X Netflix", { exact: true }).first().waitFor();
   await page.getByText(/검증 상태 LIVE_CONFIRMED/).waitFor();
   await page.getByText(/help\.naver\.com/).waitFor();
