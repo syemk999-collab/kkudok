@@ -268,6 +268,7 @@ export function NotificationCenterModal({
           </div>
           <Button
             size="compact"
+            data-contest-target="contest-reminder-test"
             className="shrink-0 !py-1.5 !px-2.5 !text-[11px]"
             onClick={onTriggerTest}
           >
