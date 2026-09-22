@@ -43,6 +43,24 @@ jobs:
       - name: Production build
         run: pnpm build
 
+      - name: Setup Java for Android verification
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Sync Capacitor Android
+        run: pnpm exec cap sync android
+
+      - name: Compile Android debug APK
+        run: |
+          chmod +x android/gradlew
+          cd android
+          ./gradlew assembleDebug --stacktrace
+
       - name: Start preview
         run: |
           pnpm preview --host 127.0.0.1 --port 4173 > /tmp/kkudok-preview.log 2>&1 &
