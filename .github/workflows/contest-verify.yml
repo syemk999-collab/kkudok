@@ -52,7 +52,7 @@ jobs:
 
       - name: Install Playwright for browser smoke test
         run: |
-          pnpm add -D playwright@1.55.0 --lockfile=false
+          pnpm add -Dw playwright@1.55.0 --lockfile=false
           pnpm exec playwright install --with-deps chromium
 
       - name: Responsive and scenario smoke test
