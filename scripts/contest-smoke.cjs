@@ -48,6 +48,27 @@ async function assertNoHorizontalOverflow(page, label) {
     assert.equal(videoStyle.objectFit, "contain");
     assert.ok(videoStyle.src.length > 0, "demo video source is missing");
 
+    const videoMeta = await video.evaluate((node) =>
+      new Promise((resolve, reject) => {
+        const read = () =>
+          resolve({
+            width: node.videoWidth,
+            height: node.videoHeight,
+            duration: node.duration,
+          });
+        if (node.readyState >= 1) {
+          read();
+          return;
+        }
+        node.addEventListener("loadedmetadata", read, { once: true });
+        node.addEventListener("error", () => reject(new Error("demo video metadata failed to load")), { once: true });
+        node.load();
+      })
+    );
+    assert.equal(videoMeta.width, 720);
+    assert.equal(videoMeta.height, 1552);
+    assert.ok(videoMeta.duration > 130 && videoMeta.duration < 136, `unexpected demo duration: ${videoMeta.duration}`);
+
     const contestHref = await desktop
       .getByRole("link", { name: "꾸독 체험 시작하기" })
       .getAttribute("href");
