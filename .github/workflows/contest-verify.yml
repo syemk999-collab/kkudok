@@ -1,0 +1,57 @@
+name: Verify Contest Landing
+
+on:
+  push:
+    branches:
+      - feature/contest-landing
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Production build
+        run: pnpm build
+
+      - name: Start preview
+        run: |
+          pnpm preview --host 127.0.0.1 --port 4173 > /tmp/kkudok-preview.log 2>&1 &
+          echo $! > /tmp/kkudok-preview.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/kkudok-preview.log
+          exit 1
+
+      - name: Install Chromium for browser smoke test
+        run: npx -y -p playwright@1.55.0 playwright install --with-deps chromium
+
+      - name: Responsive and scenario smoke test
+        run: npx -y -p playwright@1.55.0 node scripts/contest-smoke.cjs
