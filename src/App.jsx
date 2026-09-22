@@ -5,6 +5,7 @@ import { Browser } from "@capacitor/browser";
 import { Bell } from "lucide-react";
 import { AuthLogin, AuthRegister } from "./components/AuthScreens";
 import { SplashScreen, LandingScreen } from "./components/LandingScreen";
+import { ContestExperienceScreen } from "./contest/ContestExperienceScreen";
 import { AddModal } from "./components/AddModal";
 import { AccountModal } from "./components/AccountModal";
 import { TermsModal } from "./components/TermsModal";
@@ -18,7 +19,7 @@ import { RenewalSheet } from "./components/RenewalSheet";
 import { CalendarScreen, SubscriptionDetailScreen, SubscriptionListScreen } from "./components/SubscriptionScreens";
 import { NotificationCenterModal } from "./components/NotificationComponents";
 import { AppHeader, BottomNavigation, Toast } from "./components/ui";
-import { promotionCatalog, serviceCatalog } from "./data/subscriptionData";
+import { createMockSubscriptions, promotionCatalog, serviceCatalog } from "./data/subscriptionData";
 import { removeDemoSubscriptions, getStoredUsers, saveUser, findUser, storageKeys, readStoredValue } from "./lib/storage";
 import { generateSubscriptionAlerts } from "./lib/notifications";
 import { useNavigation } from "./hooks/useNavigation";
@@ -206,6 +207,29 @@ export default function App() {
     deleteSubscription,
   } = useSubscriptions({ currentRoute: screen.route });
 
+  // Contest route uses a disposable guest profile so judges can exercise
+  // the real subscription, benefit, reminder and cancellation flows
+  // without creating an account.
+  useEffect(() => {
+    if (screen.route !== "contest" || profile) return;
+    setProfile({
+      nickname: "체험 사용자",
+      provider: "Contest",
+      guest: true,
+      notificationsAllowed: true,
+    });
+    setSubscriptions((current) =>
+      current.length > 0 ? current : createMockSubscriptions()
+    );
+    setOnboardingComplete(true);
+  }, [
+    screen.route,
+    profile,
+    setProfile,
+    setSubscriptions,
+    setOnboardingComplete,
+  ]);
+
   // Notifications domain state
   const {
     notifications,
@@ -302,7 +326,7 @@ export default function App() {
 
   // Route guard: unauthenticated users must stay on auth screens
   useEffect(() => {
-    if (!profile && screen.route !== "login" && screen.route !== "register") {
+    if (!profile && !["login", "register", "contest"].includes(screen.route)) {
       navigate("login");
     }
   }, [profile, screen.route, screen.params, navigate]);
@@ -473,6 +497,21 @@ export default function App() {
         onLogin={() => navigate("login")}
       />
     );
+  } else if (screen.route === "contest") {
+    content = (
+      <ContestExperienceScreen
+        onSimulatePayment={handleTestPaymentDetection}
+        onOpenImageRegistration={() => {
+          setAddInitialMode("ai");
+          setAddOpen(true);
+        }}
+        onOpenPromotions={() => navigate("promotions")}
+        onTestReminder={() => handleTriggerTestNotification(null, notify)}
+        onOpenCancellationGuide={() => {
+          window.location.hash = "#/detail/seed-spotify?highlight=cancel";
+        }}
+      />
+    );
   } else if (screen.route === "register") {
     content = (
       <AuthRegister
@@ -563,7 +602,7 @@ export default function App() {
 
   return (
     <div className="app-shell" data-screen={screen.route} data-hash={typeof window !== "undefined" ? window.location.hash : ""}>
-      {showSplash && (
+      {showSplash && screen.route !== "contest" && (
         <SplashScreen
           onFinish={() => {
             if (typeof window !== "undefined") {
