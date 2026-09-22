@@ -281,7 +281,8 @@ async function runScenarioB(page) {
   assert.equal(flow?.step, "B8");
 
   await page.locator('[data-contest-target="cancel-primary"]').click();
-  await page.getByText("구독 해지 가이드", { exact: false }).first().waitFor();
+  await page.getByRole("dialog", { name: "구독 해지 가이드" }).waitFor();
+  await page.locator('[data-contest-target="cancel-open-site"]').waitFor();
   flow = await readContestFlow(page);
   assert.equal(flow?.step, "B9");
 
