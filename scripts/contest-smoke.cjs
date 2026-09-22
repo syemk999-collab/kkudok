@@ -48,26 +48,15 @@ async function assertNoHorizontalOverflow(page, label) {
     assert.equal(videoStyle.objectFit, "contain");
     assert.ok(videoStyle.src.length > 0, "demo video source is missing");
 
-    const videoMeta = await video.evaluate((node) =>
-      new Promise((resolve, reject) => {
-        const read = () =>
-          resolve({
-            width: node.videoWidth,
-            height: node.videoHeight,
-            duration: node.duration,
-          });
-        if (node.readyState >= 1) {
-          read();
-          return;
-        }
-        node.addEventListener("loadedmetadata", read, { once: true });
-        node.addEventListener("error", () => reject(new Error("demo video metadata failed to load")), { once: true });
-        node.load();
-      })
+    const videoUrl = new URL(videoStyle.src, baseURL).toString();
+    const videoResponse = await fetch(videoUrl);
+    assert.equal(videoResponse.status, 200, "demo video request did not return 200");
+    assert.ok(
+      (videoResponse.headers.get("content-type") || "").includes("video/mp4"),
+      "demo video did not return video/mp4"
     );
-    assert.equal(videoMeta.width, 720);
-    assert.equal(videoMeta.height, 1552);
-    assert.ok(videoMeta.duration > 130 && videoMeta.duration < 136, `unexpected demo duration: ${videoMeta.duration}`);
+    const videoBytes = await videoResponse.arrayBuffer();
+    assert.equal(videoBytes.byteLength, 2961186, "unexpected demo video file size");
 
     const contestHref = await desktop
       .getByRole("link", { name: "꾸독 체험 시작하기" })
