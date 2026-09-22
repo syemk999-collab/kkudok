@@ -20,7 +20,7 @@ const baseSteps = [
   "해지 신청 후 완료 화면 확인하기",
 ];
 
-export function CancelModal({ subscription: rawSub, promotion, autoOpen = false, onClose, onComplete, onToast }) {
+export function CancelModal({ subscription: rawSub, promotion, autoOpen = false, onClose, onComplete, onToast, onExternalOpen }) {
   // DB 구독 데이터에 guideSteps나 cancelUrl이 누락되어도 serviceCatalog에서 100% 매칭 보강
   const subscription = useMemo(() => {
     const targetName = (rawSub.name || "").toLowerCase().replace(/\s+/g, "");
@@ -65,6 +65,7 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
   const goToCancel = async () => {
     if (!subscription.cancelUrl) return;
 
+    onExternalOpen?.(subscription);
     setCancelSessionActive(true);
     if (!Capacitor.isNativePlatform()) {
       window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
@@ -298,15 +299,17 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
         </div>
       ) : (
         <div className="mt-5 space-y-2">
-          <Button
-            size="large"
-            fullWidth
-            disabled={!subscription.cancelUrl}
-            onClick={goToCancel}
-            prefixIcon={<ExternalLink size={17} />}
-          >
-            {subscription.cancelUrl ? "해지 페이지로 바로 이동 (가이드 포함)" : "해지 링크를 찾지 못했어요"}
-          </Button>
+          <div data-contest-target="cancel-open-site">
+            <Button
+              size="large"
+              fullWidth
+              disabled={!subscription.cancelUrl}
+              onClick={goToCancel}
+              prefixIcon={<ExternalLink size={17} />}
+            >
+              {subscription.cancelUrl ? "해지 페이지로 바로 이동 (가이드 포함)" : "해지 링크를 찾지 못했어요"}
+            </Button>
+          </div>
           <Button
             size="large"
             fullWidth
