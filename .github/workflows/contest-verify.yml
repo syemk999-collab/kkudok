@@ -57,3 +57,11 @@ jobs:
 
       - name: Responsive and scenario smoke test
         run: node scripts/contest-smoke.cjs
+
+      - name: Upload contest verification screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contest-verification-screenshots
+          path: artifacts/contest
+          if-no-files-found: warn
