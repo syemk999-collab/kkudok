@@ -183,7 +183,7 @@ export function useSubscriptions({ currentRoute = "home" } = {}) {
     }
     setOnboardingComplete(true);
     notify?.(`${record.name}을 내 구독에 추가했어요.`);
-    return true;
+    return record;
   }, [subscriptions, profile?.user_id]);
 
   const updateSubscription = useCallback((subscriptionId, update, notify) => {
