@@ -71,7 +71,7 @@ const NAVER_PLUS_TUTORIAL_HINTS = [
   },
 ];
 
-const NAVER_CANCEL_CHARACTER = "/assets/kkudok/cancel_guide_character.png";
+const NAVER_CANCEL_CHARACTER = "/assets/kkudok/character.png";
 
 function NaverPlusStepUiIllustration({ stepNumber, large = false }) {
   const config = {
@@ -305,8 +305,8 @@ export function CancelBrowserModal({
   const characterImg = customCharacterSrc || (isNaverPlus
     ? NAVER_CANCEL_CHARACTER
     : isFinalStep
-      ? "/assets/kkudok/character_done.png"
-      : "/assets/kkudok/character_guide.png");
+      ? "/assets/kkudok/character.png"
+      : "/assets/kkudok/character.png");
 
   const displayUrl = (() => {
     try {
@@ -389,7 +389,7 @@ export function CancelBrowserModal({
             className="group relative flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-tr from-blue-600 to-indigo-500 shadow-2xl ring-4 ring-white transition-all active:scale-90 hover:scale-105 cursor-pointer animate-tutorial-float overflow-hidden"
           >
             <img
-              src={customCharacterSrc || (isNaverPlus ? NAVER_CANCEL_CHARACTER : "/assets/kkudok/character_mascot.png")}
+              src={customCharacterSrc || "/assets/kkudok/character.png"}
               alt="꾸독이"
               className="h-13 w-13 object-contain drop-shadow"
             />
