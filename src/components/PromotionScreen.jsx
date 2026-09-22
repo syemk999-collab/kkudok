@@ -74,7 +74,7 @@ function getBadgeInfo(promotion, isUserSubscribed) {
   return { text: promotion.kind || (promotion.category + " 추천"), isHighlight: false };
 }
 
-export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPromotion }) {
+export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPromotion, contestMode = false }) {
   const [filter, setFilter] = useState("all");
 
   const userSubscribedServiceIds = useMemo(() => {
@@ -204,6 +204,27 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
     return Array.from(userSubscribedCategories).join(" · ");
   }, [isPersonalized, userSubscribedCategories]);
 
+  const contestDirectPromotion = useMemo(
+    () => candidatePromotions.find((promotion) => promotion.isDirectMatch) || null,
+    [candidatePromotions]
+  );
+
+  const contestSourceHost = useMemo(() => {
+    try {
+      return contestDirectPromotion?.link ? new URL(contestDirectPromotion.link).hostname : "";
+    } catch {
+      return "";
+    }
+  }, [contestDirectPromotion]);
+
+  const contestMatchedSubscription = useMemo(() => {
+    if (!contestDirectPromotion) return null;
+    return subscriptions.find((subscription) => {
+      const id = subscription.serviceId || subscription.service_id || subscription.id;
+      return (contestDirectPromotion.sourceServiceIds || []).includes(id);
+    }) || null;
+  }, [contestDirectPromotion, subscriptions]);
+
   return (
     <main className="px-5 pb-[calc(6rem+env(safe-area-inset-bottom,0px))] pt-4 select-none">
       {/* 1. 상단 타이틀 & 안내 헤더 */}
@@ -221,6 +242,75 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
             : "구독 중인 서비스가 없어 전체 혜택을 보여드려요. 구독을 추가하시면 딱 맞는 혜택만 골라드려요."}
         </p>
       </div>
+
+      {contestMode && contestDirectPromotion && (
+        <section className="mb-5 overflow-hidden rounded-[22px] border border-[#D9E7F8] bg-[#F7FBFF]">
+          <div className="border-b border-[#E4EDF7] px-4 py-4">
+            <span className="text-[10px] font-black tracking-[0.14em] text-[#3182F6]">WHY THIS BENEFIT</span>
+            <h2 className="mt-1 text-[18px] font-black tracking-tight text-[#191F28]">
+              {contestMatchedSubscription?.name || "내 구독"}과 직접 연결되는 혜택이에요.
+            </h2>
+            <p className="mt-1.5 text-[12px] leading-5 text-[#6B7684]">
+              꾸독은 혜택 이름만 보여주지 않고, 어떤 구독과 연결되는지와 적용 조건·출처를 함께 확인하는 방향으로 정확도를 높이고 있어요.
+            </p>
+          </div>
+
+          <div className="px-4 py-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-[#E8F3FF] px-2.5 py-1 text-[10px] font-black text-[#1B64DA]">
+                검증 상태 {contestDirectPromotion.verifiedStatus || "확인 필요"}
+              </span>
+              {contestSourceHost && (
+                <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-[#6B7684] ring-1 ring-[#E5E8EB]">
+                  출처 {contestSourceHost}
+                </span>
+              )}
+            </div>
+
+            <h3 className="mt-3 text-[17px] font-black tracking-tight text-[#191F28]">
+              {contestDirectPromotion.title}
+            </h3>
+            <p className="mt-1 text-[13px] font-bold text-[#3182F6]">
+              {contestDirectPromotion.subtitle || contestDirectPromotion.kind}
+            </p>
+            <p className="mt-2 text-[12px] leading-5 text-[#4E5968]">
+              {contestDirectPromotion.description}
+            </p>
+
+            <dl className="mt-4 overflow-hidden rounded-2xl border border-[#E5E8EB] bg-white text-[11px]">
+              <div className="grid grid-cols-[84px_1fr] gap-3 border-b border-[#F2F4F6] px-3.5 py-3">
+                <dt className="font-semibold text-[#8B95A1]">적용 조건</dt>
+                <dd className="m-0 font-semibold leading-5 text-[#333D4B]">{contestDirectPromotion.campaignPeriod || "공식 페이지에서 확인 필요"}</dd>
+              </div>
+              <div className="grid grid-cols-[84px_1fr] gap-3 border-b border-[#F2F4F6] px-3.5 py-3">
+                <dt className="font-semibold text-[#8B95A1]">혜택 기간</dt>
+                <dd className="m-0 font-semibold leading-5 text-[#333D4B]">{contestDirectPromotion.benefitPeriod || "공식 페이지에서 확인 필요"}</dd>
+              </div>
+              <div className="grid grid-cols-[84px_1fr] gap-3 px-3.5 py-3">
+                <dt className="font-semibold text-[#8B95A1]">혜택 가치</dt>
+                <dd className="m-0 font-semibold leading-5 text-[#333D4B]">
+                  {Number(contestDirectPromotion.saving) > 0
+                    ? `카탈로그 기준 ${Number(contestDirectPromotion.saving).toLocaleString("ko-KR")}원`
+                    : "조건 확인 필요"}
+                </dd>
+              </div>
+            </dl>
+
+            <p className="mt-3 text-[10px] leading-4 text-[#8B95A1]">
+              실제 절약액은 현재 요금제와 기존 멤버십 보유 여부, 선택하는 이용권에 따라 달라질 수 있어요. 조건과 공식 출처를 확인한 뒤 직접 판단해주세요.
+            </p>
+
+            <button
+              type="button"
+              data-contest-target="contest-benefit-source"
+              onClick={() => onOpenPromotion(contestDirectPromotion)}
+              className="mt-4 min-h-[48px] w-full rounded-2xl bg-[#191F28] px-4 text-[13px] font-bold text-white active:scale-[0.99]"
+            >
+              공식 출처에서 조건 확인하기
+            </button>
+          </div>
+        </section>
+      )}
 
       {/* 2. 심플 필터 탭 */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none mb-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
