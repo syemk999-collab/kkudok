@@ -2,7 +2,7 @@ import { Capacitor, registerPlugin } from "@capacitor/core";
 
 const NativeCharacterAsset = registerPlugin("CharacterAsset");
 
-export const DEFAULT_CHARACTER_SRC = "/assets/kkudok/cancel_guide_character.png";
+export const DEFAULT_CHARACTER_SRC = "/assets/kkudok/character.png";
 
 function normalizeAsset(result = {}) {
   const custom = result?.mode === "CUSTOM" && result?.uri;
