@@ -217,7 +217,9 @@ async function runScenarioB(page) {
   const downloadPromise = page.waitForEvent("download");
   await sampleLink.click();
   const download = await downloadPromise;
-  assert.ok((await download.suggestedFilename()).includes("kkudok-sample-receipt"));
+  const downloadedPath = await download.path();
+  assert.ok(downloadedPath && fs.existsSync(downloadedPath), "sample receipt download did not produce a file");
+  assert.ok(fs.statSync(downloadedPath).size > 0, "sample receipt download is empty");
 
   let flow = await readContestFlow(page);
   assert.equal(flow?.step, "B2");
