@@ -1,5 +1,8 @@
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
 const { chromium } = require("playwright");
+
+fs.mkdirSync("artifacts/contest", { recursive: true });
 
 const baseURL = process.env.CONTEST_BASE_URL || "http://127.0.0.1:4173";
 
@@ -51,11 +54,13 @@ async function assertNoHorizontalOverflow(page, label) {
     assert.equal(contestHref, "/#/contest");
 
     await assertNoHorizontalOverflow(desktop, "desktop 1440");
+    await desktop.screenshot({ path: "artifacts/contest/landing-desktop-1440.png", fullPage: true });
 
     await desktop.getByRole("link", { name: "꾸독 체험 시작하기" }).click();
     await desktop.waitForURL(/#\/contest$/);
     await desktop.getByRole("heading", { name: "꾸독 공모전 체험" }).waitFor();
     await desktop.getByText("꾸독 컨시어지", { exact: true }).waitFor();
+    await desktop.screenshot({ path: "artifacts/contest/contest-experience.png", fullPage: true });
 
     await desktop.getByRole("button", { name: "테스트 결제 알림 보내기" }).click();
     await desktop.getByRole("heading", { name: "구독 정보 확인" }).waitFor();
@@ -78,6 +83,9 @@ async function assertNoHorizontalOverflow(page, label) {
         name: /결제는 AI로 읽고,\s*절약액은 검증해서 보여줍니다\./,
       }).waitFor();
       await assertNoHorizontalOverflow(page, `mobile ${width}`);
+      if (width === 390) {
+        await page.screenshot({ path: "artifacts/contest/landing-mobile-390.png", fullPage: true });
+      }
       await page.close();
     }
 
