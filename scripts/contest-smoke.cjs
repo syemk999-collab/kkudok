@@ -77,12 +77,12 @@ async function assertNoHorizontalOverflow(page, label) {
     await desktop.getByRole("button", { name: "테스트 결제 알림 보내기" }).click();
     await desktop.getByRole("heading", { name: "구독 정보 확인" }).waitFor();
     await desktop.getByText("Netflix", { exact: true }).first().waitFor();
-    await desktop.getByRole("button", { name: "닫기" }).click();
+    await desktop.getByRole("button", { name: "닫기", exact: true }).click();
 
     await desktop.getByRole("button", { name: "AI 캡처 등록 시작" }).click();
     await desktop.getByRole("heading", { name: "구독 추가하기" }).waitFor();
     await desktop.getByText("결제 내역을 불러오면", { exact: false }).waitFor();
-    await desktop.getByRole("button", { name: "닫기" }).click();
+    await desktop.getByRole("button", { name: "닫기", exact: true }).click();
 
     await desktop.getByRole("button", { name: "해지 가이드 체험" }).click();
     await desktop.waitForURL(/#\/detail\/seed-spotify\?highlight=cancel$/);
