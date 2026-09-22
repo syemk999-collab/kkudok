@@ -122,8 +122,8 @@ export default function ContestLandingPage() {
             </div>
 
             <h1 id="contest-hero-title">
-              결제는 <em>AI로 읽고,</em><br />
-              절약액은 <em>검증해서 보여줍니다.</em>
+              <span>결제는 <em>AI로 읽고,</em></span>
+              <span>절약액은 <em>검증해서 보여줍니다.</em></span>
             </h1>
 
             <div className="contest-feature-stack" aria-label="꾸독 핵심 기능">
