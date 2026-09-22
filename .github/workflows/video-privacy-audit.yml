@@ -1,0 +1,38 @@
+name: Video privacy audit
+
+on:
+  push:
+    branches:
+      - feature/contest-experience-v2
+    paths:
+      - .github/workflows/video-privacy-audit.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Inspect source video
+        run: |
+          ffprobe -v error -show_entries format=duration -show_entries stream=width,height -of default=noprint_wrappers=1 public/assets/contest/kkudok-demo.mp4
+          mkdir -p artifacts/video-privacy
+
+      - name: Create contact sheets
+        run: |
+          ffmpeg -hide_banner -loglevel error -i public/assets/contest/kkudok-demo.mp4 \
+            -vf "fps=1/4,scale=270:-2,tile=5x5:padding=4:margin=4:color=white" \
+            -q:v 3 artifacts/video-privacy/contact-%02d.jpg
+          ffmpeg -hide_banner -loglevel error -i public/assets/contest/kkudok-demo.mp4 \
+            -vf "fps=1,drawtext=text='%{pts\:hms}':x=8:y=8:fontsize=18:fontcolor=white:box=1:boxcolor=black@0.65,scale=360:-2,tile=5x5:padding=4:margin=4:color=white" \
+            -frames:v 6 -q:v 3 artifacts/video-privacy/timed-%02d.jpg
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: video-privacy-audit
+          path: artifacts/video-privacy
+          if-no-files-found: error
