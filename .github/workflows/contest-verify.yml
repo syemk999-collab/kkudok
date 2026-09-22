@@ -6,6 +6,10 @@ on:
       - feature/contest-landing
   workflow_dispatch:
 
+concurrency:
+  group: contest-verify-${{ github.ref }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
@@ -56,7 +60,7 @@ jobs:
           pnpm exec playwright install --with-deps chromium
 
       - name: Responsive and scenario smoke test
-        run: node scripts/contest-smoke.cjs
+        run: timeout 90s node scripts/contest-smoke.cjs
 
       - name: Upload contest verification screenshots
         if: always()
