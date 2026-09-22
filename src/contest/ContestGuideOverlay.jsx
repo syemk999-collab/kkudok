@@ -1,0 +1,227 @@
+import { useEffect, useMemo, useState } from "react";
+
+const GUIDE = {
+  A1: {
+    target: "contest-a-start",
+    eyebrow: "SCENARIO A · 1/8",
+    title: "새로운 결제가 발생한 상황부터 시작해볼게요.",
+    body: "테스트 결제 이벤트를 실행하면 꾸독이 원문을 파싱하고, 웹에서는 실제 Heads-up과 같은 형태로 결과를 보여줍니다.",
+  },
+  A2: {
+    target: "contest-payment-headsup",
+    eyebrow: "SCENARIO A · 2/8",
+    title: "방금 도착한 결제 알림을 눌러보세요.",
+    body: "웹에서는 운영체제 알림을 읽을 수 없어 동일한 원문을 실제 파서에 통과시킨 결과를 Heads-up으로 재현합니다. Android 앱에서는 시스템 알림 감지가 동작합니다.",
+  },
+  A3: {
+    target: "contest-add-review",
+    eyebrow: "SCENARIO A · 3/8",
+    title: "꾸독이 결제 원문에서 필요한 정보를 읽었습니다.",
+    body: "서비스명, 금액, 요금제, 결제수단을 확인해보세요. 파싱 결과를 바로 확정하지 않고 사용자가 먼저 확인합니다.",
+    continueLabel: "등록 단계로",
+    next: "A4",
+  },
+  A4: {
+    target: "contest-add-save",
+    eyebrow: "SCENARIO A · 4/8",
+    title: "정보가 맞다면 실제로 구독에 등록해주세요.",
+    body: "‘내 구독에 추가’를 누르면 이 구독을 기준으로 혜택을 연결할 수 있습니다.",
+  },
+  A5: {
+    target: "nav-promotions",
+    eyebrow: "SCENARIO A · 5/8",
+    title: "이제 방금 등록한 구독의 혜택을 확인해볼게요.",
+    body: "하단의 ‘혜택’을 눌러주세요. 꾸독은 단순 지출 목록이 아니라, 등록된 구독을 기준으로 검증된 선택지를 연결하는 것을 목표로 합니다.",
+  },
+  A6: {
+    target: "contest-benefit-source",
+    eyebrow: "SCENARIO A · 6/8",
+    title: "혜택은 ‘얼마나 싸다’보다 근거와 조건을 함께 봅니다.",
+    body: "현재 구독과 연결된 이유, 적용 조건, 혜택 기간, 검증 상태를 먼저 확인한 뒤 ‘공식 출처 확인’을 눌러주세요.",
+  },
+  A7: {
+    target: "notification-center-button",
+    eyebrow: "SCENARIO A · 7/8",
+    title: "마지막으로 다음 결제를 미리 챙기는 흐름입니다.",
+    body: "상단 알림 버튼을 열어 D-1 리마인더를 직접 발송해보세요.",
+  },
+  A8: {
+    target: "contest-reminder-test",
+    eyebrow: "SCENARIO A · 8/8",
+    title: "D-1 리마인더를 실제로 발송해보세요.",
+    body: "테스트 버튼은 기존 알림 생성 로직을 사용합니다. 발송 후 Scenario A가 완료됩니다.",
+  },
+  A9: {
+    eyebrow: "SCENARIO A · 완료",
+    title: "실시간 감지부터 혜택과 다음 결제까지 확인했습니다.",
+    body: "결제 발견 → 구조화 → 등록 → 혜택 검토 → 리마인더가 하나의 흐름으로 연결됩니다.",
+    complete: true,
+  },
+  B1: {
+    target: "contest-b-sample",
+    eyebrow: "SCENARIO B · 1/9",
+    title: "이번에는 알림을 놓친 결제가 있다고 가정해볼게요.",
+    body: "준비된 실제 결제 캡처를 열어 휴대폰에 저장해주세요. 이 이미지는 다음 단계에서 직접 업로드합니다.",
+  },
+  B2: {
+    target: "contest-b-upload-start",
+    eyebrow: "SCENARIO B · 2/9",
+    title: "저장한 이미지를 직접 AI 등록 화면에 넣어보세요.",
+    body: "버튼을 누르면 꾸독의 실제 이미지 등록 화면이 열립니다. 결과를 미리 주입하지 않습니다.",
+  },
+  B3: {
+    target: "contest-image-upload",
+    eyebrow: "SCENARIO B · 3/9",
+    title: "결제 캡처를 선택해주세요.",
+    body: "선택한 이미지는 실제 /api/ocr 경로로 전송되고, 분석 중 상태를 거쳐 결과가 채워집니다.",
+  },
+  B4: {
+    target: "contest-add-review",
+    eyebrow: "SCENARIO B · 4/9",
+    title: "AI가 실제 이미지에서 읽어낸 결과입니다.",
+    body: "서비스명·금액·결제일·결제수단을 확인해주세요. 틀린 값은 사용자가 수정할 수 있습니다.",
+    continueLabel: "등록 단계로",
+    next: "B5",
+  },
+  B5: {
+    target: "contest-add-save",
+    eyebrow: "SCENARIO B · 5/9",
+    title: "확인한 정보를 실제 구독으로 등록해주세요.",
+    body: "등록이 끝나면 기존 구독 중 하나를 직접 선택해 해지 가이드까지 이어갑니다.",
+  },
+  B6: {
+    target: "nav-subscriptions",
+    eyebrow: "SCENARIO B · 6/9",
+    title: "이번에는 관리 중인 구독을 정리해볼게요.",
+    body: "하단 ‘구독’ 탭을 눌러주세요.",
+  },
+  B7: {
+    target: "subscription-seed-spotify",
+    eyebrow: "SCENARIO B · 7/9",
+    title: "예시로 Spotify 구독을 선택해주세요.",
+    body: "실제 구독 상세 화면에서 해지 경로를 확인합니다.",
+  },
+  B8: {
+    target: "cancel-primary",
+    eyebrow: "SCENARIO B · 8/9",
+    title: "이제 실제 해지 가이드를 시작해주세요.",
+    body: "꾸독은 해지를 대신하지 않습니다. 공식 해지 페이지와 필요한 단계를 안내해 사용자가 직접 결정하고 완료하도록 돕습니다.",
+  },
+  B9: {
+    target: "cancel-open-site",
+    eyebrow: "SCENARIO B · 9/9",
+    title: "공식 해지 페이지로 이동해 안내를 확인해보세요.",
+    body: "웹에서는 공식 페이지를 새 탭으로 열고, Android에서는 기존 네이티브 가이드 기능을 사용할 수 있습니다.",
+  },
+  B10: {
+    eyebrow: "SCENARIO B · 완료",
+    title: "놓친 결제를 복원하고 정리하는 흐름을 확인했습니다.",
+    body: "이미지 → 실제 AI 인식 → 사용자 확인 → 등록 → 해지 가이드까지 하나의 관리 흐름으로 연결됩니다.",
+    complete: true,
+  },
+};
+
+function measureTarget(targetName) {
+  if (!targetName || typeof document === "undefined") return null;
+  const element = document.querySelector(`[data-contest-target="${targetName}"]`);
+  if (!element) return null;
+  const rect = element.getBoundingClientRect();
+  if (!rect.width || !rect.height) return null;
+  return {
+    top: Math.max(6, rect.top - 6),
+    left: Math.max(6, rect.left - 6),
+    width: Math.min(window.innerWidth - 12, rect.width + 12),
+    height: rect.height + 12,
+  };
+}
+
+export function ContestGuideOverlay({ flow, onStep, onExit }) {
+  const guide = flow?.step ? GUIDE[flow.step] : null;
+  const [rect, setRect] = useState(null);
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    setCollapsed(false);
+  }, [flow?.step]);
+
+  useEffect(() => {
+    if (!guide?.target) {
+      setRect(null);
+      return;
+    }
+
+    let frame;
+    const update = () => {
+      frame = requestAnimationFrame(() => setRect(measureTarget(guide.target)));
+    };
+
+    update();
+    const observer = new MutationObserver(update);
+    observer.observe(document.body, { childList: true, subtree: true, attributes: true });
+    window.addEventListener("resize", update);
+    window.addEventListener("scroll", update, true);
+
+    return () => {
+      cancelAnimationFrame(frame);
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+      window.removeEventListener("scroll", update, true);
+    };
+  }, [guide?.target, flow?.step]);
+
+  const targetExists = useMemo(() => Boolean(rect), [rect]);
+  if (!guide || !flow?.scenario) return null;
+
+  return (
+    <>
+      {rect && (
+        <div
+          className="contest-guide-spotlight"
+          style={{ top: rect.top, left: rect.left, width: rect.width, height: rect.height }}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside className={`contest-guide-panel ${collapsed ? "is-collapsed" : ""}`} aria-live="polite">
+        <button
+          type="button"
+          className="contest-guide-collapse"
+          onClick={() => setCollapsed((value) => !value)}
+          aria-label={collapsed ? "컨시어지 안내 펼치기" : "컨시어지 안내 접기"}
+        >
+          {collapsed ? "안내 보기" : "접기"}
+        </button>
+
+        <img src="/assets/kkudok/character.png" alt="꾸독 컨시어지" className="contest-guide-character" />
+
+        {!collapsed && (
+          <div className="contest-guide-copy">
+            <span>{guide.eyebrow}</span>
+            <strong>{guide.title}</strong>
+            <p>{guide.body}</p>
+            {guide.target && !targetExists && (
+              <small>안내할 화면을 불러오는 중이에요.</small>
+            )}
+            <div className="contest-guide-actions">
+              {guide.continueLabel && (
+                <button type="button" onClick={() => onStep?.(guide.next)}>
+                  {guide.continueLabel}
+                </button>
+              )}
+              {guide.complete && (
+                <a href="/#/contest" onClick={onExit}>다른 시나리오 체험하기</a>
+              )}
+              <button type="button" className="contest-guide-exit" onClick={onExit}>
+                체험 안내 종료
+              </button>
+            </div>
+          </div>
+        )}
+      </aside>
+    </>
+  );
+}
+
+export function getContestGuide(step) {
+  return GUIDE[step] || null;
+}
