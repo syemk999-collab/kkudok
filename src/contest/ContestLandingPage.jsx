@@ -1,6 +1,7 @@
 import "./contest.css";
 
 const EXPERIENCE_URL = "/#/contest";
+const DEMO_VIDEO_URL = import.meta.env.VITE_CONTEST_DEMO_URL || "/assets/contest/kkudok-demo.mp4";
 const QR_DATA_URI =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAbwAAAG8AQAAAACNyy1yAAACW0lEQVR4nO2cUY7kIAxEq1b7T+5/u7kBnMD7gQHTnZmdyY6aJVP+QHSHJ4JUMsZAaLhk5dc1DhAoUKBAgQIFChQo8Msgux1AGRXAy6nB0lcV+NPBZNVqHckA8AAPIFktR4O1ryrwx4PDZ1Z3CliGvXVHGhp8U48CBX7Ffp//XWgAkyEZC8/yWhuNUeCdQcsgicI6+7+gR4EC/2bDr3ZFsonTyoFCK0TKscG/9ShQ4DVrWm0xajUmY8qjfGqw1RgF3gN0rUafaYC1GNUKq0qf4oCNxijwHiA8E5XMMix7wspye5w8T2XZW7rljcYo8B7grFXz0tdTyWqDWu+PpFWBC7X64FRdrtHH9gWX/KrANeDQ6nCtza8Ol2vDwUqrAheBTZCxksOMX38CMaCVVgWu1epQI0I80MIDezBpVeCrwUmEMUadFlxdz5BfFbgKDFrN7wSoOay5suJVgavAscdKgCkzZQPY/rFy1H0rK7TpYMBGYxR4D3COAcJiPwYDPYg15VcFLgNDkiqN7aox3YdsgItWWhW4BgznAcIs349asT2tEcJ39ChQ4EU78avpMSfg1rNY8qsCV8erI2rN7VHI//dDAtKqwMV7AdWG50R3rQ95V2lV4MqcVYtFe+aKT4da5+PWG41R4D3AKb/qd1UKra2n6iVBV6nWVgL/M7B+FqDfCiTpkWohyQ/Ayz0KFPgJO7lz7VP/fNXamuNtmauNxijwbmDfnwKAQste1op/euWNrc2WYxS4M3iSBxipgLDrqrMrAleDp99U+YTpW8ECBQoUKFCgQIECXwH+ARm8ak9FomGnAAAAAElFTkSuQmCC";
 
@@ -195,7 +196,7 @@ export default function ContestLandingPage() {
                 poster="/assets/contest/demo-poster.svg"
                 aria-label="꾸독 전체 서비스 시연 영상"
               >
-                <source src="/assets/contest/kkudok-demo.mp4" type="video/mp4" />
+                <source src={DEMO_VIDEO_URL} type="video/mp4" />
                 브라우저가 동영상 재생을 지원하지 않습니다.
               </video>
               <div className="contest-video-meta">
