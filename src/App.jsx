@@ -705,7 +705,7 @@ export default function App() {
 
   return (
     <div className="app-shell" data-screen={screen.route} data-hash={typeof window !== "undefined" ? window.location.hash : ""}>
-      {showSplash && screen.route !== "contest" && (
+      {showSplash && screen.route !== "contest" && !contestFlowActive && profile?.provider !== "Contest" && (
         <SplashScreen
           onFinish={() => {
             if (typeof window !== "undefined") {
