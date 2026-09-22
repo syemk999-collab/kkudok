@@ -625,6 +625,9 @@ export function AddModal({
   initialData = null,
   onClose,
   onAdd,
+  onRecognitionStart,
+  onRecognitionComplete,
+  onRecognitionError,
 }) {
   const fileInputRef = useRef(null);
 
@@ -900,6 +903,7 @@ export function AddModal({
     setError("");
     setWarnings([]);
     setScanning(true);
+    onRecognitionStart?.(file);
 
     try {
       const {
@@ -990,11 +994,17 @@ export function AddModal({
       setIsEditing(false);
       setIsServicePickerOpen(false);
       setCustomServiceInputOpen(false);
+      onRecognitionComplete?.({
+        result,
+        recognized,
+        fileName: file?.name || "",
+      });
     } catch (recognitionError) {
       setError(
         recognitionError?.message ||
         "결제 정보를 인식하지 못했습니다."
       );
+      onRecognitionError?.(recognitionError);
     } finally {
       setScanning(false);
     }
@@ -1509,6 +1519,7 @@ export function AddModal({
 
             <button
               type="button"
+              data-contest-target="contest-image-upload"
               disabled={scanning}
               onClick={() =>
                 fileInputRef.current?.click()
@@ -1616,7 +1627,7 @@ export function AddModal({
             </div>
           </div>
         ) : (
-          <div className="pb-2">
+          <div className="pb-2" data-contest-target="contest-add-review">
             <div
               className={`mt-4 flex items-center gap-2 text-[12px] font-semibold ${
                 needsReview
@@ -1820,6 +1831,7 @@ export function AddModal({
           <div className="sticky bottom-0 z-10 -mx-4 mt-auto bg-gradient-to-t from-white via-white to-white/80 px-4 pb-1 pt-4 sm:-mx-5 sm:px-5">
             <button
               type="button"
+              data-contest-target="contest-add-save"
               disabled={!canSave}
               onClick={
                 saveSubscription
