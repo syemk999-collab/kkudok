@@ -809,7 +809,7 @@ export default function App() {
           }}
         />
       )}
-      {renewalSubscription && !addOpen && !cancelSubscription && !notificationCenterOpen && !termsOpen && (
+      {renewalSubscription && !contestFlowActive && !addOpen && !cancelSubscription && !notificationCenterOpen && !termsOpen && (
         <RenewalSheet
           subscription={renewalSubscription}
           onKeep={() => handleRenewal(true, notify)}
