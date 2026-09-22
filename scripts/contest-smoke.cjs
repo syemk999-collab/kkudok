@@ -32,9 +32,11 @@ async function readContestFlow(page) {
 async function verifyLanding(page, label) {
   await page.goto(baseURL, { waitUntil: "networkidle" });
 
-  await page.getByRole("heading", {
-    name: /결제는 AI로 읽고,s*절약액은 검증해서 보여줍니다./,
-  }).waitFor();
+  const heroHeading = page.locator("#contest-hero-title");
+  await heroHeading.waitFor();
+  const heroHeadingText = await heroHeading.innerText();
+  assert.ok(heroHeadingText.includes("결제는 AI로 읽고,"));
+  assert.ok(heroHeadingText.includes("절약액은 검증해서 보여줍니다."));
 
   for (const text of [
     "AI 영수증 · 결제 문자 자동 파싱",
