@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/contest-landing
+      - feature/contest-experience-v2
       - main
   workflow_dispatch:
 
@@ -61,12 +62,14 @@ jobs:
           pnpm exec playwright install --with-deps chromium
 
       - name: Responsive and scenario smoke test
-        run: timeout 90s node scripts/contest-smoke.cjs
+        run: timeout 180s node scripts/contest-smoke.cjs
 
       - name: Resolve Vercel deployment target
         run: |
           if [ "$GITHUB_REF_NAME" = "main" ]; then
             TARGET_URL="https://kkudok-kohl.vercel.app"
+          elif [ "$GITHUB_REF_NAME" = "feature/contest-experience-v2" ]; then
+            TARGET_URL="https://kkudok-git-feature-contest-experience-v2-remix33.vercel.app"
           else
             TARGET_URL="https://kkudok-git-feature-contest-landing-remix33.vercel.app"
           fi
@@ -84,7 +87,7 @@ jobs:
           exit 1
 
       - name: Vercel deployed-site smoke test
-        run: CONTEST_BASE_URL="$TARGET_URL" timeout 90s node scripts/contest-smoke.cjs
+        run: CONTEST_BASE_URL="$TARGET_URL" CONTEST_VERIFY_OCR=1 timeout 240s node scripts/contest-smoke.cjs
 
       - name: Upload contest verification screenshots
         if: always()
