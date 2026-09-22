@@ -60,16 +60,16 @@ function getBadgeInfo(promotion, isUserSubscribed) {
     (promotion.kind || "").includes("결합");
 
   if (isUserSubscribed && isPartnership) {
-    return { text: "제휴 0원 · 결합 혜택", isHighlight: true };
+    return { text: "내 구독 연결 · 제휴 혜택", isHighlight: true };
   }
   if (isUserSubscribed && (promotion.kind?.includes("연간") || promotion.category === "학생/연간")) {
-    return { text: "내 구독 연간 절약", isHighlight: true };
+    return { text: "내 구독 연결 · 연간 혜택", isHighlight: true };
   }
   if (isUserSubscribed && (promotion.kind?.includes("무료 체험") || promotion.category === "100원/무료")) {
-    return { text: "신규 가입 0원 혜택", isHighlight: false };
+    return { text: "신규 가입 혜택", isHighlight: false };
   }
   if (isUserSubscribed) {
-    return { text: "내 구독 전용 혜택", isHighlight: true };
+    return { text: "내 구독 연결 혜택", isHighlight: true };
   }
   return { text: promotion.kind || (promotion.category + " 추천"), isHighlight: false };
 }
@@ -205,7 +205,12 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
   }, [isPersonalized, userSubscribedCategories]);
 
   const contestDirectPromotion = useMemo(
-    () => candidatePromotions.find((promotion) => promotion.isDirectMatch) || null,
+    () =>
+      candidatePromotions.find(
+        (promotion) => promotion.id === "naverplus-netflix" && promotion.isDirectMatch
+      ) ||
+      candidatePromotions.find((promotion) => promotion.isDirectMatch) ||
+      null,
     [candidatePromotions]
   );
 
@@ -239,7 +244,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
         <p className="mt-1 text-[13.5px] text-[#6B7684] font-medium leading-relaxed">
           {isPersonalized
             ? `회원님이 이용 중인 ${categorySummary} 카테고리 기반으로 놓치고 있던 제휴 및 할인 혜택을 분석했어요.`
-            : "구독 중인 서비스가 없어 전체 혜택을 보여드려요. 구독을 추가하시면 딱 맞는 혜택만 골라드려요."}
+            : "구독 중인 서비스가 없어 전체 혜택을 보여드려요. 구독을 추가하면 연결 가능한 혜택과 조건을 함께 확인할 수 있어요."}
         </p>
       </div>
 
@@ -349,7 +354,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
             const savingAmount = Number(promotion.saving) || 0;
             const isAnnual = promotion.kind?.includes("연간") || promotion.category === "학생/연간";
             const savingText = savingAmount > 0
-              ? (isAnnual ? `연 ${savingAmount.toLocaleString("ko-KR")}원 절약` : `월 ${savingAmount.toLocaleString("ko-KR")}원 절약`)
+              ? (isAnnual ? `연 ${savingAmount.toLocaleString("ko-KR")}원 혜택 가치` : `월 ${savingAmount.toLocaleString("ko-KR")}원 혜택 가치`)
               : (promotion.offerPrice === 0 ? "0원 무료" : null);
 
             const offerPriceText = promotion.offerPrice === 0
