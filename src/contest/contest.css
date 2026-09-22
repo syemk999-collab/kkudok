@@ -1249,6 +1249,11 @@
   backdrop-filter: blur(18px);
 }
 
+.contest-guide-panel.is-top {
+  top: max(16px, calc(env(safe-area-inset-top, 0px) + 12px));
+  bottom: auto;
+}
+
 .contest-guide-panel.is-collapsed {
   width: 150px;
   min-height: 62px;
