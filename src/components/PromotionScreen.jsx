@@ -253,7 +253,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
           <div className="border-b border-[#E4EDF7] px-4 py-4">
             <span className="text-[10px] font-black tracking-[0.14em] text-[#3182F6]">WHY THIS BENEFIT</span>
             <h2 className="mt-1 text-[18px] font-black tracking-tight text-[#191F28]">
-              {contestMatchedSubscription?.name || "내 구독"}과 직접 연결되는 혜택이에요.
+              등록한 {contestMatchedSubscription?.name || "구독"} 기준으로 확인할 수 있는 혜택이에요.
             </h2>
             <p className="mt-1.5 text-[12px] leading-5 text-[#6B7684]">
               꾸독은 혜택 이름만 보여주지 않고, 어떤 구독과 연결되는지와 적용 조건·출처를 함께 확인하는 방향으로 정확도를 높이고 있어요.
