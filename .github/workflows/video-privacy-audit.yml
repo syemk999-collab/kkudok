@@ -1,4 +1,4 @@
-name: Video privacy audit
+name: Video privacy mask
 
 on:
   push:
@@ -9,35 +9,53 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  audit:
+  mask:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: feature/contest-experience-v2
+          fetch-depth: 1
 
       - name: Install ffmpeg
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
-      - name: Inspect source video
+      - name: Blur Naver login sequence
         run: |
-          ffprobe -v error -show_entries format=duration -show_entries stream=width,height -of default=noprint_wrappers=1 public/assets/contest/kkudok-demo.mp4
-          mkdir -p artifacts/video-privacy
+          INPUT="public/assets/contest/kkudok-demo.mp4"
+          OUTPUT="public/assets/contest/kkudok-demo.privacy.mp4"
 
-      - name: Create contact sheets
+          ffmpeg -hide_banner -loglevel error -y -i "$INPUT" \
+            -filter_complex "[0:v]split=2[base][privacy];[privacy]crop=720:1432:0:120,boxblur=luma_radius=22:luma_power=2:chroma_radius=14:chroma_power=2[blurred];[base][blurred]overlay=0:120:enable='between(t,70,86.2)'[v]" \
+            -map "[v]" -map 0:a? \
+            -c:v libx264 -preset medium -crf 20 -pix_fmt yuv420p \
+            -c:a copy -movflags +faststart "$OUTPUT"
+
+          mv "$OUTPUT" "$INPUT"
+
+      - name: Verify privacy interval
         run: |
-          ffmpeg -hide_banner -loglevel error -i public/assets/contest/kkudok-demo.mp4 \
-            -vf "fps=1/4,scale=270:-2,tile=5x5:padding=4:margin=4:color=white" \
-            -q:v 3 artifacts/video-privacy/contact-%02d.jpg
-          ffmpeg -hide_banner -loglevel error -i public/assets/contest/kkudok-demo.mp4 \
+          mkdir -p artifacts/video-privacy
+          ffprobe -v error -show_entries format=duration -show_entries stream=width,height -of default=noprint_wrappers=1 public/assets/contest/kkudok-demo.mp4
+          ffmpeg -hide_banner -loglevel error -ss 68 -t 21 -i public/assets/contest/kkudok-demo.mp4 \
             -vf "fps=1,drawtext=text='%{pts\:hms}':x=8:y=8:fontsize=18:fontcolor=white:box=1:boxcolor=black@0.65,scale=360:-2,tile=5x5:padding=4:margin=4:color=white" \
-            -frames:v 6 -q:v 3 artifacts/video-privacy/timed-%02d.jpg
+            -q:v 3 artifacts/video-privacy/privacy-check-%02d.jpg
+
+      - name: Commit masked demo video
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/assets/contest/kkudok-demo.mp4
+          git commit -m "fix: blur Naver login in demo video"
+          git push origin HEAD:feature/contest-experience-v2
 
       - uses: actions/upload-artifact@v4
         with:
-          name: video-privacy-audit
+          name: video-privacy-check
           path: artifacts/video-privacy
           if-no-files-found: error
