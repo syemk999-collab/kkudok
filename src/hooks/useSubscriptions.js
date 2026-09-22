@@ -39,7 +39,11 @@ export function useSubscriptions({ currentRoute = "home" } = {}) {
 
   const [profile, setProfile] = useState(effectiveProfile);
   const [subscriptions, setSubscriptions] = useState(() => {
-    if (isContestSession) return createMockSubscriptions();
+    if (isContestSession) {
+      return createMockSubscriptions().filter((subscription) =>
+        (subscription.serviceId || subscription.id) !== "netflix"
+      );
+    }
     const saved = readStoredValue(storageKeys.subscriptions, null);
     if (Array.isArray(saved) && saved.length > 0) {
       return effectiveProfile?.guest ? saved : removeDemoSubscriptions(saved);
