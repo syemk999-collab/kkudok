@@ -2,6 +2,7 @@ import "./contest.css";
 
 const EXPERIENCE_URL = "/#/contest";
 const DEMO_VIDEO_URL = import.meta.env.VITE_CONTEST_DEMO_URL || "/assets/contest/kkudok-demo.mp4";
+// Contest demo media is served from the same origin unless an explicit public URL is configured.
 const QR_DATA_URI =
   "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXIAAAFyAQAAAADAX2ykAAACX0lEQVR4nO2bTWrcQBCFv4oEXvaAD+CjtK6WI+UGo6P4AAFpaWjxsuhuSeMhJCYaxW2qF0JY36Lg8arrZ2ziI2f89iEcnHfeeeedd9753/FWTg+jmdnAYsBiMNdvw4nxOH8wHyVJExCnTjD32EAnG+gkSbrlHx2P8wfzc3XoeAEICX23Pn/Lxj43HueP4fv7Py0m5mcRp4uJ+dx4nH80HxJml8VsoLtvjj9//M7vT/VvEDCDxWkBws+e8eXNiD9gr/Jni9/5v+JHMzO7AMxPIr7WByy5fD43HucP4rN/N4cK3vKtq/GCFWOfF4/zx/Lk5icqoStdfssnSsqV9Hauny1+5/9wdvpKCWnqBHSCoPyma5Byi+z6NsYXc15DyqONouW0ObkU0e7fJvmqW7Vp8W99kyYoD9e3Qb7k5yIobEpDKP4t7nZ9G+SrvquMrJlaShRPe33VKr8rjrdbN6fmVdoMun9b5Fd901pJq5bOu5or+f3bJl/1nahZeaof1nZ4U9/1bY3f5+fi2pKpc36+At7/tsvXrDx1Wcs8sMrShm1+5fVzo3ydP8+LKQryfgHACCDmHovX0+Jx/lj+zr9R7+ZXrO2S+7c9fr88KJdwIo871qkGccLzc5t8zs91u9slAWIc+mTx9UnG/JwgpF7nxOP8Q/hYmyQb5h4bQk3NhASj/76uVX69f9ntj0oTHG5GV37/fgW++JdOMJtl4Uf/fc5X4XOvO75s+blsH2z4L/E4/2/8bupcFr55a1QesBtSen5uj1/3g0DR8nZcie8XWubN/7/beeedd95550/nfwHxEkPoiJuTMgAAAABJRU5ErkJggg==";
 
