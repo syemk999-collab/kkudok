@@ -65,15 +65,20 @@ function PhonePreview() {
             <span>구독 관리</span>
           </div>
 
+          <div className="contest-phone-benefit-banner">
+            <span>이번 달<br />얼마나 절약할 수 있을까요?</span>
+            <strong>꾸독</strong>
+          </div>
+
           <div className="contest-phone-summary">
-            <span>이번 달 총 지출</span>
-            <strong>₩24,600</strong>
-            <small>활성 구독 4개</small>
+            <span>이번 달 예상 절약액</span>
+            <strong>24,600<small>원</small></strong>
+            <em>최근 3개월 대비<br /><b>+12,800원</b></em>
           </div>
 
           <div className="contest-phone-section-title">
-            <strong>구독 관리</strong>
-            <span>전체보기</span>
+            <strong>내 구독 <small>6</small></strong>
+            <span>전체보기 〉</span>
           </div>
 
           <div className="contest-phone-subscriptions">
@@ -81,11 +86,6 @@ function PhonePreview() {
             <div><b>S</b><span>Spotify<small>다음 결제일 10월 14일</small></span><strong>10,900원</strong></div>
             <div><b>N+</b><span>네이버플러스 멤버십<small>다음 결제일 10월 20일</small></span><strong>4,900원</strong></div>
             <div><b>Y</b><span>YouTube Premium<small>다음 결제일 10월 22일</small></span><strong>14,900원</strong></div>
-          </div>
-
-          <div className="contest-phone-benefit">
-            <span>이번 달 얼마나 절약할 수 있을까요?</span>
-            <strong>검증된 혜택 확인하기</strong>
           </div>
 
           <div className="contest-phone-nav">
