@@ -6,6 +6,7 @@ import { readStoredValue, storageKeys } from "../lib/storage.js";
 export const PAGE_TITLES = {
   home: "꾸독",
   landing: "꾸독",
+  contest: "꾸독 공모전 체험",
   subscriptions: "구독 목록",
   calendar: "결제 캘린더",
   promotions: "혜택",
@@ -91,7 +92,7 @@ export function useNavigation({ initialRoute, onHashParamAction } = {}) {
     }
   }, [screen]);
 
-  const hasAppChrome = !["login", "register", "onboarding", "landing"].includes(screen.route);
+  const hasAppChrome = !["login", "register", "onboarding", "landing", "contest"].includes(screen.route);
 
   return {
     screen,
