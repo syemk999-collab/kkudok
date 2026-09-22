@@ -19,7 +19,7 @@ import { RenewalSheet } from "./components/RenewalSheet";
 import { CalendarScreen, SubscriptionDetailScreen, SubscriptionListScreen } from "./components/SubscriptionScreens";
 import { NotificationCenterModal } from "./components/NotificationComponents";
 import { AppHeader, BottomNavigation, Toast } from "./components/ui";
-import { createMockSubscriptions, promotionCatalog, serviceCatalog } from "./data/subscriptionData";
+import { promotionCatalog, serviceCatalog } from "./data/subscriptionData";
 import { removeDemoSubscriptions, getStoredUsers, saveUser, findUser, storageKeys, readStoredValue } from "./lib/storage";
 import { generateSubscriptionAlerts } from "./lib/notifications";
 import { useNavigation } from "./hooks/useNavigation";
@@ -207,29 +207,6 @@ export default function App() {
     deleteSubscription,
   } = useSubscriptions({ currentRoute: screen.route });
 
-  // Contest route uses a disposable guest profile so judges can exercise
-  // the real subscription, benefit, reminder and cancellation flows
-  // without creating an account.
-  useEffect(() => {
-    if (screen.route !== "contest" || profile) return;
-    setProfile({
-      nickname: "체험 사용자",
-      provider: "Contest",
-      guest: true,
-      notificationsAllowed: true,
-    });
-    setSubscriptions((current) =>
-      current.length > 0 ? current : createMockSubscriptions()
-    );
-    setOnboardingComplete(true);
-  }, [
-    screen.route,
-    profile,
-    setProfile,
-    setSubscriptions,
-    setOnboardingComplete,
-  ]);
-
   // Notifications domain state
   const {
     notifications,
@@ -246,7 +223,7 @@ export default function App() {
     handleTogglePermissionFromHome,
     markAllRead,
     clearAll,
-  } = useNotificationManager({ subscriptions });
+  } = useNotificationManager({ subscriptions, persist: profile?.provider !== "Contest" });
 
   
   // Supabase Auth session & state change listener
