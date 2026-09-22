@@ -50,8 +50,10 @@ jobs:
           cat /tmp/kkudok-preview.log
           exit 1
 
-      - name: Install Chromium for browser smoke test
-        run: npx -y -p playwright@1.55.0 playwright install --with-deps chromium
+      - name: Install Playwright for browser smoke test
+        run: |
+          pnpm add -D playwright@1.55.0 --lockfile=false
+          pnpm exec playwright install --with-deps chromium
 
       - name: Responsive and scenario smoke test
-        run: npx -y -p playwright@1.55.0 node scripts/contest-smoke.cjs
+        run: node scripts/contest-smoke.cjs
