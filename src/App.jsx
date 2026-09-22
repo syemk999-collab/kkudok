@@ -628,7 +628,7 @@ export default function App() {
             notify
           )
         }
-        onOpenNotificationCenter={() => setNotificationCenterOpen(true)}
+        onOpenNotificationCenter={openNotificationCenter}
         onTestPaymentDetection={handleTestPaymentDetection}
         onRequestPaymentCapture={handleRequestPaymentCapture}
         onOpenTerms={handleOpenTerms}
@@ -641,14 +641,14 @@ export default function App() {
     content = (
       <SubscriptionListScreen
         subscriptions={subscriptions}
-        onOpen={(id) => navigate("detail", id)}
-        onAdd={() => { setAddInitialMode("manual"); setAddOpen(true); }}
-        onStartCancel={(id, promotion, options) => {
-          startCancellation(id, promotion, options);
-          if (contestFlow.step === "B8") {
-            setContestStep("B9");
+        onOpen={(id) => {
+          if (contestFlow.step === "B7" && id === "seed-spotify") {
+            setContestStep("B8");
           }
+          navigate("detail", id);
         }}
+        onAdd={() => { setAddInitialMode("manual"); setAddOpen(true); }}
+        onStartCancel={startCancellation}
         onMute={(id) => muteSubscription(id, notify)}
         onRefresh={() => notify("최신 구독 목록을 확인했어요.")}
         onTogglePin={(id) => togglePinSubscription(id, notify)}
@@ -671,7 +671,12 @@ export default function App() {
         subscription={selectedSubscription}
         subscriptions={subscriptions}
         onUpdate={(id, update) => updateSubscription(id, update, notify)}
-        onStartCancel={startCancellation}
+        onStartCancel={(id, promotion, options) => {
+          startCancellation(id, promotion, options);
+          if (contestFlow.step === "B8") {
+            setContestStep("B9");
+          }
+        }}
         onBack={() => {
           setHighlightCancelId(null);
           navigate("subscriptions");
@@ -859,7 +864,10 @@ export default function App() {
           onDismiss={() => setContestHeadsUp(null)}
         />
       )}
-      {contestFlowActive && (
+      {contestFlowActive && !(
+        screen.route === "contest" &&
+        ["A1", "B1", "B2"].includes(contestFlow.step)
+      ) && (
         <ContestGuideOverlay
           flow={contestFlow}
           onStep={setContestStep}
