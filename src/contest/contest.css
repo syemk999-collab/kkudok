@@ -360,27 +360,80 @@
   font-size: 11px;
 }
 
+.contest-phone-benefit-banner {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 18px;
+  padding: 16px 17px;
+  border-radius: 17px;
+  background: linear-gradient(135deg, #e6ecff, #dce7ff);
+}
+
+.contest-phone-benefit-banner span {
+  color: #34435a;
+  font-size: 11px;
+  line-height: 1.45;
+  font-weight: 850;
+}
+
+.contest-phone-benefit-banner strong {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 50%;
+  background: #fff;
+  color: #111827;
+  font-size: 10px;
+  box-shadow: 0 5px 15px rgba(31, 64, 112, 0.12);
+}
+
 .contest-phone-summary {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 4px 12px;
-  padding: 22px 0 28px;
+  margin-top: 14px;
+  padding: 17px 16px 20px;
+  border-radius: 17px;
+  background: #fff;
+  box-shadow: 0 5px 18px rgba(25, 42, 70, 0.045);
 }
 
-.contest-phone-summary span {
+.contest-phone-summary > span {
   grid-column: 1 / -1;
-  color: #8a95a3;
-  font-size: 11px;
+  color: #697586;
+  font-size: 10px;
+  font-weight: 700;
 }
 
-.contest-phone-summary strong {
-  font-size: 34px;
+.contest-phone-summary > strong {
+  align-self: end;
+  font-size: 31px;
   letter-spacing: -0.05em;
 }
 
-.contest-phone-summary small {
+.contest-phone-summary > strong small {
+  margin-left: 2px;
+  color: #303947;
+  font-size: 10px;
+}
+
+.contest-phone-summary em {
   align-self: end;
-  color: #6b7280;
+  padding: 7px 8px;
+  border-radius: 9px;
+  background: #ebfff8;
+  color: #718091;
+  font-size: 8px;
+  font-style: normal;
+  line-height: 1.45;
+  text-align: right;
+}
+
+.contest-phone-summary em b {
+  color: #13af6c;
   font-size: 10px;
 }
 
@@ -393,6 +446,12 @@
 
 .contest-phone-section-title strong {
   font-size: 14px;
+}
+
+.contest-phone-section-title strong small {
+  margin-left: 3px;
+  color: #5c6b7d;
+  font-size: 9px;
 }
 
 .contest-phone-section-title span {
