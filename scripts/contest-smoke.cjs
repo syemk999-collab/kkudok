@@ -53,6 +53,13 @@ async function assertNoHorizontalOverflow(page, label) {
       .getAttribute("href");
     assert.equal(contestHref, "/#/contest");
 
+    await desktop.evaluate(() => {
+      localStorage.setItem(
+        "submate-mvp:profile",
+        JSON.stringify({ nickname: "기존 사용자", provider: "Local", guest: false })
+      );
+    });
+
     await assertNoHorizontalOverflow(desktop, "desktop 1440");
     await desktop.screenshot({ path: "artifacts/contest/landing-desktop-1440.png", fullPage: true });
 
@@ -60,6 +67,11 @@ async function assertNoHorizontalOverflow(page, label) {
     await desktop.waitForURL(/#\/contest$/);
     await desktop.getByRole("heading", { name: "꾸독 공모전 체험" }).waitFor();
     await desktop.getByText("꾸독 컨시어지", { exact: true }).waitFor();
+    const preservedProfile = await desktop.evaluate(() =>
+      JSON.parse(localStorage.getItem("submate-mvp:profile") || "null")
+    );
+    assert.equal(preservedProfile?.nickname, "기존 사용자");
+    assert.equal(preservedProfile?.provider, "Local");
     await desktop.screenshot({ path: "artifacts/contest/contest-experience.png", fullPage: true });
 
     await desktop.getByRole("button", { name: "테스트 결제 알림 보내기" }).click();
