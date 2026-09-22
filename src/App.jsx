@@ -189,11 +189,11 @@ export default function App() {
           parsedPayment: {
             serviceName: result.serviceName,
             name: result.serviceName,
-            serviceId: "netflix",
+            serviceId: result.serviceId || "",
             amount: Number(result.amount) || 0,
             plan: result.plan || "",
             paymentMethod: result.paymentMethod || "",
-            category: "OTT",
+            category: result.category || "기타",
             isSubscription: true,
           },
         });
