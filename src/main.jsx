@@ -1,5 +1,6 @@
 import { StrictMode, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
+import { Capacitor } from "@capacitor/core";
 import App from "./App";
 import ContestLandingPage from "./contest/ContestLandingPage";
 import "./index.css";
@@ -19,7 +20,7 @@ function RootRouter() {
     };
   }, []);
 
-  return hasHashRoute ? <App /> : <ContestLandingPage />;
+  return Capacitor.isNativePlatform() || hasHashRoute ? <App /> : <ContestLandingPage />;
 }
 
 createRoot(document.getElementById("root")).render(
