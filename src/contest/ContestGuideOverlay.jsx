@@ -170,6 +170,11 @@ export function ContestGuideOverlay({ flow, onStep, onExit }) {
   }, [guide?.target, flow?.step]);
 
   const targetExists = useMemo(() => Boolean(rect), [rect]);
+  const placement = useMemo(() => {
+    if (!rect || typeof window === "undefined") return "is-bottom";
+    return rect.top > window.innerHeight * 0.56 ? "is-top" : "is-bottom";
+  }, [rect]);
+
   if (!guide || !flow?.scenario) return null;
 
   return (
@@ -182,7 +187,7 @@ export function ContestGuideOverlay({ flow, onStep, onExit }) {
         />
       )}
 
-      <aside className={`contest-guide-panel ${collapsed ? "is-collapsed" : ""}`} aria-live="polite">
+      <aside className={`contest-guide-panel ${placement} ${collapsed ? "is-collapsed" : ""}`} aria-live="polite">
         <button
           type="button"
           className="contest-guide-collapse"
