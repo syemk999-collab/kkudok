@@ -145,6 +145,7 @@ async function runScenarioA(page) {
   await addButton.waitFor();
   assert.equal(await addButton.isEnabled(), true);
   await addButton.click();
+  await page.getByRole("heading", { name: "구독 정보 확인" }).waitFor({ state: "hidden" });
 
   await page.waitForURL(/#\/home$/);
   flow = await readContestFlow(page);
