@@ -12,9 +12,9 @@ import {
 } from "../lib/notifications";
 import { readHash } from "./useNavigation";
 
-export function useNotificationManager({ subscriptions = [] } = {}) {
+export function useNotificationManager({ subscriptions = [], persist = true } = {}) {
   const [notifications, setNotifications] = useState(() => {
-    const stored = getStoredNotifications();
+    const stored = persist ? getStoredNotifications() : [];
     if (stored.length > 0) return stored;
     return subscriptions.length > 0 ? generateSubscriptionAlerts(subscriptions) : [];
   });
@@ -37,10 +37,11 @@ export function useNotificationManager({ subscriptions = [] } = {}) {
   }, []);
 
   useEffect(() => {
+    if (!persist) return;
     if (notifications.length > 0) {
       saveStoredNotifications(notifications);
     }
-  }, [notifications]);
+  }, [notifications, persist]);
 
   // Auto-generate alerts when subscriptions update
   useEffect(() => {
@@ -54,8 +55,10 @@ export function useNotificationManager({ subscriptions = [] } = {}) {
         return [...newItems, ...current];
       });
     }
-    scheduleSubscriptionNotifications(subscriptions).catch(() => {});
-  }, [subscriptions]);
+    if (persist) {
+      scheduleSubscriptionNotifications(subscriptions).catch(() => {});
+    }
+  }, [subscriptions, persist]);
 
   const unreadCount = useMemo(
     () => notifications.filter((n) => !n.read).length,
