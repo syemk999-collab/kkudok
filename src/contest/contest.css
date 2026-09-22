@@ -975,7 +975,7 @@
 
 @media (max-width: 920px) {
   .contest-container {
-    width: min(100% - 36px, 720px);
+    width: min(calc(100% - 36px), 720px);
   }
 
   .contest-section {
@@ -1064,7 +1064,7 @@
 
 @media (max-width: 620px) {
   .contest-container {
-    width: min(100% - 28px, 520px);
+    width: min(calc(100% - 28px), 520px);
   }
 
   .contest-section {
@@ -1235,10 +1235,6 @@
 }
 
 @media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
-
   .contest-phone,
   .contest-primary-cta,
   .contest-experience-card a {
