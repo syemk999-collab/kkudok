@@ -18,7 +18,9 @@ export const createSubscription = (service, index = 0) => ({
 });
 
 export function useSubscriptions({ currentRoute = "home" } = {}) {
+  const isContestSession = currentRoute === "contest";
   const storedProfile = useMemo(() => {
+    if (isContestSession) return null;
     const raw = typeof window !== "undefined" ? readStoredValue(storageKeys.profile, null) : null;
     if (raw && (raw.guest || raw.provider === "Guest" || raw.nickname === "민수")) {
       clearStoredValue(storageKeys.profile);
@@ -27,13 +29,17 @@ export function useSubscriptions({ currentRoute = "home" } = {}) {
       return null;
     }
     return raw;
-  }, []);
+  }, [isContestSession]);
   const initialHash = useMemo(() => readHash(), []);
   const isGuestParam = !storedProfile && initialHash.params?.get("guest") === "1";
-  const effectiveProfile = storedProfile || (isGuestParam ? { nickname: "체험 사용자", provider: "Guest", guest: true, notificationsAllowed: true } : null);
+  const contestProfile = isContestSession
+    ? { nickname: "체험 사용자", provider: "Contest", guest: true, notificationsAllowed: true }
+    : null;
+  const effectiveProfile = contestProfile || storedProfile || (isGuestParam ? { nickname: "체험 사용자", provider: "Guest", guest: true, notificationsAllowed: true } : null);
 
   const [profile, setProfile] = useState(effectiveProfile);
   const [subscriptions, setSubscriptions] = useState(() => {
+    if (isContestSession) return createMockSubscriptions();
     const saved = readStoredValue(storageKeys.subscriptions, null);
     if (Array.isArray(saved) && saved.length > 0) {
       return effectiveProfile?.guest ? saved : removeDemoSubscriptions(saved);
@@ -41,8 +47,12 @@ export function useSubscriptions({ currentRoute = "home" } = {}) {
     return effectiveProfile?.guest || isGuestParam ? createMockSubscriptions() : [];
   });
 
-  const [onboardingComplete, setOnboardingComplete] = useState(() => readStoredValue(storageKeys.onboardingComplete, false));
-  const [savedAmount, setSavedAmount] = useState(() => readStoredValue(storageKeys.savedAmount, 0));
+  const [onboardingComplete, setOnboardingComplete] = useState(() =>
+    isContestSession ? true : readStoredValue(storageKeys.onboardingComplete, false)
+  );
+  const [savedAmount, setSavedAmount] = useState(() =>
+    isContestSession ? 0 : readStoredValue(storageKeys.savedAmount, 0)
+  );
   const [selectedOnboarding, setSelectedOnboarding] = useState([]);
   const [cancelTarget, setCancelTarget] = useState(null);
   const [renewalTarget, setRenewalTarget] = useState(null);
@@ -50,6 +60,7 @@ export function useSubscriptions({ currentRoute = "home" } = {}) {
 
   // Storage sync
   useEffect(() => {
+    if (profile?.provider === "Contest") return;
     if (profile) {
       writeStoredValue(storageKeys.profile, profile);
     } else {
@@ -58,18 +69,21 @@ export function useSubscriptions({ currentRoute = "home" } = {}) {
   }, [profile]);
 
   useEffect(() => {
+    if (profile?.provider === "Contest") return;
     if (profile) {
       writeStoredValue(storageKeys.subscriptions, subscriptions);
     }
   }, [subscriptions, profile]);
 
   useEffect(() => {
+    if (profile?.provider === "Contest") return;
     writeStoredValue(storageKeys.onboardingComplete, onboardingComplete);
-  }, [onboardingComplete]);
+  }, [onboardingComplete, profile?.provider]);
 
   useEffect(() => {
+    if (profile?.provider === "Contest") return;
     writeStoredValue(storageKeys.savedAmount, savedAmount);
-  }, [savedAmount]);
+  }, [savedAmount, profile?.provider]);
 
   
   // Sync subscriptions from Supabase if logged in

@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="1552" viewBox="0 0 720 1552" role="img" aria-label="꾸독 전체 시연 영상">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#06162b"/>
+      <stop offset="0.6" stop-color="#0a2548"/>
+      <stop offset="1" stop-color="#07111f"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="65%" cy="32%" r="60%">
+      <stop offset="0" stop-color="#1685ff" stop-opacity=".42"/>
+      <stop offset="1" stop-color="#1685ff" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="720" height="1552" fill="url(#bg)"/>
+  <rect width="720" height="1552" fill="url(#glow)"/>
+  <g fill="#fff" font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+    <text x="360" y="650" font-size="30" font-weight="700" opacity=".75">FULL PRODUCT DEMO</text>
+    <text x="360" y="720" font-size="54" font-weight="800">꾸독은 이렇게 작동합니다.</text>
+    <text x="360" y="785" font-size="24" opacity=".7">전체 서비스 시연 · 02:13</text>
+  </g>
+  <circle cx="360" cy="900" r="62" fill="#fff" fill-opacity=".14" stroke="#fff" stroke-opacity=".3"/>
+  <path d="M343 864 L343 936 L397 900 Z" fill="#fff"/>
+</svg>

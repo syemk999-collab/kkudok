@@ -5,6 +5,7 @@ import { Browser } from "@capacitor/browser";
 import { Bell } from "lucide-react";
 import { AuthLogin, AuthRegister } from "./components/AuthScreens";
 import { SplashScreen, LandingScreen } from "./components/LandingScreen";
+import { ContestExperienceScreen } from "./contest/ContestExperienceScreen";
 import { AddModal } from "./components/AddModal";
 import { AccountModal } from "./components/AccountModal";
 import { TermsModal } from "./components/TermsModal";
@@ -222,7 +223,7 @@ export default function App() {
     handleTogglePermissionFromHome,
     markAllRead,
     clearAll,
-  } = useNotificationManager({ subscriptions });
+  } = useNotificationManager({ subscriptions, persist: profile?.provider !== "Contest" });
 
   
   // Supabase Auth session & state change listener
@@ -302,7 +303,7 @@ export default function App() {
 
   // Route guard: unauthenticated users must stay on auth screens
   useEffect(() => {
-    if (!profile && screen.route !== "login" && screen.route !== "register") {
+    if (!profile && !["login", "register", "contest"].includes(screen.route)) {
       navigate("login");
     }
   }, [profile, screen.route, screen.params, navigate]);
@@ -473,6 +474,21 @@ export default function App() {
         onLogin={() => navigate("login")}
       />
     );
+  } else if (screen.route === "contest") {
+    content = (
+      <ContestExperienceScreen
+        onSimulatePayment={handleTestPaymentDetection}
+        onOpenImageRegistration={() => {
+          setAddInitialMode("ai");
+          setAddOpen(true);
+        }}
+        onOpenPromotions={() => navigate("promotions")}
+        onTestReminder={() => handleTriggerTestNotification(null, notify)}
+        onOpenCancellationGuide={() => {
+          window.location.hash = "#/detail/seed-spotify?highlight=cancel";
+        }}
+      />
+    );
   } else if (screen.route === "register") {
     content = (
       <AuthRegister
@@ -563,7 +579,7 @@ export default function App() {
 
   return (
     <div className="app-shell" data-screen={screen.route} data-hash={typeof window !== "undefined" ? window.location.hash : ""}>
-      {showSplash && (
+      {showSplash && screen.route !== "contest" && (
         <SplashScreen
           onFinish={() => {
             if (typeof window !== "undefined") {

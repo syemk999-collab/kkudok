@@ -10,7 +10,7 @@ import {
   X,
 } from "lucide-react";
 
-import { API_BASE_URL, getApiEndpoint } from "../lib/apiBase";
+import { API_BASE_URL, getApiEndpoint, isNativePlatform as isNativeApiPlatform } from "../lib/apiBase";
 import { recognizeDirectly, isDirectGeminiAvailable } from "../lib/geminiOcr";
 import {
   calculateEqualShare,
@@ -290,13 +290,13 @@ const optimizeImageFile = (file) =>
   });
 
 async function callRecognitionApi(payload) {
-  if (!API_BASE_URL) {
+  if (!API_BASE_URL && isNativeApiPlatform()) {
     if (isDirectGeminiAvailable()) {
       return recognizeDirectly(payload);
     }
 
     throw new Error(
-      "AI 영수증 인식을 위해 백엔드 서버 또는 Gemini 설정이 필요합니다."
+      "모바일 앱에서 AI 영수증 인식을 사용하려면 배포된 백엔드 주소가 필요합니다."
     );
   }
 

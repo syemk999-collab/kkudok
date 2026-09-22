@@ -1,0 +1,95 @@
+name: Verify Contest Landing
+
+on:
+  push:
+    branches:
+      - feature/contest-landing
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: contest-verify-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Production build
+        run: pnpm build
+
+      - name: Start preview
+        run: |
+          pnpm preview --host 127.0.0.1 --port 4173 > /tmp/kkudok-preview.log 2>&1 &
+          echo $! > /tmp/kkudok-preview.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat /tmp/kkudok-preview.log
+          exit 1
+
+      - name: Install Playwright for browser smoke test
+        run: |
+          pnpm add -Dw playwright@1.55.0 --lockfile=false
+          pnpm exec playwright install --with-deps chromium
+
+      - name: Responsive and scenario smoke test
+        run: timeout 90s node scripts/contest-smoke.cjs
+
+      - name: Resolve Vercel deployment target
+        run: |
+          if [ "$GITHUB_REF_NAME" = "main" ]; then
+            TARGET_URL="https://kkudok-kohl.vercel.app"
+          else
+            TARGET_URL="https://kkudok-git-feature-contest-landing-remix33.vercel.app"
+          fi
+          echo "TARGET_URL=$TARGET_URL" >> "$GITHUB_ENV"
+
+      - name: Wait for Vercel deployment
+        run: |
+          for i in {1..60}; do
+            if curl -LfsS "$TARGET_URL/" > /dev/null; then
+              exit 0
+            fi
+            sleep 3
+          done
+          echo "Vercel deployment did not become publicly reachable in time: $TARGET_URL"
+          exit 1
+
+      - name: Vercel deployed-site smoke test
+        run: CONTEST_BASE_URL="$TARGET_URL" timeout 90s node scripts/contest-smoke.cjs
+
+      - name: Upload contest verification screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: contest-verification-screenshots
+          path: artifacts/contest
+          if-no-files-found: warn

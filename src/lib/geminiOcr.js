@@ -1,6 +1,6 @@
 import { parseReceiptText } from "../../api/_lib/receiptParser.js";
 
-const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "";
+const GEMINI_API_KEY = import.meta.env.DEV ? (import.meta.env.VITE_GEMINI_API_KEY || "") : "";
 const DEFAULT_GEMINI_MODEL = import.meta.env.VITE_GEMINI_MODEL || "gemini-3.5-flash-lite";
 
 const FALLBACK_MODELS = [
@@ -92,7 +92,7 @@ const fetchGeminiVisionWithFallback = async ({ imageBase64, mimeType, apiKey, si
   throw lastError || new Error("Gemini OCR 호출에 실패했습니다.");
 };
 
-export const isDirectGeminiAvailable = () => Boolean(GEMINI_API_KEY);
+export const isDirectGeminiAvailable = () => import.meta.env.DEV && Boolean(GEMINI_API_KEY);
 
 export async function recognizeDirectly(payload) {
   // 1. 문자(SMS) 입력인 경우 로컬에서 즉시 파싱 (외부 네트워크 불필요)
