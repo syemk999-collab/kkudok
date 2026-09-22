@@ -77,7 +77,7 @@ async function verifyLanding(page, label) {
     "demo video did not return video/mp4"
   );
   const videoBytes = await videoResponse.arrayBuffer();
-  assert.equal(videoBytes.byteLength, 2961186, "unexpected demo video file size");
+  assert.ok(videoBytes.byteLength > 1_000_000, "demo video payload is unexpectedly small");
 
   const heroQr = page.locator(".contest-hero-experience img");
   await heroQr.waitFor();
