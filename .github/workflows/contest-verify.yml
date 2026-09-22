@@ -49,8 +49,12 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      - name: Verify preinstalled Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          test -n "$ANDROID_HOME"
+          test -x "$ANDROID_HOME/platform-tools/adb" || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version || sdkmanager --version
 
       - name: Sync Capacitor Android
         run: pnpm exec cap sync android
