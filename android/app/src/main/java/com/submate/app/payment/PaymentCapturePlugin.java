@@ -51,7 +51,9 @@ public class PaymentCapturePlugin extends Plugin {
         if (parsed != null && parsed.isSubscription) {
             PaymentNotificationHelper.dispatchQuickAddNotification(getContext(), parsed);
             ret.put("detected", true);
+            ret.put("serviceId", parsed.serviceId);
             ret.put("serviceName", parsed.serviceName);
+            ret.put("category", parsed.category);
             ret.put("amount", parsed.amount);
             ret.put("plan", parsed.plan);
             ret.put("paymentMethod", parsed.paymentMethod);
