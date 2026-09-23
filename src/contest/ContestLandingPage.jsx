@@ -5,6 +5,7 @@ import "./contest.css";
 
 const EXPERIENCE_URL = "/#/contest";
 const DEMO_VIDEO_URL = import.meta.env.VITE_CONTEST_DEMO_URL || "/assets/contest/kkudok-demo.mp4";
+const DEMO_POSTER_URL = "/assets/contest/kkudok-demo-poster.jpg";
 const QR_IMAGE_URL = "/assets/contest/contest-experience-qr.svg"
 
 const TECH_STACK = ["React", "Next.js / Vite", "Gemini AI", "ChatGPT", "Supabase", "Vercel"];
@@ -61,6 +62,7 @@ function HeroPhoneDemo() {
         <video
           ref={videoRef}
           src={DEMO_VIDEO_URL}
+          poster={DEMO_POSTER_URL}
           playsInline
           preload="auto"
           onPlay={() => setPlaying(true)}
@@ -230,7 +232,7 @@ export default function ContestLandingPage() {
             </div>
 
             <div className="contest-demo-video">
-              <video controls playsInline preload="metadata" src={DEMO_VIDEO_URL} aria-label="꾸독 전체 서비스 시연 영상" />
+              <video controls playsInline preload="metadata" src={DEMO_VIDEO_URL} poster={DEMO_POSTER_URL} aria-label="꾸독 전체 서비스 시연 영상" />
               <div><strong>전체 서비스 시연</strong><span>02:13 · 세로 원본 비율 유지 · crop 없음</span></div>
             </div>
           </div>
