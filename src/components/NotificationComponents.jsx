@@ -262,7 +262,7 @@ export function NotificationCenterModal({
             <div className="min-w-0">
               <strong className="block text-[12px] font-semibold truncate">알림 기능 즉시 테스트</strong>
               <span className="block text-[10px] text-[#71717A] truncate">
-                D-1/D-3 푸시 알림을 즉시 발송합니다
+                D-1/D-3 테스트 알림을 생성합니다
               </span>
             </div>
           </div>

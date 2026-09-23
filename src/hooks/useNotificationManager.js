@@ -93,8 +93,11 @@ export function useNotificationManager({ subscriptions = [], persist = true } = 
     }
     const alertItem = createTestNotification(sub, forcedType);
     setNotifications((current) => [alertItem, ...current]);
-    sendAppNotification(alertItem.title, { body: alertItem.message });
-    notify?.(`${alertItem.badge} 푸시 알림을 발송했어요.`);
+    sendAppNotification(alertItem.title, { body: alertItem.message })
+      .then((delivered) => notify?.(delivered
+        ? `${alertItem.badge} 테스트 알림을 기기와 알림 센터에 보냈어요.`
+        : `${alertItem.badge} 테스트 알림을 알림 센터에 추가했어요.`))
+      .catch(() => notify?.(`${alertItem.badge} 테스트 알림을 알림 센터에 추가했어요.`));
     return alertItem;
   }, [subscriptions]);
 

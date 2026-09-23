@@ -49,8 +49,8 @@ const GUIDE = {
   A8: {
     target: "contest-reminder-test",
     eyebrow: "SCENARIO A · 8/8",
-    title: "D-1 리마인더를 실제로 발송해보세요.",
-    body: "테스트 버튼은 기존 알림 생성 로직을 사용합니다. 발송 후 Scenario A가 완료됩니다.",
+    title: "D-1 테스트 리마인더를 생성해보세요.",
+    body: "알림 센터에 D-1 항목을 만들고, 기기 권한이 허용되어 있으면 기기 알림도 보냅니다.",
   },
   A9: {
     eyebrow: "SCENARIO A · 완료",
