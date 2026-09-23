@@ -21,6 +21,11 @@ export function ContestExperienceScreen({
 
       <section className="mt-6 rounded-[24px] border border-[#E5E7EB] bg-white p-5 shadow-sm">
         <div className="flex items-start gap-4">
+          <img
+            src={DEFAULT_CHARACTER_SRC}
+            alt="꾸독이"
+            className="h-[88px] w-[88px] shrink-0 object-contain"
+          />
           <div>
             <p className="text-[12px] font-bold text-[#3182F6]">꾸독 컨시어지</p>
             <h2 className="mt-1 text-[18px] font-extrabold leading-7">
