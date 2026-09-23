@@ -132,7 +132,17 @@ export default function ContestLandingPage() {
   return (
     <main className="contest-page">
       <section className="contest-hero" aria-labelledby="contest-hero-title">
-        <div className="contest-shell contest-hero-layout">
+        <div className="contest-shell contest-hero-frame">
+          <header className="contest-hero-nav">
+            <a className="contest-hero-nav-brand" href="#contest-hero-title" aria-label="꾸독 소개로 이동"><span>RƐ.</span><strong>꾸독</strong></a>
+            <nav aria-label="공모전 페이지 탐색">
+              <a href="#full-demo">서비스 시연</a>
+              <a href="#scenario-heading">체험 시나리오</a>
+              <a href="#benefit-heading">혜택 검증</a>
+            </nav>
+            <a className="contest-hero-nav-cta" href={EXPERIENCE_URL}>서비스 체험 ↗</a>
+          </header>
+          <div className="contest-hero-layout">
           <div className="contest-hero-copy">
             <div className="contest-top-badges">
               <span className="contest-top-badge is-primary">🏆 윈터드 AI Championship 2026 출품작</span>
@@ -150,6 +160,11 @@ export default function ContestLandingPage() {
             </h1>
 
             <p className="contest-hero-intro">등록의 번거로움부터 해지의 막막함, 놓치기 쉬운 혜택까지. 꾸독이 덜어주는 세 가지 부담입니다.</p>
+
+            <div className="contest-hero-actions">
+              <a className="contest-hero-action-primary" href={EXPERIENCE_URL}>직접 체험하기 <span aria-hidden="true">↗</span></a>
+              <a className="contest-hero-action-secondary" href="#full-demo">전체 시연 보기 <span aria-hidden="true">↗</span></a>
+            </div>
 
             <div className="contest-hero-features" aria-label="꾸독이 덜어주는 세 가지 부담">
               {HERO_FEATURES.map((feature) => (
@@ -179,6 +194,12 @@ export default function ContestLandingPage() {
           </div>
 
           <HeroPhoneDemo />
+          </div>
+          <div className="contest-hero-footer" aria-hidden="true">
+            <span>SCROLL TO EXPLORE <i>↓</i></span>
+            <span>PAYMENT · GUIDANCE · BENEFITS</span>
+            <span>01 / 03</span>
+          </div>
         </div>
       </section>
 
