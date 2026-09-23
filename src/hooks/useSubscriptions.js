@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { createMockSubscriptions, serviceCatalog } from "../data/subscriptionData";
 import { getMonthKey, isPastDueThisCycle } from "../lib/dates";
 import { clearStoredValue, readStoredValue, removeDemoSubscriptions, storageKeys, writeStoredValue } from "../lib/storage";
@@ -17,8 +17,10 @@ export const createSubscription = (service, index = 0) => ({
   renewalPending: false,
 });
 
-export function useSubscriptions({ currentRoute = "home" } = {}) {
-  const isContestSession = currentRoute === "contest";
+export function useSubscriptions({ currentRoute = "home", contestMode = currentRoute === "contest" } = {}) {
+  const isContestSession = contestMode;
+  const previousContestMode = useRef(contestMode);
+  const previousUserState = useRef(null);
   const storedProfile = useMemo(() => {
     if (isContestSession) return null;
     const raw = typeof window !== "undefined" ? readStoredValue(storageKeys.profile, null) : null;
@@ -62,37 +64,68 @@ export function useSubscriptions({ currentRoute = "home" } = {}) {
   const [renewalTarget, setRenewalTarget] = useState(null);
   const [completedCancelId, setCompletedCancelId] = useState(null);
 
+  // Entering the experience from an already-open app must swap to an isolated
+  // profile before any subscription or notification can be persisted.
+  useEffect(() => {
+    if (previousContestMode.current === contestMode) return;
+    if (contestMode) {
+      previousUserState.current = { profile, subscriptions, onboardingComplete, savedAmount };
+      setProfile({ nickname: "체험 사용자", provider: "Contest", guest: true, notificationsAllowed: true });
+      setSubscriptions(createMockSubscriptions().filter((subscription) =>
+        (subscription.serviceId || subscription.id) !== "netflix"
+      ));
+      setOnboardingComplete(true);
+      setSavedAmount(0);
+    } else if (previousUserState.current) {
+      const saved = previousUserState.current;
+      setProfile(saved.profile);
+      setSubscriptions(saved.subscriptions);
+      setOnboardingComplete(saved.onboardingComplete);
+      setSavedAmount(saved.savedAmount);
+      previousUserState.current = null;
+    } else if (profile?.provider === "Contest") {
+      // A direct /#/contest visit has no in-memory prior state; recover only
+      // the user's persisted state when returning to the normal app.
+      const savedProfile = readStoredValue(storageKeys.profile, null);
+      setProfile(savedProfile);
+      setSubscriptions(readStoredValue(storageKeys.subscriptions, []));
+      setOnboardingComplete(readStoredValue(storageKeys.onboardingComplete, false));
+      setSavedAmount(readStoredValue(storageKeys.savedAmount, 0));
+    }
+    previousContestMode.current = contestMode;
+  }, [contestMode]);
+
   // Storage sync
   useEffect(() => {
-    if (profile?.provider === "Contest") return;
+    if (contestMode || profile?.provider === "Contest") return;
     if (profile) {
       writeStoredValue(storageKeys.profile, profile);
     } else {
       clearStoredValue(storageKeys.profile);
     }
-  }, [profile]);
+  }, [profile, contestMode]);
 
   useEffect(() => {
-    if (profile?.provider === "Contest") return;
+    if (contestMode || profile?.provider === "Contest") return;
     if (profile) {
       writeStoredValue(storageKeys.subscriptions, subscriptions);
     }
-  }, [subscriptions, profile]);
+  }, [subscriptions, profile, contestMode]);
 
   useEffect(() => {
-    if (profile?.provider === "Contest") return;
+    if (contestMode || profile?.provider === "Contest") return;
     writeStoredValue(storageKeys.onboardingComplete, onboardingComplete);
-  }, [onboardingComplete, profile?.provider]);
+  }, [onboardingComplete, profile?.provider, contestMode]);
 
   useEffect(() => {
-    if (profile?.provider === "Contest") return;
+    if (contestMode || profile?.provider === "Contest") return;
     writeStoredValue(storageKeys.savedAmount, savedAmount);
-  }, [savedAmount, profile?.provider]);
+  }, [savedAmount, profile?.provider, contestMode]);
 
   
   // Sync subscriptions from Supabase if logged in
   useEffect(() => {
-    if (!profile?.user_id) return;
+    if (contestMode || !profile?.user_id) return;
     let active = true;
     fetchUserSubscriptions(profile.user_id).then((cloudSubs) => {
       if (!active) return;
@@ -116,11 +149,11 @@ export function useSubscriptions({ currentRoute = "home" } = {}) {
       }
     });
     return () => { active = false; };
-  }, [profile?.user_id]);
+  }, [profile?.user_id, contestMode]);
 
   // Check past-due renewal for current month on home route
   useEffect(() => {
-    if (currentRoute !== "home" || profile?.provider === "Contest") return;
+    if (contestMode || currentRoute !== "home" || profile?.provider === "Contest") return;
     const currentMonth = getMonthKey();
     const pastDue = subscriptions.find((subscription) =>
       isPastDueThisCycle(subscription) && subscription.renewalReviewedFor !== currentMonth
@@ -128,7 +161,7 @@ export function useSubscriptions({ currentRoute = "home" } = {}) {
     if (pastDue) {
       setRenewalTarget(pastDue.subscriptionId);
     }
-  }, [currentRoute, subscriptions, profile?.provider]);
+  }, [currentRoute, subscriptions, profile?.provider, contestMode]);
 
   const renewalSubscription = useMemo(
     () => subscriptions.find((subscription) => subscription.subscriptionId === renewalTarget) || null,

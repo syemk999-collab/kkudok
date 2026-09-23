@@ -74,6 +74,7 @@ export default function App() {
     setStep: setContestStep,
     reset: resetContestFlow,
   } = useContestFlow();
+  const isContestMode = screen.route === "contest" || contestFlowActive;
   const [contestHeadsUp, setContestHeadsUp] = useState(null);
 
   // Deep link listener (실시간 결제 감지 알림 탭 시 수신)
@@ -261,7 +262,7 @@ export default function App() {
     togglePinSubscription,
     muteSubscription,
     deleteSubscription,
-  } = useSubscriptions({ currentRoute: screen.route });
+  } = useSubscriptions({ currentRoute: screen.route, contestMode: isContestMode });
 
   // Notifications domain state
   const {
@@ -279,14 +280,19 @@ export default function App() {
     handleTogglePermissionFromHome,
     markAllRead,
     clearAll,
-  } = useNotificationManager({ subscriptions, persist: profile?.provider !== "Contest" });
+  } = useNotificationManager({
+    subscriptions: isContestMode && profile?.provider !== "Contest" ? [] : subscriptions,
+    persist: !isContestMode && profile?.provider !== "Contest",
+  });
 
   
   // Supabase Auth session & state change listener
   useEffect(() => {
-    if (!supabase || profile?.provider === "Contest" || contestFlowActive) return;
+    if (!supabase || screen.route === "contest" || profile?.provider === "Contest" || contestFlowActive) return;
+    let active = true;
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!active) return;
       if (session?.user) {
         const user = session.user;
         const nickname = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "사용자";
@@ -303,6 +309,7 @@ export default function App() {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active) return;
       if (event === "SIGNED_IN" && session?.user) {
         const user = session.user;
         const nickname = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "사용자";
@@ -346,9 +353,10 @@ export default function App() {
     });
 
     return () => {
+      active = false;
       subscription?.unsubscribe();
     };
-  }, [contestFlowActive, navigate, notify, profile?.provider, setOnboardingComplete, setProfile, setSubscriptions]);
+  }, [screen.route, contestFlowActive, navigate, notify, profile?.provider, setOnboardingComplete, setProfile, setSubscriptions]);
 
   // Handle URL query actions (?notifications=1)
   useEffect(() => {
@@ -567,11 +575,12 @@ export default function App() {
   }, [contestFlow.step, setContestStep, setNotificationCenterOpen]);
 
   const triggerContestReminder = useCallback(() => {
-    handleTriggerTestNotification(null, notify);
-    if (contestFlow.step === "A8") {
+    const spotify = subscriptions.find((subscription) => (subscription.serviceId || subscription.id) === "spotify");
+    const result = handleTriggerTestNotification(spotify, notify, "billing_d1");
+    if (result && contestFlow.step === "A8") {
       setContestStep("A9");
     }
-  }, [contestFlow.step, handleTriggerTestNotification, notify, setContestStep]);
+  }, [contestFlow.step, handleTriggerTestNotification, notify, setContestStep, subscriptions]);
 
   let content;
   if (screen.route === "landing") {

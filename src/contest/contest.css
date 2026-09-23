@@ -301,8 +301,8 @@
 }
 
 .contest-hero-experience img {
-  width: 92px;
-  height: 92px;
+  width: 112px;
+  height: 112px;
   padding: 7px;
   border-radius: 12px;
   background: #fff;
@@ -326,6 +326,24 @@
   margin-top: 4px;
   color: #98aabd;
   font-size: 11px;
+}
+
+.contest-page .contest-qr-pending {
+  display: grid;
+  place-items: center;
+  width: 112px;
+  height: 112px;
+  flex: none;
+  margin: 0;
+  border-radius: 12px;
+  background: white;
+  color: #4e5968;
+  font-size: 11px;
+}
+
+.contest-direct-qr .contest-qr-pending {
+  width: 154px;
+  height: 154px;
 }
 
 .contest-hero-experience a {
@@ -1635,8 +1653,13 @@
   }
 
   .contest-hero-experience img {
-    width: 82px;
-    height: 82px;
+    width: 100px;
+    height: 100px;
+  }
+
+  .contest-hero-experience .contest-qr-pending {
+    width: 100px;
+    height: 100px;
   }
 
   .contest-hero-phone {

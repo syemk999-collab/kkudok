@@ -49,6 +49,15 @@ test("createTestNotification은 올바른 테스트 알림 아이템을 생성�
   assert.equal(testItem.serviceName, "Netflix");
 });
 
+test("공모전 결제 리마인더는 일반 Spotify 구독에도 D-1로 생성된다", () => {
+  const spotify = { subscriptionId: "seed-spotify", id: "spotify", name: "Spotify", amount: 10900 };
+  const alert = createTestNotification(spotify, "billing_d1");
+  assert.equal(alert.type, "billing_d1");
+  assert.equal(alert.badge, "D-1");
+  assert.equal(alert.daysUntil, 1);
+  assert.match(alert.message, /내일 Spotify/);
+});
+
 test("알림바 지속 시간은 2~3초(2000ms~3000ms) 사이에 위치한다", () => {
   assert.ok(DEFAULT_NOTIFICATION_DURATION >= 2000, "2초 이상이어야 함");
   assert.ok(DEFAULT_NOTIFICATION_DURATION <= 3000, "3초 이하여야 함");

@@ -1,4 +1,5 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import QRCode from "qrcode";
 import { promotionCatalog } from "../data/subscriptionData";
 import "./contest.css";
 
@@ -97,6 +98,22 @@ function ScenarioSummary({ label, title, description, steps }) {
 }
 
 export default function ContestLandingPage() {
+  const [experienceQr, setExperienceQr] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    // The preview QR must open this very deployment. Production uses the same
+    // path on the production origin after the approved merge.
+    const url = new URL(EXPERIENCE_URL, window.location.origin).href;
+    QRCode.toDataURL(url, { errorCorrectionLevel: "M", margin: 4, width: 296 })
+      .then((image) => { if (active) setExperienceQr(image); })
+      .catch(() => {
+        if (active && window.location.origin === "https://kkudok-kohl.vercel.app") {
+          setExperienceQr(QR_IMAGE_URL);
+        }
+      });
+    return () => { active = false; };
+  }, []);
   const verifiedBenefit = useMemo(
     () => promotionCatalog.find((promotion) => promotion.id === "naverplus-netflix") || null,
     []
@@ -147,7 +164,7 @@ export default function ContestLandingPage() {
             </div>
 
             <div className="contest-hero-experience">
-              <img src={QR_IMAGE_URL} alt="휴대폰으로 꾸독 공모전 체험에 접속하는 QR 코드" />
+              {experienceQr ? <img src={experienceQr} alt="휴대폰으로 이 배포의 꾸독 공모전 체험에 접속하는 QR 코드" /> : <span className="contest-qr-pending">QR 준비 중</span>}
               <div>
                 <strong>휴대폰으로 꾸독 직접 체험하기</strong>
                 <span>QR 스캔 · 설치 없이 바로 체험</span>
@@ -302,7 +319,7 @@ export default function ContestLandingPage() {
             <a href={EXPERIENCE_URL}>이 브라우저에서 체험 시작하기</a>
           </div>
           <div className="contest-direct-qr">
-            <img src={QR_IMAGE_URL} alt="꾸독 공모전 체험 QR 코드" />
+              {experienceQr ? <img src={experienceQr} alt="이 배포의 꾸독 공모전 체험 QR 코드" /> : <span className="contest-qr-pending">QR 준비 중</span>}
             <strong>휴대폰으로 꾸독 직접 체험하기</strong>
             <span>Scenario A · Scenario B</span>
           </div>
