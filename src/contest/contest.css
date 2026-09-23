@@ -2262,6 +2262,7 @@
     radial-gradient(ellipse at 83% 44%, rgba(176, 220, 192, .09), transparent 45%),
     #0c1415;
 }
+.contest-page .contest-benefit-section .contest-section-heading { width: min(1200px, 100%); }
 .contest-page .contest-benefit-arrow { color: #c7dfcf; }
 .contest-page .contest-benefit-evidence-top span {
   color: #d5f0dc;
@@ -2309,7 +2310,7 @@
   aspect-ratio: 1;
 }
 .contest-page .contest-direct-qr strong { margin-top: 16px; font-size: 14px; }
-.contest-page .contest-direct-qr span { color: #b3c9b9; }
+.contest-page .contest-direct-card .contest-direct-qr > span { color: #b3c9b9; letter-spacing: normal; }
 .contest-page .contest-direct-copy p { max-width: 620px; margin-left: 0; }
 .contest-page .contest-direct-copy .contest-browser-link { margin-top: 16px; }
 

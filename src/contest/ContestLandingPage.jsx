@@ -106,6 +106,21 @@ export default function ContestLandingPage() {
   const [experienceQr, setExperienceQr] = useState("");
 
   useEffect(() => {
+    const hash = window.location.hash;
+    if (!hash.startsWith("#") || hash.startsWith("#/")) return;
+    let targetId;
+    try {
+      targetId = decodeURIComponent(hash.slice(1));
+    } catch {
+      return;
+    }
+    const frame = window.requestAnimationFrame(() => {
+      document.getElementById(targetId)?.scrollIntoView({ block: "start" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, []);
+
+  useEffect(() => {
     let active = true;
     // The QR always opens the contest experience on the current deployment.
     const url = new URL(EXPERIENCE_URL, window.location.origin).href;
