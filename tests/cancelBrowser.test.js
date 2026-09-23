@@ -85,8 +85,9 @@ test("보안 제한을 준수하는 게임 튜토리얼 위치 가이드 앵커�
   assert.match(TUTORIAL_HINTS[3].locationBadge, /최종 완료/);
 });
 
-test("삭제된 레거시 캐릭터 정적 에셋은 다시 존재하지 않는다", () => {
+test("해지 컨시어지는 공식 꾸독이 한 파일만 사용한다", () => {
   const publicKkudok = path.join(process.cwd(), "public/assets/kkudok");
+  assert.equal(fs.existsSync(path.join(publicKkudok, "kkudok_official.png")), true);
   assert.equal(fs.existsSync(path.join(publicKkudok, "character_guide.png")), false);
   assert.equal(fs.existsSync(path.join(publicKkudok, "character_done.png")), false);
   assert.equal(fs.existsSync(path.join(publicKkudok, "character_mascot.png")), false);
