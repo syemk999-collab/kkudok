@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { DEFAULT_CHARACTER_SRC } from "../lib/characterAsset";
 
 const GUIDE = {
   A1: {
@@ -209,6 +210,7 @@ export function ContestGuideOverlay({ flow, onStep, onExit }) {
       )}
 
       <aside className={`contest-guide-panel ${placement} ${collapsed ? "is-collapsed" : ""}`} aria-live="polite">
+        <img src={DEFAULT_CHARACTER_SRC} alt="꾸독이" className="contest-guide-character" />
         <button
           type="button"
           className="contest-guide-collapse"
