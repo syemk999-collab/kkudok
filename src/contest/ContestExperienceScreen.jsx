@@ -1,3 +1,5 @@
+import { DEFAULT_CHARACTER_SRC } from "../lib/characterAsset";
+
 export function ContestExperienceScreen({
   flow,
   onStartScenario,
@@ -21,6 +23,7 @@ export function ContestExperienceScreen({
         </header>
 
         <section className="contest-concierge-intro">
+          <img src={DEFAULT_CHARACTER_SRC} alt="꾸독이" />
           <div>
             <span>꾸독 컨시어지</span>
             <h2>두 가지 실제 상황으로 핵심 기능을 안내할게요.</h2>
@@ -70,6 +73,7 @@ export function ContestExperienceScreen({
         </header>
 
         <section className="contest-focus-card">
+          <img src={DEFAULT_CHARACTER_SRC} alt="꾸독이" />
           <div className="contest-focus-copy">
             <span>꾸독 컨시어지</span>
             <h2>테스트 결제 원문을 실제 파서로 읽어볼게요.</h2>
@@ -108,6 +112,7 @@ export function ContestExperienceScreen({
         </header>
 
         <section className="contest-focus-card contest-focus-card-receipt">
+          <img className="contest-focus-character-small" src={DEFAULT_CHARACTER_SRC} alt="꾸독이" />
           <div className="contest-focus-copy">
             <span>꾸독 컨시어지</span>
             <h2>{ready ? "이제 저장한 이미지를 직접 업로드해주세요." : "먼저 실제 결제 캡처를 준비해주세요."}</h2>
@@ -153,6 +158,7 @@ export function ContestExperienceScreen({
   return (
     <main className="contest-experience-shell">
       <section className="contest-concierge-intro">
+          <img src={DEFAULT_CHARACTER_SRC} alt="꾸독이" />
         <div>
           <span>꾸독 컨시어지</span>
           <h2>현재 체험 단계를 이어가는 중이에요.</h2>
