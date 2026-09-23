@@ -252,7 +252,7 @@ public final class CharacterAssetManager {
                 return;
             }
         }
-        view.setImageResource(R.drawable.kkudok_character_guide);
+        view.setImageDrawable(null);
     }
 
     public static String invalidMessage() {
