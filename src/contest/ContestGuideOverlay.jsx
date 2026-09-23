@@ -44,7 +44,7 @@ const GUIDE = {
     target: "notification-center-button",
     eyebrow: "SCENARIO A · 7/8",
     title: "마지막으로 다음 결제를 미리 챙기는 흐름입니다.",
-    body: "상단 알림 버튼을 열어 D-1 리마인더를 직접 발송해보세요.",
+    body: "상단 알림 버튼을 열어 D-1 테스트 리마인더를 만들어보세요.",
   },
   A8: {
     target: "contest-reminder-test",

@@ -273,7 +273,7 @@ export function NotificationCenterModal({
             onClick={onTriggerTest}
           >
             <Send size={12} />
-            알림 발송
+            테스트 알림 만들기
           </Button>
         </div>
 
