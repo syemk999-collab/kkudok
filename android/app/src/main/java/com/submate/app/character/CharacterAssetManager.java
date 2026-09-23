@@ -30,6 +30,7 @@ public final class CharacterAssetManager {
     private static final String DIR_NAME = "character";
     private static final String CUSTOM_FILE = "custom_character.png";
     private static final String PENDING_FILE = "pending_character.png";
+    private static final String OFFICIAL_ASSET_PATH = "public/assets/kkudok/kkudok_official.png";
     private static final long MAX_BYTES = 5L * 1024L * 1024L;
     private static final int MIN_DIMENSION = 256;
     private static final int MAX_DIMENSION = 2048;
@@ -100,6 +101,9 @@ public final class CharacterAssetManager {
 
     public static ValidationResult stageFromUri(Context context, Uri uri) {
         clearPending(context);
+        return ValidationResult.fail("DISABLED", "꾸독은 공식 캐릭터 이미지만 사용합니다.");
+        /*
+
         if (uri == null) return ValidationResult.fail("NO_FILE", invalidMessage());
 
         String displayName = getDisplayName(context, uri);
@@ -135,6 +139,7 @@ public final class CharacterAssetManager {
         ValidationResult result = validateFile(pending);
         if (!result.valid) deleteQuietly(pending);
         return result;
+        */
     }
 
     public static ValidationResult validateFile(File file) {
@@ -219,12 +224,6 @@ public final class CharacterAssetManager {
     }
 
     public static AssetInfo getActiveAsset(Context context) {
-        File custom = getCustomFile(context);
-        String mode = prefs(context).getString(KEY_MODE, MODE_DEFAULT);
-        if (MODE_CUSTOM.equals(mode) && custom.isFile()) {
-            AssetInfo info = describeFile(MODE_CUSTOM, custom);
-            if (info != null) return info;
-        }
         return new AssetInfo(MODE_DEFAULT, null, 0, 0, 0L, false);
     }
 
@@ -244,14 +243,13 @@ public final class CharacterAssetManager {
 
     public static void applyToImageView(Context context, ImageView view) {
         if (view == null) return;
-        AssetInfo active = getActiveAsset(context);
-        if (MODE_CUSTOM.equals(active.mode) && active.file != null) {
-            Bitmap bitmap = BitmapFactory.decodeFile(active.file.getAbsolutePath());
+        try (InputStream in = context.getAssets().open(OFFICIAL_ASSET_PATH)) {
+            Bitmap bitmap = BitmapFactory.decodeStream(in);
             if (bitmap != null) {
                 view.setImageBitmap(bitmap);
                 return;
             }
-        }
+        } catch (Exception ignored) {}
         view.setImageDrawable(null);
     }
 
