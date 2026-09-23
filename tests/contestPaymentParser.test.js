@@ -17,7 +17,8 @@ test("공모전 결제 원문은 Netflix 구독으로 실제 파싱된다", () =
   assert.equal(parsed.plan, "프리미엄");
   assert.equal(parsed.paymentMethod, "신한카드");
 
-  const quickAdd = toQuickAddData(parsed, new Date("2026-09-22T09:00:00+09:00"));
+  // The due day is based on the device's local calendar, regardless of its time zone.
+  const quickAdd = toQuickAddData(parsed, new Date(2026, 8, 22, 12));
   assert.equal(quickAdd.name, "Netflix");
   assert.equal(quickAdd.amount, 17000);
   assert.equal(quickAdd.dueDay, 22);
