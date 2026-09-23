@@ -79,6 +79,22 @@ export function useContestFlow() {
   }, [setFlow]);
 
   const setStep = useCallback((step, patch = {}) => {
+    if (
+      typeof window !== "undefined" &&
+      ["A2", "B2"].includes(step) &&
+      window.location.hash.startsWith("#/contest")
+    ) {
+      const previous = window.history.state;
+      const state = previous && typeof previous === "object" ? previous : {};
+      const current = state[HISTORY_KEY] || EMPTY_FLOW;
+      if (current.step !== step) {
+        window.history.pushState(
+          { ...state, [HISTORY_KEY]: { ...current, ...patch, step } },
+          "",
+          window.location.href,
+        );
+      }
+    }
     setFlow((current) => ({ ...current, ...patch, step }));
   }, [setFlow]);
 

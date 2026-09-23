@@ -77,6 +77,14 @@ export default function App() {
   const isContestMode = screen.route === "contest" || contestFlowActive;
   const [contestHeadsUp, setContestHeadsUp] = useState(null);
 
+  useEffect(() => {
+    if (contestFlow.step === "A2" && contestFlow.parsedPayment && !isNativePlatform()) {
+      setContestHeadsUp(contestFlow.parsedPayment);
+    } else {
+      setContestHeadsUp(null);
+    }
+  }, [contestFlow.step, contestFlow.parsedPayment]);
+
   // Deep link listener (실시간 결제 감지 알림 탭 시 수신)
   useEffect(() => {
     const handleUrl = (event) => {
