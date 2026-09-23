@@ -17,7 +17,19 @@ const bannedPaths = [
   "public/assets/kkudok/character_sorry.png",
 ];
 
-const bannedTokens = bannedPaths.map((item) => path.basename(item));
+const bannedTokens = [
+  "/assets/kkudok/cancel_guide_character.png",
+  "/assets/kkudok/character.png",
+  "/assets/kkudok/character_done.png",
+  "/assets/kkudok/character_guide.png",
+  "/assets/kkudok/character_guide.webp",
+  "/assets/kkudok/character_idle.png",
+  "/assets/kkudok/character_loading.png",
+  "/assets/kkudok/character_mascot.png",
+  "/assets/kkudok/character_sorry.png",
+  "R.drawable.kkudok_character_guide",
+  "R.drawable.kkudok_character_mascot",
+];
 const textExtensions = new Set([".js", ".jsx", ".ts", ".tsx", ".java", ".xml", ".json", ".css", ".html", ".md"]);
 
 function walk(directory, files = []) {
