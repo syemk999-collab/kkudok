@@ -1082,6 +1082,14 @@
   margin: 16px auto 0;
 }
 
+.contest-experience-glossary {
+  max-width: 440px;
+  margin: 12px auto 0;
+  color: #61758a;
+  font-size: 11px;
+  line-height: 1.65;
+}
+
 .contest-scenario-picker > button {
   padding: 20px;
   border: 1px solid #dce3ec;
