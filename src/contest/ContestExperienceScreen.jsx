@@ -1,3 +1,5 @@
+import { DEFAULT_CHARACTER_SRC } from "../lib/characterAsset";
+
 export function ContestExperienceScreen({
   onSimulatePayment,
   onOpenImageRegistration,
