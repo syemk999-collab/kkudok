@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Capacitor } from "@capacitor/core";
 import { openCancelBrowser } from "../lib/cancelBrowser";
-import { getCharacterAsset } from "../lib/characterAsset";
+import { DEFAULT_CHARACTER_SRC } from "../lib/characterAsset";
 import {
   Lock,
   X,
@@ -70,8 +70,6 @@ const NAVER_PLUS_TUTORIAL_HINTS = [
     tip: "꾸독은 최종 해지 버튼을 대신 누르지 않습니다.",
   },
 ];
-
-const NAVER_CANCEL_CHARACTER = null;
 
 function NaverPlusStepUiIllustration({ stepNumber, large = false }) {
   const config = {
@@ -286,27 +284,12 @@ export function CancelBrowserModal({
   const tutorialHints = isNaverPlus ? NAVER_PLUS_TUTORIAL_HINTS : TUTORIAL_HINTS;
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [minimized, setMinimized] = useState(false);
-  const [customCharacterSrc, setCustomCharacterSrc] = useState(null);
   const scrollContainerRef = useRef(null);
-
-  useEffect(() => {
-    let active = true;
-    getCharacterAsset().then((asset) => {
-      if (active) setCustomCharacterSrc(asset?.hasCustom ? asset.src : null);
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
   const currentStep = steps[activeStepIndex] || steps[0];
   const stepHint = tutorialHints[Math.min(activeStepIndex, tutorialHints.length - 1)];
 
   const isFinalStep = activeStepIndex === steps.length - 1;
-  const characterImg = customCharacterSrc || (isNaverPlus
-    ? NAVER_CANCEL_CHARACTER
-    : isFinalStep
-      ? null
-      : null);
+  const characterImg = DEFAULT_CHARACTER_SRC;
 
   const displayUrl = (() => {
     try {
