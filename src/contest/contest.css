@@ -2140,6 +2140,7 @@
   color: #f3f8f4;
   font-size: clamp(36px, 4.1vw, 58px);
   letter-spacing: -.06em;
+  scroll-margin-top: clamp(48px, 7vw, 88px);
 }
 .contest-page .contest-section-heading p,
 .contest-page .contest-direct-copy p {
