@@ -208,6 +208,13 @@
   gap: 10px;
 }
 
+.contest-hero-intro {
+  margin: -11px 0 19px;
+  color: #c3d2e1;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
 .contest-hero-features article {
   display: grid;
   grid-template-columns: 55px minmax(0, 1fr);
@@ -265,6 +272,13 @@
   font-size: 13px;
   line-height: 1.55;
   letter-spacing: -.012em;
+}
+
+.contest-hero-features .contest-feature-term {
+  margin-top: 6px;
+  color: #85c8e8;
+  font-size: 11px;
+  line-height: 1.55;
 }
 
 .contest-tech-row {
@@ -359,7 +373,7 @@
   font-weight: 850;
 }
 
-/* HERO phone is an actual video player */
+/* Galaxy reference frame (986.83 × 2048 in Figma); the portrait video keeps its own aspect ratio. */
 .contest-hero-device-wrap {
   position: relative;
   display: flex;
@@ -384,15 +398,14 @@
 
 .contest-hero-phone {
   position: relative;
-  width: min(430px, 100%);
-  padding: 12px;
+  width: min(430px, 100%, 37.5vh);
+  aspect-ratio: 986.83 / 2048;
   border-radius: 49px;
   background: linear-gradient(145deg, #d1d9e5 0%, #617084 8%, #111827 30%, #1d2633 100%);
   box-shadow:
     0 46px 90px rgba(0,0,0,.46),
     0 0 0 1px rgba(255,255,255,.16),
     -26px 0 65px rgba(28, 129, 255, .20);
-  transform: perspective(1500px) rotateY(-5deg) rotateX(1deg);
 }
 
 .contest-hero-phone-camera {
@@ -410,9 +423,10 @@
 
 .contest-hero-phone video {
   display: block;
-  width: 100%;
-  aspect-ratio: 720 / 1552;
-  max-height: 78vh;
+  position: absolute;
+  inset: 10px;
+  width: calc(100% - 20px);
+  height: calc(100% - 20px);
   border-radius: 38px;
   background: #05090f;
   object-fit: contain;
@@ -647,6 +661,13 @@
   font-size: 13px;
 }
 
+.contest-scenario-note {
+  margin: 19px 0 0;
+  color: #92b7d3;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
 /* benefits - differentiator */
 .contest-benefit-section {
   background:
@@ -794,6 +815,14 @@
   color: #53c1ff;
   font-size: 11px;
   font-weight: 850;
+  max-width: 100%;
+  margin-right: 8px;
+}
+
+.contest-section-heading .contest-section-term {
+  margin-top: 13px;
+  color: #8fbfdc;
+  font-size: 12px;
 }
 
 /* parsing */
@@ -1664,14 +1693,14 @@
 
   .contest-hero-phone {
     width: min(390px, 91vw);
-    padding: 9px;
     border-radius: 39px;
-    transform: none;
   }
 
   .contest-hero-phone video {
     border-radius: 31px;
-    max-height: none;
+    inset: 9px;
+    width: calc(100% - 18px);
+    height: calc(100% - 18px);
   }
 
   .contest-hero-play {

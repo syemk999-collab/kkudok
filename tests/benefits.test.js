@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { promotionCatalog } from "../src/data/subscriptionData.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -63,4 +64,21 @@ test("사용자 등록 구독 기반 혜택 조회 시 제휴 혜택 중복 제�
     (b) => b.id === "naverplus-netflix"
   );
   assert.equal(naverplusNetflixFinal.length, 1, "중복 제거 후 최종 혜택 목록에는 1번만 노출되어야 합니다.");
+});
+
+test("Netflix 제휴 혜택의 화면 데이터와 공개 카탈로그 가격·가입 조건이 일치한다", () => {
+  const publicPromotions = JSON.parse(
+    fs.readFileSync(path.join(__dirname, "../public/catalog/promotions.json"), "utf8")
+  );
+  const source = publicPromotions.find((item) => item.id === "naverplus-netflix");
+  const displayed = promotionCatalog.find((item) => item.id === "naverplus-netflix");
+  assert.ok(source && displayed);
+
+  for (const field of ["description", "originalPrice", "membershipMonthlyPrice", "membershipRequired", "priceSourceUrl", "campaignPeriod", "benefitPeriod"]) {
+    assert.deepEqual(displayed[field], source[field], `${field} 값이 두 카탈로그에서 같아야 합니다.`);
+  }
+  assert.equal(source.membershipRequired, true);
+  assert.ok(source.originalPrice > source.membershipMonthlyPrice);
+  assert.match(source.description, /회차.*4종.*광고형 스탠다드/);
+  assert.doesNotMatch(source.subtitle, /넷플릭스 0원/);
 });

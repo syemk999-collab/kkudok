@@ -16,7 +16,7 @@ function getPromoCategories(promotion) {
 function resolveFilter(promotion, filter, userSubscribedServiceIds) {
   if (filter === "all") return true;
   if (filter === "direct") return Boolean(promotion.isDirectMatch);
-  if (filter === "100원/무료") return promotion.category === "100원/무료" || promotion.offerPrice === 0 || promotion.offerPrice === 100;
+  if (filter === "100원/무료") return !promotion.membershipRequired && (promotion.category === "100원/무료" || promotion.offerPrice === 0 || promotion.offerPrice === 100);
   if (filter === "통신사/결합") return promotion.category === "통신사/결합" || promotion.id.includes("bundle") || promotion.id.includes("nerget") || promotion.id.includes("naver");
   if (filter === "학생/연간") return promotion.category === "학생/연간" || promotion.kind?.includes("연간") || promotion.kind?.includes("학생");
   
@@ -177,7 +177,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
     });
 
     const hasFree = candidatePromotions.some(
-      (p) => p.offerPrice === 0 || p.offerPrice === 100 || p.category === "100원/무료"
+      (p) => !p.membershipRequired && (p.offerPrice === 0 || p.offerPrice === 100 || p.category === "100원/무료")
     );
     if (hasFree) {
       items.push({ id: "100원/무료", label: "0원 · 무료" });
@@ -263,7 +263,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
           <div className="px-4 py-4">
             <div className="flex flex-wrap items-center gap-2">
               <span className="rounded-full bg-[#E8F3FF] px-2.5 py-1 text-[10px] font-black text-[#1B64DA]">
-                검증 상태 {contestDirectPromotion.verifiedStatus || "확인 필요"}
+                {contestDirectPromotion.verifiedStatus === "LIVE_CONFIRMED" ? "공식 출처 확인" : "조건 확인 필요"}
               </span>
               {contestSourceHost && (
                 <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-[#6B7684] ring-1 ring-[#E5E8EB]">
@@ -292,17 +292,24 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
                 <dd className="m-0 font-semibold leading-5 text-[#333D4B]">{contestDirectPromotion.benefitPeriod || "공식 페이지에서 확인 필요"}</dd>
               </div>
               <div className="grid grid-cols-[84px_1fr] gap-3 px-3.5 py-3">
-                <dt className="font-semibold text-[#8B95A1]">혜택 가치</dt>
+                <dt className="font-semibold text-[#8B95A1]">{contestDirectPromotion.membershipRequired ? "상품 별도 가격" : "혜택 가치"}</dt>
                 <dd className="m-0 font-semibold leading-5 text-[#333D4B]">
                   {Number(contestDirectPromotion.saving) > 0
-                    ? `카탈로그 기준 ${Number(contestDirectPromotion.saving).toLocaleString("ko-KR")}원`
+                    ? `${Number(contestDirectPromotion.saving).toLocaleString("ko-KR")}원 / 월`
                     : "조건 확인 필요"}
                 </dd>
               </div>
+              {contestDirectPromotion.membershipRequired && (
+                <div className="grid grid-cols-[84px_1fr] gap-3 border-t border-[#F2F4F6] px-3.5 py-3">
+                  <dt className="font-semibold text-[#8B95A1]">멤버십 이용료</dt>
+                  <dd className="m-0 font-semibold leading-5 text-[#333D4B]">{Number(contestDirectPromotion.membershipMonthlyPrice).toLocaleString("ko-KR")}원 / 월</dd>
+                </div>
+              )}
             </dl>
 
             <p className="mt-3 text-[10px] leading-4 text-[#8B95A1]">
-              실제 절약액은 현재 요금제와 기존 멤버십 보유 여부, 선택하는 이용권에 따라 달라질 수 있어요. 조건과 공식 출처를 확인한 뒤 직접 판단해주세요.
+              *상품 별도 가격 : 멤버십과 별개로 해당 상품을 구독할 때의 가격입니다. *검증 상태 : 공식 페이지에서 혜택을 확인했다는 뜻이며, 내 계정에 적용됐다는 의미는 아닙니다.
+              실제 절약액은 현재 요금제와 기존 멤버십 보유 여부, 선택하는 이용권에 따라 달라집니다.
             </p>
 
             <button
@@ -313,6 +320,11 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
             >
               공식 출처에서 조건 확인하기
             </button>
+            {contestDirectPromotion.priceSourceUrl && (
+              <a className="mt-3 block text-center text-[12px] font-semibold text-[#3182F6] underline" href={contestDirectPromotion.priceSourceUrl} target="_blank" rel="noreferrer">
+                넷플릭스 별도 요금 확인하기
+              </a>
+            )}
           </div>
         </section>
       )}
@@ -353,11 +365,15 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
             // 통일된 절약 금액 양식 산출
             const savingAmount = Number(promotion.saving) || 0;
             const isAnnual = promotion.kind?.includes("연간") || promotion.category === "학생/연간";
-            const savingText = savingAmount > 0
+            const savingText = promotion.membershipRequired
+              ? `별도 가격 월 ${Number(promotion.originalPrice).toLocaleString("ko-KR")}원 · 멤버십 필요`
+              : savingAmount > 0
               ? (isAnnual ? `연 ${savingAmount.toLocaleString("ko-KR")}원 혜택 가치` : `월 ${savingAmount.toLocaleString("ko-KR")}원 혜택 가치`)
               : (promotion.offerPrice === 0 ? "0원 무료" : null);
 
-            const offerPriceText = promotion.offerPrice === 0
+            const offerPriceText = promotion.membershipRequired
+              ? `멤버십 월 ${Number(promotion.membershipMonthlyPrice).toLocaleString("ko-KR")}원 필요`
+              : promotion.offerPrice === 0
               ? "0원 무료"
               : (promotion.offerPrice ? `${Number(promotion.offerPrice).toLocaleString("ko-KR")}원` : null);
 
