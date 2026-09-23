@@ -19,11 +19,6 @@ export function ContestExperienceScreen({
 
       <section className="mt-6 rounded-[24px] border border-[#E5E7EB] bg-white p-5 shadow-sm">
         <div className="flex items-start gap-4">
-          <img
-            src="/assets/kkudok/character_guide.webp"
-            alt="꾸독 공모전 체험을 안내하는 컨시어지"
-            className="h-[82px] w-[82px] shrink-0 object-contain"
-          />
           <div>
             <p className="text-[12px] font-bold text-[#3182F6]">꾸독 컨시어지</p>
             <h2 className="mt-1 text-[18px] font-extrabold leading-7">
