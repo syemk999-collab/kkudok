@@ -168,6 +168,7 @@ export function ContestExperienceScreen({
           <span>꾸독 컨시어지</span>
           <h2>현재 체험 단계를 이어가는 중이에요.</h2>
           <p>화면에 표시되는 안내를 따라 실제 꾸독 UI를 사용해주세요.</p>
+          <button type="button" className="contest-focus-primary" onClick={onReset}>시나리오 다시 선택하기</button>
         </div>
       </section>
     </main>

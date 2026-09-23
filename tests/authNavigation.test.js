@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { readHash } from "../src/hooks/useNavigation.js";
+import { isAppRouteHash, readHash } from "../src/hooks/useNavigation.js";
 import { readStoredValue, storageKeys, saveUser, findUser, getStoredUsers } from "../src/lib/storage.js";
 import { createMockSubscriptions } from "../src/data/subscriptionData.js";
 
@@ -16,6 +16,15 @@ test("URL 해시가 없거나 비어있을 때 readHash는 빈 문자열 라우�
 
   global.window = undefined;
   assert.equal(readHash().route, "");
+});
+
+test("랜딩 섹션 해시는 앱 화면으로 전환하지 않고 브라우저 뒤로가기로 복원된다", () => {
+  assert.equal(isAppRouteHash("#full-demo"), false);
+  assert.equal(isAppRouteHash("#experience-qr"), false);
+  assert.equal(isAppRouteHash("#/contest"), true);
+  global.window = { location: { hash: "#full-demo" } };
+  assert.equal(readHash().route, "");
+  global.window = undefined;
 });
 
 test("URL 해시가 지정되어 있을 때 올바른 라우트와 파라미터를 파싱한다", () => {

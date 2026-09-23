@@ -142,7 +142,7 @@ export default function ContestLandingPage() {
               <a href="#scenario-heading">체험 시나리오</a>
               <a href="#benefit-heading">혜택 검증</a>
             </nav>
-            <a className="contest-hero-nav-cta" href={EXPERIENCE_URL}>서비스 체험 ↗</a>
+            <a className="contest-hero-nav-cta" href="#experience-qr">QR로 체험하기 ↓</a>
           </header>
           <div className="contest-hero-layout">
           <div className="contest-hero-copy">
@@ -163,10 +163,17 @@ export default function ContestLandingPage() {
 
             <p className="contest-hero-intro">등록의 번거로움부터 해지의 막막함, 놓치기 쉬운 혜택까지. 꾸독이 덜어주는 세 가지 부담입니다.</p>
 
-            <div className="contest-hero-actions">
-              <a className="contest-hero-action-primary" href={EXPERIENCE_URL}>직접 체험하기 <span aria-hidden="true">↗</span></a>
-              <a className="contest-hero-action-secondary" href="#full-demo">전체 시연 보기 <span aria-hidden="true">↗</span></a>
+            <div className="contest-hero-experience" id="experience-qr">
+              {experienceQr ? <img src={experienceQr} alt="휴대폰 카메라로 스캔하면 꾸독 공모전 체험으로 이동하는 QR 코드" /> : <span className="contest-qr-pending">QR 준비 중</span>}
+              <div>
+                <span className="contest-qr-eyebrow">SCAN TO EXPERIENCE · 01 / 02</span>
+                <strong>휴대폰 카메라로 QR을 스캔해주세요.</strong>
+                <span>설치 없이 Scenario A와 B를 직접 체험할 수 있어요.</span>
+                <a className="contest-browser-link" href={EXPERIENCE_URL}>이 기기에서 웹으로 열기 ↗</a>
+              </div>
             </div>
+
+            <a className="contest-hero-demo-link" href="#full-demo">먼저 전체 서비스 시연 보기 <span aria-hidden="true">↘</span></a>
 
             <div className="contest-hero-features" aria-label="꾸독이 덜어주는 세 가지 부담">
               {HERO_FEATURES.map((feature) => (
@@ -185,14 +192,6 @@ export default function ContestLandingPage() {
               {TECH_STACK.map((item) => <span key={item}>{item}</span>)}
             </div>
 
-            <div className="contest-hero-experience">
-              {experienceQr ? <img src={experienceQr} alt="휴대폰으로 이 배포의 꾸독 공모전 체험에 접속하는 QR 코드" /> : <span className="contest-qr-pending">QR 준비 중</span>}
-              <div>
-                <strong>휴대폰으로 꾸독 직접 체험하기</strong>
-                <span>QR 스캔 · 설치 없이 바로 체험</span>
-                <a href={EXPERIENCE_URL}>이 브라우저에서 체험하기 →</a>
-              </div>
-            </div>
           </div>
 
           <HeroPhoneDemo />
@@ -343,16 +342,16 @@ export default function ContestLandingPage() {
 
       <section className="contest-section contest-direct-section" aria-labelledby="direct-heading">
         <div className="contest-shell contest-direct-card">
-          <div>
-            <span>DIRECT EXPERIENCE</span>
-            <h2 id="direct-heading">이번에는 직접 경험해보세요.</h2>
-            <p>QR은 휴대폰 카메라로 스캔하는 체험 진입점입니다. 데스크톱에서는 별도의 버튼으로 동일한 공모전 체험을 열 수 있습니다.</p>
-            <a href={EXPERIENCE_URL}>이 브라우저에서 체험 시작하기</a>
-          </div>
           <div className="contest-direct-qr">
-              {experienceQr ? <img src={experienceQr} alt="이 배포의 꾸독 공모전 체험 QR 코드" /> : <span className="contest-qr-pending">QR 준비 중</span>}
-            <strong>휴대폰으로 꾸독 직접 체험하기</strong>
-            <span>Scenario A · Scenario B</span>
+            {experienceQr ? <img src={experienceQr} alt="휴대폰 카메라로 스캔하면 꾸독 공모전 체험으로 이동하는 QR 코드" /> : <span className="contest-qr-pending">QR 준비 중</span>}
+            <strong>휴대폰으로 스캔하기</strong>
+            <span>설치 없이 바로 시작</span>
+          </div>
+          <div className="contest-direct-copy">
+            <span>DIRECT EXPERIENCE · SCAN TO BEGIN</span>
+            <h2 id="direct-heading">이번에는 직접 경험해보세요.</h2>
+            <p>휴대폰 카메라로 QR을 스캔하면 Scenario A와 B를 직접 체험할 수 있습니다. 결제 정보 확인부터 꾸독이의 해지 안내, 혜택의 공식 근거까지 살펴보세요.</p>
+            <a className="contest-browser-link" href={EXPERIENCE_URL}>이 기기에서 웹으로 열기 ↗</a>
           </div>
         </div>
       </section>

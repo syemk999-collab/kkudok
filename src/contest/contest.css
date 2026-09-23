@@ -2115,3 +2115,232 @@
   .contest-hero-footer span:nth-child(2) { display: none; }
   .contest-hero-footer { font-size: 9px; }
 }
+
+/* The same graphite and soft sage visual language continues below the hero. */
+.contest-page {
+  --contest-line: rgba(219, 241, 230, .16);
+  --contest-muted: #a2b5ae;
+}
+.contest-page .contest-section {
+  padding: clamp(88px, 9vw, 132px) 0;
+  background: #0d1415;
+}
+.contest-page .contest-section:nth-of-type(odd) { background: #10191a; }
+.contest-page .contest-section::before {
+  width: min(1560px, calc(100% - 72px));
+  background: linear-gradient(90deg, transparent, rgba(216, 239, 226, .19), transparent);
+}
+.contest-page .contest-section-heading > span,
+.contest-page .contest-direct-copy > span {
+  color: #b3d4c4;
+  letter-spacing: .2em;
+}
+.contest-page .contest-section-heading h2,
+.contest-page .contest-direct-copy h2 {
+  color: #f3f8f4;
+  font-size: clamp(36px, 4.1vw, 58px);
+  letter-spacing: -.06em;
+}
+.contest-page .contest-section-heading p,
+.contest-page .contest-direct-copy p {
+  color: #a8b7b1;
+}
+.contest-page .contest-section-heading .contest-section-term,
+.contest-page .contest-scenario-note { color: #adc8b9; }
+
+/* QR is the primary way into the experience; the web link stays available. */
+.contest-page .contest-hero-experience {
+  gap: 21px;
+  width: min(100%, 630px);
+  margin: 0;
+  padding: 17px;
+  border: 1px solid rgba(219, 243, 229, .43);
+  border-radius: 20px;
+  background: linear-gradient(115deg, rgba(212, 237, 222, .14), rgba(212, 237, 222, .04));
+  box-shadow: 0 15px 44px rgba(0, 0, 0, .16), inset 0 1px 0 rgba(250, 255, 251, .12);
+  scroll-margin-top: 32px;
+}
+.contest-page .contest-hero-experience img,
+.contest-page .contest-hero-experience .contest-qr-pending {
+  width: clamp(152px, 12vw, 180px);
+  height: clamp(152px, 12vw, 180px);
+  flex: none;
+  padding: 7px;
+  border-radius: 10px;
+}
+.contest-page .contest-hero-experience strong {
+  max-width: 300px;
+  font-size: clamp(16px, 1.45vw, 19px);
+  line-height: 1.4;
+}
+.contest-page .contest-hero-experience span { color: #b5c7bd; font-size: 11px; line-height: 1.5; }
+.contest-page .contest-hero-experience .contest-qr-eyebrow {
+  margin: 0 0 8px;
+  color: #b5dac5;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .13em;
+}
+.contest-page .contest-browser-link,
+.contest-page .contest-hero-experience .contest-browser-link,
+.contest-page .contest-direct-copy .contest-browser-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  width: fit-content;
+  margin-top: 5px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: #a9bdb3;
+  font-size: 11px;
+  font-weight: 650;
+  text-decoration: underline;
+  text-decoration-color: rgba(208, 233, 217, .27);
+  text-underline-offset: 4px;
+}
+.contest-page .contest-browser-link:hover,
+.contest-page .contest-browser-link:focus-visible {
+  color: #fff;
+  text-decoration-color: #fff;
+}
+.contest-page .contest-hero-demo-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin: 9px 0 10px;
+  color: #becbc4;
+  font-size: 11px;
+  font-weight: 720;
+}
+.contest-page .contest-hero-demo-link span { padding-left: 7px; }
+
+.contest-page .contest-demo-story,
+.contest-page .contest-scenario-summary,
+.contest-page .contest-benefit-current,
+.contest-page .contest-benefit-evidence,
+.contest-page .contest-parsing-input,
+.contest-page .contest-parsing-steps {
+  border-color: var(--contest-line);
+  background: linear-gradient(135deg, rgba(28, 42, 41, .92), rgba(15, 25, 26, .9));
+  box-shadow: inset 0 1px 0 rgba(236, 250, 241, .045);
+}
+.contest-page .contest-demo-story,
+.contest-page .contest-scenario-summary,
+.contest-page .contest-benefit-current,
+.contest-page .contest-benefit-evidence,
+.contest-page .contest-parsing-input,
+.contest-page .contest-parsing-steps { border-radius: 20px; }
+.contest-page .contest-demo-story > strong,
+.contest-page .contest-demo-story-row > span,
+.contest-page .contest-scenario-summary > span,
+.contest-page .contest-scenario-summary small,
+.contest-page .contest-benefit-current span,
+.contest-page .contest-parsing-input > span,
+.contest-page .contest-parsing-steps span { color: #b8d8c5; }
+.contest-page .contest-demo-story-row,
+.contest-page .contest-scenario-summary li,
+.contest-page .contest-benefit-evidence dl div,
+.contest-page .contest-parsing-steps article {
+  border-color: rgba(224, 242, 231, .13);
+}
+.contest-page .contest-demo-story-row p,
+.contest-page .contest-scenario-summary > p,
+.contest-page .contest-benefit-current p,
+.contest-page .contest-benefit-evidence > p,
+.contest-page .contest-parsing-steps p { color: #a4b6ae; }
+.contest-page .contest-demo-video {
+  border-color: rgba(221, 239, 227, .27);
+  background: linear-gradient(145deg, rgba(189, 213, 200, .17), #0a1112 55%);
+  box-shadow: 0 34px 90px rgba(0, 0, 0, .37), 0 0 70px rgba(196, 231, 211, .07);
+}
+.contest-page .contest-demo-video > div { color: #a7b8ae; }
+.contest-page .contest-benefit-section {
+  background:
+    radial-gradient(ellipse at 83% 44%, rgba(176, 220, 192, .09), transparent 45%),
+    #0c1415;
+}
+.contest-page .contest-benefit-arrow { color: #c7dfcf; }
+.contest-page .contest-benefit-evidence-top span {
+  color: #d5f0dc;
+  background: rgba(109, 180, 132, .16);
+}
+.contest-page .contest-benefit-evidence-top small,
+.contest-page .contest-benefit-evidence dt { color: #a8bcb0; }
+.contest-page .contest-benefit-evidence > strong { color: #c7e0cb; }
+.contest-page .contest-benefit-caution { background: rgba(204, 232, 210, .075); color: #afc5b5; }
+.contest-page .contest-benefit-evidence > a {
+  border-color: rgba(211, 239, 217, .27);
+  color: #d5edda;
+}
+.contest-page .contest-parsing-steps article:not(:last-child)::after {
+  background: #1a2926;
+  color: #c5e3d1;
+}
+.contest-page .contest-parsing-input strong { color: #dbe9dc; }
+
+.contest-page .contest-direct-section {
+  padding-bottom: clamp(100px, 11vw, 160px);
+  background: radial-gradient(ellipse at 23% 40%, rgba(183, 219, 194, .11), transparent 53%), #0c1314;
+}
+.contest-page .contest-direct-card {
+  grid-template-columns: minmax(240px, .48fr) minmax(0, 1fr);
+  gap: clamp(34px, 6vw, 100px);
+  padding: clamp(26px, 5vw, 64px);
+  border: 1px solid rgba(218, 241, 225, .22);
+  border-radius: 26px;
+  background: linear-gradient(125deg, rgba(33, 54, 46, .75), rgba(14, 25, 25, .96) 66%);
+  box-shadow: 0 28px 80px rgba(0, 0, 0, .26);
+}
+.contest-page .contest-direct-qr {
+  justify-self: center;
+  width: min(100%, 310px);
+  padding: 27px 19px;
+  border: 1px solid rgba(217, 238, 222, .29);
+  border-radius: 22px;
+  background: rgba(6, 13, 14, .53);
+}
+.contest-page .contest-direct-qr img,
+.contest-page .contest-direct-qr .contest-qr-pending {
+  width: min(230px, 100%);
+  height: auto;
+  aspect-ratio: 1;
+}
+.contest-page .contest-direct-qr strong { margin-top: 16px; font-size: 14px; }
+.contest-page .contest-direct-qr span { color: #b3c9b9; }
+.contest-page .contest-direct-copy p { max-width: 620px; margin-left: 0; }
+.contest-page .contest-direct-copy .contest-browser-link { margin-top: 16px; }
+
+@media (max-width: 820px) {
+  .contest-page .contest-direct-card { grid-template-columns: 1fr; gap: 30px; }
+  .contest-page .contest-direct-copy { text-align: center; }
+  .contest-page .contest-direct-copy p { margin-left: auto; margin-right: auto; }
+  .contest-page .contest-direct-copy .contest-browser-link { margin-left: auto; margin-right: auto; }
+}
+@media (max-width: 620px) {
+  .contest-page .contest-section { padding: 78px 0; }
+  .contest-page .contest-section::before { width: calc(100% - 28px); }
+  .contest-page .contest-section-heading h2,
+  .contest-page .contest-direct-copy h2 { font-size: clamp(30px, 9vw, 38px); }
+  .contest-page .contest-hero-experience {
+    flex-direction: column;
+    align-items: center;
+    gap: 13px;
+    padding: 18px 12px 12px;
+    text-align: center;
+  }
+  .contest-page .contest-hero-experience img,
+  .contest-page .contest-hero-experience .contest-qr-pending {
+    width: min(182px, 100%);
+    height: auto;
+    aspect-ratio: 1;
+  }
+  .contest-page .contest-hero-experience strong { max-width: none; font-size: 16px; }
+  .contest-page .contest-hero-experience .contest-browser-link { margin-left: auto; margin-right: auto; }
+  .contest-page .contest-direct-card { padding: 27px 16px; }
+  .contest-page .contest-direct-qr { width: min(100%, 270px); }
+  .contest-page .contest-direct-qr img,
+  .contest-page .contest-direct-qr .contest-qr-pending { width: min(190px, 100%); }
+}

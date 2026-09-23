@@ -13,8 +13,13 @@ export const PAGE_TITLES = {
   detail: "구독 상세",
 };
 
+export const isAppRouteHash = (hash = "") => hash.startsWith("#/");
+
 export const readHash = () => {
   if (typeof window === "undefined") {
+    return { route: "", id: null, params: new URLSearchParams() };
+  }
+  if (!isAppRouteHash(window.location.hash)) {
     return { route: "", id: null, params: new URLSearchParams() };
   }
   const raw = window.location.hash.replace(/^#\/?/, "");
