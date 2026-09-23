@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 
 const bannedPaths = [
   "android/app/src/main/res/drawable-nodpi/kkudok_character_guide.png",
@@ -64,4 +65,13 @@ test("legacy character assets stay permanently removed", () => {
   }
 
   assert.deepEqual(offenders, [], `legacy character references were reintroduced:\n${offenders.join("\n")}`);
+});
+
+
+test("official kkudok master asset stays exact", () => {
+  const officialPath = "public/assets/kkudok/kkudok_official.png";
+  assert.equal(fs.existsSync(officialPath), true, "official kkudok asset must exist");
+  const bytes = fs.readFileSync(officialPath);
+  const sha256 = crypto.createHash("sha256").update(bytes).digest("hex");
+  assert.equal(sha256, "eea7f9f16f21664cdd8e89e330ca9b3edec659a7a6ec261a7e7166ddc9a48977");
 });
