@@ -218,8 +218,6 @@ export function ContestGuideOverlay({ flow, onStep, onExit }) {
           {collapsed ? "안내 보기" : "접기"}
         </button>
 
-        <img src="/assets/kkudok/character.png" alt="꾸독 컨시어지" className="contest-guide-character" />
-
         {!collapsed && (
           <div className="contest-guide-copy">
             <span>{guide.eyebrow}</span>
