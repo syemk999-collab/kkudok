@@ -5244,13 +5244,16 @@ export const promotionCatalog = [
   {
     "id": "naverplus-netflix",
     "category": "통신사/결합",
-    "kind": "넷플릭스 광고형 스탠다드 무료 연동",
+    "kind": "네이버플러스 디지털 콘텐츠 선택 혜택",
     "title": "네이버플러스 X Netflix",
-    "subtitle": "네이버 멤버십으로 넷플릭스 0원",
-    "description": "네이버플러스 멤버십(월 4,900원) 가입 시 넷플릭스 광고형 스탠다드(월 5,500원) 이용권을 무료 제공.",
-    "saving": 5500,
-    "originalPrice": 5500,
+    "subtitle": "네이버플러스 회원이 광고형 스탠다드를 선택할 수 있어요",
+    "description": "네이버플러스 멤버십(월 4,900원) 이용 시 매 회차 디지털 콘텐츠 4종 중 넷플릭스 광고형 스탠다드(별도 이용 시 월 7,000원)를 선택할 수 있습니다. 기존 프리미엄에서 연결하면 광고형 스탠다드로 변경됩니다.",
+    "saving": 7000,
+    "originalPrice": 7000,
     "offerPrice": 0,
+    "membershipMonthlyPrice": 4900,
+    "membershipRequired": true,
+    "priceSourceUrl": "https://www.netflix.com/kr/",
     "dday": 30,
     "sourceServiceIds": [
       "netflix",
@@ -5259,8 +5262,8 @@ export const promotionCatalog = [
     "link": "https://help.naver.com/service/23168/contents/23881?lang=ko",
     "monogram": "N",
     "verifiedStatus": "LIVE_CONFIRMED",
-    "campaignPeriod": "상시 제휴 (네이버플러스 멤버십 파트너십)",
-    "benefitPeriod": "네이버 멤버십 유지 기간 상시"
+    "campaignPeriod": "네이버플러스 가입 후 회차마다 디지털 콘텐츠 4종 중 1종 선택",
+    "benefitPeriod": "선택한 회차 동안 (멤버십 유지 시 다음 회차 자동 지급)"
   },
   {
     "id": "naver-spotify-link",

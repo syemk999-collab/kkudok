@@ -1,125 +1,147 @@
+import { useEffect, useMemo, useRef, useState } from "react";
+import QRCode from "qrcode";
+import { promotionCatalog } from "../data/subscriptionData";
 import "./contest.css";
 
 const EXPERIENCE_URL = "/#/contest";
 const DEMO_VIDEO_URL = import.meta.env.VITE_CONTEST_DEMO_URL || "/assets/contest/kkudok-demo.mp4";
-// Contest demo media is served from the same origin unless an explicit public URL is configured.
-const QR_DATA_URI =
-  "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXIAAAFyAQAAAADAX2ykAAACX0lEQVR4nO2bTWrcQBCFv4oEXvaAD+CjtK6WI+UGo6P4AAFpaWjxsuhuSeMhJCYaxW2qF0JY36Lg8arrZ2ziI2f89iEcnHfeeeedd9753/FWTg+jmdnAYsBiMNdvw4nxOH8wHyVJExCnTjD32EAnG+gkSbrlHx2P8wfzc3XoeAEICX23Pn/Lxj43HueP4fv7Py0m5mcRp4uJ+dx4nH80HxJml8VsoLtvjj9//M7vT/VvEDCDxWkBws+e8eXNiD9gr/Jni9/5v+JHMzO7AMxPIr7WByy5fD43HucP4rN/N4cK3vKtq/GCFWOfF4/zx/Lk5icqoStdfssnSsqV9Hauny1+5/9wdvpKCWnqBHSCoPyma5Byi+z6NsYXc15DyqONouW0ObkU0e7fJvmqW7Vp8W99kyYoD9e3Qb7k5yIobEpDKP4t7nZ9G+SrvquMrJlaShRPe33VKr8rjrdbN6fmVdoMun9b5Fd901pJq5bOu5or+f3bJl/1nahZeaof1nZ4U9/1bY3f5+fi2pKpc36+At7/tsvXrDx1Wcs8sMrShm1+5fVzo3ydP8+LKQryfgHACCDmHovX0+Jx/lj+zr9R7+ZXrO2S+7c9fr88KJdwIo871qkGccLzc5t8zs91u9slAWIc+mTx9UnG/JwgpF7nxOP8Q/hYmyQb5h4bQk3NhASj/76uVX69f9ntj0oTHG5GV37/fgW++JdOMJtl4Uf/fc5X4XOvO75s+blsH2z4L/E4/2/8bupcFr55a1QesBtSen5uj1/3g0DR8nZcie8XWubN/7/beeedd95550/nfwHxEkPoiJuTMgAAAABJRU5ErkJggg==";
+const QR_IMAGE_URL = "/assets/contest/contest-experience-qr.svg"
 
 const TECH_STACK = ["React", "Next.js / Vite", "Gemini AI", "ChatGPT", "Supabase", "Vercel"];
 
-const FLOW_STEPS = [
-  "결제 발견",
-  "구독 등록",
-  "혜택 확인",
-  "다음 결제 관리",
-  "놓친 결제 등록",
-  "해지 가이드",
+const HERO_FEATURES = [
+  {
+    icon: "01",
+    title: "결제 정보를 읽어 등록 부담 줄이기",
+    description: "결제 알림이나 캡처에서 구독 정보를 정리합니다. 확인하고 등록하는 것은 사용자 몫입니다.",
+    term: "*파싱 : 결제 문장에서 서비스명·금액·결제수단 등을 찾아 정리하는 과정입니다.",
+    tone: "blue",
+  },
+  {
+    icon: "02",
+    title: "꾸독이와 해지 방법 찾기",
+    description: "해지하고 싶을 때 다음에 누를 곳과 공식 해지 경로를 안내합니다. 해지는 사용자가 직접 결정합니다.",
+    term: "*컨시어지 : 꾸독이가 화면에서 다음 행동을 알려주는 안내 역할입니다.",
+    tone: "amber",
+  },
+  {
+    icon: "03",
+    title: "내 구독에 연결되는 혜택 발견하기",
+    description: "혜택의 조건·기간·공식 출처를 확인하고, 유지·변경·해지 중 무엇이 나을지 직접 판단합니다.",
+    term: "*혜택 가치 : 혜택에 포함된 상품의 별도 가격입니다. 내 확정 절약액은 아닙니다.",
+    tone: "cyan",
+  },
 ];
 
-const SCENARIO_A = [
-  "실시간 결제 감지",
-  "결제 정보 확인",
-  "원클릭 구독 등록",
-  "내 구독 기반 혜택 발견",
-  "외부 혜택 확인",
-  "D-1 결제 리마인더",
-];
+function formatWon(value) {
+  return Number(value || 0).toLocaleString("ko-KR") + "원";
+}
 
-const SCENARIO_B = [
-  "결제 캡처 준비",
-  "이미지 업로드",
-  "AI 자동 추출",
-  "결과 확인 및 등록",
-  "불필요한 구독 선택",
-  "해지 가이드",
-  "실제 해지 페이지 이동",
-];
+function HeroPhoneDemo() {
+  const videoRef = useRef(null);
+  const [playing, setPlaying] = useState(false);
 
-function FlowList({ items }) {
+  const toggle = async () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      try {
+        await video.play();
+      } catch {}
+    } else {
+      video.pause();
+    }
+  };
+
   return (
-    <ol className="contest-flow-list">
-      {items.map((item, index) => (
-        <li key={item}>
-          <span>{String(index + 1).padStart(2, "0")}</span>
-          <strong>{item}</strong>
-        </li>
-      ))}
-    </ol>
+    <div className="contest-hero-device-wrap">
+      <div className="contest-hero-orbit" aria-hidden="true" />
+      <div className="contest-hero-phone">
+        <div className="contest-hero-phone-camera" aria-hidden="true" />
+        <video
+          ref={videoRef}
+          src={DEMO_VIDEO_URL}
+          playsInline
+          preload="auto"
+          onPlay={() => setPlaying(true)}
+          onPause={() => setPlaying(false)}
+          onEnded={() => setPlaying(false)}
+          aria-label="꾸독 전체 서비스 시연 영상"
+        />
+        <button
+          type="button"
+          className={"contest-hero-play " + (playing ? "is-playing" : "")}
+          onClick={toggle}
+          aria-label={playing ? "시연 영상 일시정지" : "시연 영상 재생"}
+        >
+          {playing ? "Ⅱ" : "▶"}
+        </button>
+      </div>
+      <p>실제 서비스 시연 영상입니다 · 휴대폰 화면에서 바로 재생</p>
+    </div>
   );
 }
 
-function PhonePreview() {
+function ScenarioSummary({ label, title, description, steps }) {
   return (
-    <a className="contest-phone-stage" href="#full-demo" aria-label="전체 시연 영상으로 이동">
-      <div className="contest-phone-glow" aria-hidden="true" />
-      <div className="contest-phone">
-        <div className="contest-phone-camera" aria-hidden="true" />
-        <div className="contest-phone-screen">
-          <div className="contest-phone-status">
-            <span>9:41</span>
-            <span>5G · 75%</span>
-          </div>
-
-          <div className="contest-phone-appbar">
-            <strong>꾸독</strong>
-            <span>구독 관리</span>
-          </div>
-
-          <div className="contest-phone-benefit-banner">
-            <span>이번 달<br />얼마나 절약할 수 있을까요?</span>
-            <strong>꾸독</strong>
-          </div>
-
-          <div className="contest-phone-summary">
-            <span>이번 달 예상 절약액</span>
-            <strong>24,600<small>원</small></strong>
-            <em>최근 3개월 대비<br /><b>+12,800원</b></em>
-          </div>
-
-          <div className="contest-phone-section-title">
-            <strong>내 구독 <small>6</small></strong>
-            <span>전체보기 〉</span>
-          </div>
-
-          <div className="contest-phone-subscriptions">
-            <div><b>N</b><span>Netflix<small>다음 결제일 10월 12일</small></span><strong>17,000원</strong></div>
-            <div><b>S</b><span>Spotify<small>다음 결제일 10월 14일</small></span><strong>10,900원</strong></div>
-            <div><b>N+</b><span>네이버플러스 멤버십<small>다음 결제일 10월 20일</small></span><strong>4,900원</strong></div>
-            <div><b>Y</b><span>YouTube Premium<small>다음 결제일 10월 22일</small></span><strong>14,900원</strong></div>
-          </div>
-
-          <div className="contest-phone-nav">
-            <span>홈</span><span>구독</span><span>혜택</span><span>더보기</span>
-          </div>
-        </div>
-
-        <span className="contest-phone-play" aria-hidden="true">▶</span>
-      </div>
-      <p>실제 서비스 전체 흐름 보기</p>
-    </a>
+    <article className="contest-scenario-summary">
+      <span>{label}</span>
+      <h3>{title}</h3>
+      <p>{description}</p>
+      <ol>
+        {steps.map((step, index) => (
+          <li key={step}>
+            <small>{String(index + 1).padStart(2, "0")}</small>
+            <strong>{step}</strong>
+          </li>
+        ))}
+      </ol>
+    </article>
   );
 }
 
 export default function ContestLandingPage() {
+  const [experienceQr, setExperienceQr] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    // The QR always opens the contest experience on the current deployment.
+    const url = new URL(EXPERIENCE_URL, window.location.origin).href;
+    QRCode.toDataURL(url, { errorCorrectionLevel: "M", margin: 4, width: 296 })
+      .then((image) => { if (active) setExperienceQr(image); })
+      .catch(() => {
+        if (active && window.location.origin === "https://kkudok-kohl.vercel.app") {
+          setExperienceQr(QR_IMAGE_URL);
+        }
+      });
+    return () => { active = false; };
+  }, []);
+  const verifiedBenefit = useMemo(
+    () => promotionCatalog.find((promotion) => promotion.id === "naverplus-netflix") || null,
+    []
+  );
+
+  const sourceHost = useMemo(() => {
+    try {
+      return verifiedBenefit?.link ? new URL(verifiedBenefit.link).hostname : "";
+    } catch {
+      return "";
+    }
+  }, [verifiedBenefit]);
+
   return (
     <main className="contest-page">
-      <section className="contest-section contest-hero" aria-labelledby="contest-hero-title">
-        <div className="contest-container contest-hero-grid">
+      <section className="contest-hero" aria-labelledby="contest-hero-title">
+        <div className="contest-shell contest-hero-layout">
           <div className="contest-hero-copy">
-            <div className="contest-badges">
-              <span className="contest-badge contest-badge-primary">🏆 윈터드 AI Championship 2026 출품작</span>
-              <a className="contest-badge" href="https://kkudok-kohl.vercel.app" target="_blank" rel="noreferrer">
-                kkudok-kohl.vercel.app
-              </a>
+            <div className="contest-top-badges">
+              <span className="contest-top-badge is-primary">🏆 윈터드 AI Championship 2026 출품작</span>
+              <span className="contest-top-badge">↗ kkudok-kohl.vercel.app</span>
             </div>
 
-            <div className="contest-brand">
-              <div className="contest-brand-mark" aria-hidden="true">RƐ.</div>
-              <div>
-                <span>구독 관리 서비스</span>
-                <strong>꾸독</strong>
-              </div>
+            <div className="contest-brand-lockup">
+              <strong className="contest-re-mark" aria-hidden="true">RƐ.</strong>
+              <div><span>구독 관리 서비스</span><b>꾸독</b></div>
             </div>
 
             <h1 id="contest-hero-title">
@@ -127,200 +149,190 @@ export default function ContestLandingPage() {
               <span>절약액은 <em>검증해서 보여줍니다.</em></span>
             </h1>
 
-            <div className="contest-feature-stack" aria-label="꾸독 핵심 기능">
-              <article>
-                <span className="contest-feature-number">01</span>
-                <div>
-                  <h2>AI 영수증 · 결제 문자 자동 파싱</h2>
-                  <p>스크린샷 한 장으로 서비스명, 결제금액, 결제일, 결제수단까지 1초 만에 자동 분류</p>
-                </div>
-              </article>
-              <article>
-                <span className="contest-feature-number">02</span>
-                <div>
-                  <h2>공식 출처 검증 제휴 절약 혜택</h2>
-                  <p>과장된 혜택 없이 통신사·카드사 제휴와 연간 전환 실질 절약액만 신뢰도</p>
-                </div>
-              </article>
-              <article>
-                <span className="contest-feature-number">03</span>
-                <div>
-                  <h2>선제적 결제 리마인더 &amp; 간편 해지</h2>
-                  <p>결제 전 D-Day 사전 알림 및 지난 결제 건 점검으로 불필요한 자동 결제 온</p>
-                </div>
-              </article>
+            <p className="contest-hero-intro">등록의 번거로움부터 해지의 막막함, 놓치기 쉬운 혜택까지. 꾸독이 덜어주는 세 가지 부담입니다.</p>
+
+            <div className="contest-hero-features" aria-label="꾸독이 덜어주는 세 가지 부담">
+              {HERO_FEATURES.map((feature) => (
+                <article key={feature.title}>
+                  <div className={"contest-feature-symbol is-" + feature.tone} aria-hidden="true">{feature.icon}</div>
+                  <div>
+                    <h2>{feature.title}</h2>
+                    <p>{feature.description}</p>
+                    <p className="contest-feature-term">{feature.term}</p>
+                  </div>
+                </article>
+              ))}
             </div>
 
-            <div className="contest-tech-stack" aria-label="기술 스택">
+            <div className="contest-tech-row" aria-label="기술 스택">
               {TECH_STACK.map((item) => <span key={item}>{item}</span>)}
             </div>
 
-            <div className="contest-experience-card">
-              <img src={QR_DATA_URI} alt="꾸독 공모전 체험 QR 코드" />
+            <div className="contest-hero-experience">
+              {experienceQr ? <img src={experienceQr} alt="휴대폰으로 이 배포의 꾸독 공모전 체험에 접속하는 QR 코드" /> : <span className="contest-qr-pending">QR 준비 중</span>}
               <div>
                 <strong>휴대폰으로 꾸독 직접 체험하기</strong>
-                <p>QR 스캔 · 설치 없이 바로 체험</p>
-                <a href={EXPERIENCE_URL}>앱 체험하기 →</a>
+                <span>QR 스캔 · 설치 없이 바로 체험</span>
+                <a href={EXPERIENCE_URL}>이 브라우저에서 체험하기 →</a>
               </div>
             </div>
-
-            <a className="contest-scroll-link" href="#full-demo">
-              꾸독이 실제로 어떻게 작동하는지 확인해보세요.
-              <span aria-hidden="true">↓</span>
-            </a>
           </div>
 
-          <PhonePreview />
+          <HeroPhoneDemo />
         </div>
       </section>
 
-      <section className="contest-section contest-demo" id="full-demo" aria-labelledby="full-demo-title">
-        <div className="contest-container">
+      <section className="contest-section contest-demo-section" id="full-demo" aria-labelledby="full-demo-title">
+        <div className="contest-shell">
           <div className="contest-section-heading">
             <span>FULL PRODUCT DEMO</span>
             <h2 id="full-demo-title">꾸독은 이렇게 작동합니다.</h2>
-            <p>결제를 발견하고, 구독으로 정리하고, 혜택을 확인하고, 다음 결제와 해지까지 이어지는 전체 흐름을 확인해보세요.</p>
+            <p>
+              결제를 읽어 구독으로 정리하고, 연결되는 혜택을 확인합니다.
+              해지를 원할 때는 꾸독이가 공식 경로를 안내합니다.
+            </p>
           </div>
 
           <div className="contest-demo-stage">
-            <div className="contest-demo-flow">
-              <span className="contest-demo-kicker">EXPERIENCE FLOW</span>
-              <FlowList items={FLOW_STEPS} />
-              <p>영상은 실제 꾸독 서비스 사용 흐름을 그대로 담았습니다.</p>
+            <div className="contest-demo-story">
+              <strong>영상에서 확인할 흐름</strong>
+              {[
+                ["01", "결제 읽고 등록하기", "결제 알림이나 캡처에서 필요한 정보를 읽고, 사용자가 확인한 뒤 등록합니다."],
+                ["02", "혜택의 조건 확인하기", "등록된 구독에 연결되는 혜택의 조건·기간·공식 출처를 살펴봅니다."],
+                ["03", "다음 행동 결정하기", "유지·변경·해지를 스스로 판단하고, 해지를 원하면 꾸독이가 경로를 안내합니다."],
+              ].map(([n, title, body]) => (
+                <div className="contest-demo-story-row" key={n}>
+                  <span>{n}</span>
+                  <div><b>{title}</b><p>{body}</p></div>
+                </div>
+              ))}
             </div>
 
-            <div className="contest-video-shell">
-              <video
-                controls
-                playsInline
-                preload="metadata"
-                poster="/assets/contest/demo-poster.svg"
-                aria-label="꾸독 전체 서비스 시연 영상"
-              >
-                <source src={DEMO_VIDEO_URL} type="video/mp4" />
-                브라우저가 동영상 재생을 지원하지 않습니다.
-              </video>
-              <div className="contest-video-meta">
-                <strong>전체 서비스 시연</strong>
-                <span>02:13 · 원본 비율 유지</span>
-              </div>
+            <div className="contest-demo-video">
+              <video controls playsInline preload="metadata" src={DEMO_VIDEO_URL} aria-label="꾸독 전체 서비스 시연 영상" />
+              <div><strong>전체 서비스 시연</strong><span>02:13 · 세로 원본 비율 유지 · crop 없음</span></div>
             </div>
           </div>
         </div>
       </section>
 
-      <section className="contest-section contest-scenarios" aria-labelledby="scenario-title">
-        <div className="contest-container">
-          <div className="contest-section-heading contest-section-heading-left">
+      <section className="contest-section contest-scenario-section" aria-labelledby="scenario-heading">
+        <div className="contest-shell">
+          <div className="contest-section-heading is-left">
             <span>REAL-WORLD SCENARIOS</span>
-            <h2 id="scenario-title">구독을 발견하는 순간은 모두 같지 않습니다.</h2>
-            <p>새로운 결제를 바로 발견할 수도 있고, 이미 지나간 결제를 뒤늦게 정리해야 할 수도 있습니다.</p>
+            <h2 id="scenario-heading">구독을 발견하는 순간은 모두 같지 않습니다.</h2>
+            <p>새로운 결제는 바로 감지하고, 놓친 결제는 실제 캡처를 다시 읽어 관리 가능한 정보로 복원합니다.</p>
           </div>
 
           <div className="contest-scenario-grid">
-            <article className="contest-scenario-card">
-              <div className="contest-scenario-topline">
-                <span>SCENARIO A</span>
-                <small>핵심 플로우</small>
-              </div>
-              <h3>새로운 결제가 발생했다면</h3>
-              <p>결제 문자나 카드사 알림에서 구독 결제를 감지하고, 등록 이후 혜택과 다음 결제 관리까지 이어집니다.</p>
-              <FlowList items={SCENARIO_A} />
-              <div className="contest-scenario-note">
-                공모전 체험에서는 실제 결제를 기다리지 않고 테스트 결제 알림으로 시작합니다.
-              </div>
-            </article>
-
-            <article className="contest-scenario-card">
-              <div className="contest-scenario-topline">
-                <span>SCENARIO B</span>
-                <small>보완 플로우</small>
-              </div>
-              <h3>놓친 결제가 있다면</h3>
-              <p>이미 지나간 결제도 캡처 화면을 불러와 필요한 정보를 먼저 정리하고, 사용자가 확인한 뒤 관리할 수 있습니다.</p>
-              <FlowList items={SCENARIO_B} />
-              <div className="contest-scenario-note">
-                준비된 결제 캡처를 직접 업로드해 AI 자동 추출과 해지 가이드를 순서대로 경험합니다.
-              </div>
-            </article>
+            <ScenarioSummary
+              label="SCENARIO A · 핵심 플로우"
+              title="새로운 결제가 발생했다면"
+              description="웹에서는 테스트 결제 문장을 실제 결제 정보 읽기 기능에 넣고, 화면 알림 → 등록 → 혜택 → 다음 결제 알림을 체험합니다. Android 앱은 사용자가 허용한 시스템 결제 알림을 감지합니다."
+              steps={["테스트 결제 문장 읽기", "읽어낸 정보 확인", "구독 등록", "연결된 혜택 확인", "결제 하루 전 알림"]}
+            />
+            <ScenarioSummary
+              label="SCENARIO B · 보완 플로우"
+              title="놓친 결제가 있다면"
+              description="결제 캡처를 직접 선택하고 이미지 글자 인식 결과를 확인·수정한 뒤 등록합니다. 이어서 기존 구독의 해지 방법을 살펴볼 수 있습니다."
+              steps={["결제 캡처 저장", "직접 이미지 선택", "실제 이미지 글자 인식", "사용자 확인 후 등록", "꾸독이 해지 안내"]}
+            />
           </div>
+          <p className="contest-scenario-note">*OCR : 이미지에 담긴 글자를 읽어 결제 정보로 정리하는 기술입니다. 이미지를 선택하면 실제 /api/ocr 요청으로 분석합니다.</p>
         </div>
       </section>
 
-      <section className="contest-section contest-parsing" aria-labelledby="parsing-title">
-        <div className="contest-container">
+      <section className="contest-section contest-benefit-section" aria-labelledby="benefit-heading">
+        <div className="contest-shell">
+          <div className="contest-section-heading is-left">
+            <span>VERIFIED BENEFIT</span>
+            <h2 id="benefit-heading">파싱은 시작이고, 차이는 그 다음에 있습니다.</h2>
+            <p>
+              꾸독은 “얼마를 썼는지”에서 끝나지 않고, 등록된 구독을 기준으로 실제 적용 가능한 혜택을 찾고
+              조건과 공식 출처를 함께 보여줍니다. 적용 여부와 실제 절약액은 사용자의 요금제와 멤버십 상태에 따라 달라집니다.
+            </p>
+          </div>
+
+          {verifiedBenefit && (
+            <article className="contest-benefit-proof">
+              <div className="contest-benefit-current">
+                <span>현재 구독과 연결</span>
+                <strong>Netflix</strong>
+                <p>Scenario A에서 등록된 서비스와 직접 연결되는 혜택 예시</p>
+              </div>
+              <div className="contest-benefit-arrow" aria-hidden="true">→</div>
+              <div className="contest-benefit-evidence">
+                <div className="contest-benefit-evidence-top">
+                  <span>{verifiedBenefit.verifiedStatus === "LIVE_CONFIRMED" ? "공식 출처 확인" : "조건 확인 필요"}</span>
+                  <small>{sourceHost}</small>
+                </div>
+                <h3>{verifiedBenefit.title}</h3>
+                <strong>{verifiedBenefit.subtitle}</strong>
+                <p>{verifiedBenefit.description}</p>
+                <dl>
+                  <div><dt>적용 조건</dt><dd>{verifiedBenefit.campaignPeriod}</dd></div>
+                  <div><dt>혜택 기간</dt><dd>{verifiedBenefit.benefitPeriod}</dd></div>
+                  <div><dt>광고형 상품 별도 가격</dt><dd>{formatWon(verifiedBenefit.originalPrice)} / 월</dd></div>
+                  <div><dt>네이버플러스 이용료</dt><dd>{formatWon(verifiedBenefit.membershipMonthlyPrice)} / 월</dd></div>
+                  <div><dt>공식 출처</dt><dd>{sourceHost}</dd></div>
+                </dl>
+                <small className="contest-benefit-caution">
+                  *별도 가격 : 넷플릭스에서 광고형 스탠다드를 단독 구독할 때의 가격입니다. 네이버플러스에서는 회차마다 디지털 콘텐츠 중 하나를 선택합니다.
+                  현재 프리미엄 요금제로 이용 중이라면 광고형 스탠다드로 전환되며, 실제 절약액은 기존 멤버십 보유 여부와 선택 상품에 따라 달라집니다.
+                </small>
+                <a href={verifiedBenefit.link} target="_blank" rel="noreferrer">공식 출처에서 조건 확인하기 →</a>
+                {verifiedBenefit.priceSourceUrl && <a href={verifiedBenefit.priceSourceUrl} target="_blank" rel="noreferrer">넷플릭스 별도 요금 확인하기 →</a>}
+              </div>
+            </article>
+          )}
+        </div>
+      </section>
+
+      <section className="contest-section contest-parsing-section" aria-labelledby="parsing-heading">
+        <div className="contest-shell">
           <div className="contest-section-heading">
             <span>AI PARSING</span>
-            <h2 id="parsing-title">결제 정보에서, 필요한 것만 읽습니다.</h2>
-            <p>꾸독은 영수증과 결제 화면에서 구독 관리에 필요한 정보를 읽고, 사용자가 확인할 수 있는 형태로 정리합니다.</p>
+            <h2 id="parsing-heading">결제 정보에서, 필요한 것만 읽습니다.</h2>
+            <p>AI가 결과를 확정하지 않습니다. 실제 이미지에서 필요한 정보를 정리하고 사용자가 확인한 뒤 등록합니다.</p>
+            <p className="contest-section-term">*파싱 : 결제 문장에서 필요한 정보를 찾아 정리하는 일입니다. *OCR : 이미지 속 글자를 읽는 기술입니다.</p>
           </div>
 
-          <div className="contest-parsing-proof">
-            <div className="contest-receipt-preview">
+          <div className="contest-parsing-layout">
+            <div className="contest-parsing-input">
               <span>INPUT</span>
-              <img src="/sample_receipt_netflix.png" alt="AI 파싱 체험에 사용하는 Netflix 결제 샘플" loading="lazy" />
+              <img src="/sample_receipt_netflix.png" alt="Scenario B에서 실제 OCR 입력으로 사용하는 Netflix 결제 캡처" loading="lazy" />
+              <strong>실제 업로드 이미지</strong>
             </div>
-
-            <div className="contest-parsing-pipeline" aria-label="AI 파싱 처리 단계">
-              <article>
-                <span>01</span>
-                <h3>INPUT</h3>
-                <p>영수증 · 결제 화면 · 결제 캡처 · 결제 문자</p>
-              </article>
-              <article>
-                <span>02</span>
-                <h3>AI PARSING</h3>
-                <p>서비스명 · 결제 금액 · 결제일 · 결제수단 · 결제주기</p>
-              </article>
-              <article>
-                <span>03</span>
-                <h3>USER REVIEW</h3>
-                <p>자동 추출 결과를 확인하고 필요한 항목은 직접 수정합니다.</p>
-              </article>
-              <article>
-                <span>04</span>
-                <h3>RESULT</h3>
-                <p>확인된 정보를 관리 가능한 구독 데이터로 등록합니다.</p>
-              </article>
-            </div>
-
-            <div className="contest-parsed-result">
-              <span>STRUCTURED RESULT</span>
-              <dl>
-                <div><dt>서비스</dt><dd>Netflix</dd></div>
-                <div><dt>결제 금액</dt><dd>17,000원</dd></div>
-                <div><dt>결제 주기</dt><dd>매월</dd></div>
-                <div><dt>결제 수단</dt><dd>사용자 확인</dd></div>
-              </dl>
-              <p>AI가 결과를 확정하는 것이 아니라, 필요한 정보를 먼저 정리하고 사용자가 확인합니다.</p>
+            <div className="contest-parsing-steps">
+              {[
+                ["01", "IMAGE UPLOAD", "사용자가 직접 JPG · PNG · WEBP 이미지를 선택"],
+                ["02", "/api/ocr", "브라우저에서 서버 API로 이미지를 전송"],
+                ["03", "AI / OCR", "서비스명 · 금액 · 결제일 · 결제수단을 구조화"],
+                ["04", "USER REVIEW", "사용자가 결과를 확인하고 필요한 경우 수정"],
+                ["05", "SUBSCRIPTION", "확인된 정보만 구독 데이터로 등록"],
+              ].map(([n, title, body]) => (
+                <article key={n}><span>{n}</span><h3>{title}</h3><p>{body}</p></article>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
-      <section className="contest-section contest-final-cta" aria-labelledby="experience-title">
-        <div className="contest-container contest-final-card">
+      <section className="contest-section contest-direct-section" aria-labelledby="direct-heading">
+        <div className="contest-shell contest-direct-card">
           <div>
-            <span className="contest-final-kicker">DIRECT EXPERIENCE</span>
-            <h2 id="experience-title">이번에는 직접 경험해보세요.</h2>
-            <p>공모전 체험 화면에서 컨시어지가 두 가지 상황을 순서대로 안내합니다. 안내 이후에는 꾸독의 실제 기능을 직접 사용합니다.</p>
-            <a className="contest-primary-cta" href={EXPERIENCE_URL}>꾸독 체험 시작하기</a>
+            <span>DIRECT EXPERIENCE</span>
+            <h2 id="direct-heading">이번에는 직접 경험해보세요.</h2>
+            <p>QR은 휴대폰 카메라로 스캔하는 체험 진입점입니다. 데스크톱에서는 별도의 버튼으로 동일한 공모전 체험을 열 수 있습니다.</p>
+            <a href={EXPERIENCE_URL}>이 브라우저에서 체험 시작하기</a>
           </div>
-
-          <div className="contest-final-qr">
-            <img src={QR_DATA_URI} alt="꾸독 직접 체험 QR 코드" />
+          <div className="contest-direct-qr">
+              {experienceQr ? <img src={experienceQr} alt="이 배포의 꾸독 공모전 체험 QR 코드" /> : <span className="contest-qr-pending">QR 준비 중</span>}
             <strong>휴대폰으로 꾸독 직접 체험하기</strong>
             <span>Scenario A · Scenario B</span>
           </div>
         </div>
       </section>
-
-      <footer className="contest-footer">
-        <div className="contest-container">
-          <strong>꾸독</strong>
-          <span>AI 구독 관리 서비스 · Winter AI Championship 2026</span>
-        </div>
-      </footer>
     </main>
   );
 }

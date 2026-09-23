@@ -189,6 +189,7 @@ export function SubscriptionDetailScreen({
   onDelete,
   promotion,
   highlightCancel,
+  contestMode = false,
 }) {
   const [editing, setEditing] = useState(false);
   const [celebrateSheetOpen, setCelebrateSheetOpen] = useState(false);
@@ -407,11 +408,12 @@ export function SubscriptionDetailScreen({
           <div className="space-y-3">
             <button
               type="button"
+              data-contest-target="cancel-primary"
               onClick={() => {
-                if (subscription.cancelUrl && !Capacitor.isNativePlatform()) {
+                if (!contestMode && subscription.cancelUrl && !Capacitor.isNativePlatform()) {
                   window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
                 }
-                onStartCancel(subscription.subscriptionId, promotion, { autoOpen: true });
+                onStartCancel(subscription.subscriptionId, promotion, { autoOpen: !contestMode });
               }}
               className={`w-full rounded-2xl bg-[#111827] text-white font-bold py-4 text-[16px] text-center active:scale-[0.98] transition-all shadow-sm cursor-pointer hover:bg-black ${
                 highlightCancel ? "ring-2 ring-blue-500 ring-offset-2 animate-pulse" : ""

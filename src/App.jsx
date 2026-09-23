@@ -6,10 +6,14 @@ import { Bell } from "lucide-react";
 import { AuthLogin, AuthRegister } from "./components/AuthScreens";
 import { SplashScreen, LandingScreen } from "./components/LandingScreen";
 import { ContestExperienceScreen } from "./contest/ContestExperienceScreen";
+import { ContestGuideOverlay } from "./contest/ContestGuideOverlay";
+import { ContestPaymentHeadsUp } from "./contest/ContestPaymentHeadsUp";
+import { useContestFlow } from "./contest/useContestFlow";
 import { AddModal } from "./components/AddModal";
 import { AccountModal } from "./components/AccountModal";
 import { TermsModal } from "./components/TermsModal";
 import { requestPaymentCapturePermission, simulatePaymentDetection } from "./lib/paymentCapture";
+import { createContestPaymentEvent, parsePaymentNotification, toQuickAddData } from "./lib/paymentParser";
 import { isNativePlatform } from "./lib/platform";
 import { CancelModal } from "./components/CancelModal";
 import { HomeScreen } from "./components/HomeScreen";
@@ -19,7 +23,7 @@ import { RenewalSheet } from "./components/RenewalSheet";
 import { CalendarScreen, SubscriptionDetailScreen, SubscriptionListScreen } from "./components/SubscriptionScreens";
 import { NotificationCenterModal } from "./components/NotificationComponents";
 import { AppHeader, BottomNavigation, Toast } from "./components/ui";
-import { promotionCatalog, serviceCatalog } from "./data/subscriptionData";
+import { createMockSubscriptions, promotionCatalog, serviceCatalog } from "./data/subscriptionData";
 import { removeDemoSubscriptions, getStoredUsers, saveUser, findUser, storageKeys, readStoredValue } from "./lib/storage";
 import { generateSubscriptionAlerts } from "./lib/notifications";
 import { useNavigation } from "./hooks/useNavigation";
@@ -63,6 +67,15 @@ export default function App() {
     pageTitle,
   } = useNavigation();
 
+  const {
+    flow: contestFlow,
+    active: contestFlowActive,
+    startScenario: startContestScenario,
+    setStep: setContestStep,
+    reset: resetContestFlow,
+  } = useContestFlow();
+  const isContestMode = screen.route === "contest" || contestFlowActive;
+  const [contestHeadsUp, setContestHeadsUp] = useState(null);
 
   // Deep link listener (실시간 결제 감지 알림 탭 시 수신)
   useEffect(() => {
@@ -115,6 +128,9 @@ export default function App() {
           setQuickAddData(detected);
           setAddInitialMode("quick-detect");
           setAddOpen(true);
+          if (contestFlow.scenario === "A") {
+            setContestStep("A3", { parsedPayment: detected });
+          }
         }
       } catch (err) {
         console.warn("Failed to parse deep link URL:", rawUrl, err);
@@ -136,7 +152,7 @@ export default function App() {
         sub.then((handle) => handle?.remove?.());
       }
     };
-  }, []);
+  }, [contestFlow.scenario, setContestStep]);
 
 
   const handleOpenTerms = (tab = "terms") => {
@@ -155,31 +171,72 @@ export default function App() {
   };
 
   const handleTestPaymentDetection = async () => {
+    const event = createContestPaymentEvent();
+
     if (isNativePlatform()) {
-      await simulatePaymentDetection({
-        package: "com.shcard.smartpay",
-        title: "[신한카드] 결제승인",
-        body: "넷플릭스 17,000원(일시불) 정상승인",
+      const result = await simulatePaymentDetection({
+        package: event.packageName,
+        title: event.title,
+        body: event.body,
       });
-      notify("⚡ 넷플릭스 17,000원 결제 알림이 발송되었습니다!");
-    } else {
-      setQuickAddData({
-        name: "Netflix",
-        amount: 17000,
-        plan: "프리미엄",
-        paymentMethod: "신한카드",
-        category: "OTT",
-        serviceId: "netflix",
-        dueDay: new Date().getDate(),
-        billingCycle: "매월",
-        sourceType: "sms",
-        autoDetected: true,
-      });
-      setAddInitialMode("quick-detect");
-      setAddOpen(true);
-      notify("⚡ 넷플릭스 17,000원 결제가 감지되었습니다! (체험 시뮬레이션)");
+
+      if (!result?.detected) {
+        notify("결제 원문에서 구독 정보를 찾지 못했습니다.");
+        return;
+      }
+
+      if (contestFlow.scenario === "A") {
+        setContestStep("A2", {
+          parsedPayment: {
+            serviceName: result.serviceName,
+            name: result.serviceName,
+            serviceId: result.serviceId || "",
+            amount: Number(result.amount) || 0,
+            plan: result.plan || "",
+            paymentMethod: result.paymentMethod || "",
+            category: result.category || "기타",
+            isSubscription: true,
+          },
+        });
+      }
+
+      notify("실제 PaymentParser를 통과한 결제 감지 알림을 발송했습니다.");
+      return;
     }
+
+    const parsed = parsePaymentNotification(event);
+    if (!parsed) {
+      notify("테스트 결제 원문에서 구독 정보를 찾지 못했습니다.");
+      return;
+    }
+
+    if (contestFlow.scenario === "A") {
+      setContestStep("A2", { parsedPayment: parsed });
+      setContestHeadsUp(parsed);
+      return;
+    }
+
+    const quickAdd = toQuickAddData(parsed);
+    setQuickAddData(quickAdd);
+    setAddInitialMode("quick-detect");
+    setAddOpen(true);
+    notify("결제 알림 원문을 파싱해 구독 정보를 찾았습니다.");
   };
+
+  const openContestParsedPayment = useCallback(() => {
+    const parsed = contestHeadsUp || contestFlow.parsedPayment;
+    const quickAdd = toQuickAddData(parsed);
+    if (!quickAdd) {
+      notify("파싱 결과를 불러오지 못했습니다.");
+      return;
+    }
+    setContestHeadsUp(null);
+    setQuickAddData(quickAdd);
+    setAddInitialMode("quick-detect");
+    setAddOpen(true);
+    setContestStep("A3", { parsedPayment: parsed });
+  }, [contestFlow.parsedPayment, contestHeadsUp, notify, setContestStep]);
+
 
   // Subscriptions domain state
   const {
@@ -205,7 +262,7 @@ export default function App() {
     togglePinSubscription,
     muteSubscription,
     deleteSubscription,
-  } = useSubscriptions({ currentRoute: screen.route });
+  } = useSubscriptions({ currentRoute: screen.route, contestMode: isContestMode });
 
   // Notifications domain state
   const {
@@ -223,14 +280,19 @@ export default function App() {
     handleTogglePermissionFromHome,
     markAllRead,
     clearAll,
-  } = useNotificationManager({ subscriptions, persist: profile?.provider !== "Contest" });
+  } = useNotificationManager({
+    subscriptions: isContestMode && profile?.provider !== "Contest" ? [] : subscriptions,
+    persist: !isContestMode && profile?.provider !== "Contest",
+  });
 
   
   // Supabase Auth session & state change listener
   useEffect(() => {
-    if (!supabase) return;
+    if (!supabase || screen.route === "contest" || profile?.provider === "Contest" || contestFlowActive) return;
+    let active = true;
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!active) return;
       if (session?.user) {
         const user = session.user;
         const nickname = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "사용자";
@@ -247,6 +309,7 @@ export default function App() {
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!active) return;
       if (event === "SIGNED_IN" && session?.user) {
         const user = session.user;
         const nickname = user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split("@")[0] || "사용자";
@@ -290,9 +353,10 @@ export default function App() {
     });
 
     return () => {
+      active = false;
       subscription?.unsubscribe();
     };
-  }, [navigate, notify, setOnboardingComplete, setProfile, setSubscriptions]);
+  }, [screen.route, contestFlowActive, navigate, notify, profile?.provider, setOnboardingComplete, setProfile, setSubscriptions]);
 
   // Handle URL query actions (?notifications=1)
   useEffect(() => {
@@ -452,6 +516,10 @@ export default function App() {
   };
 
   const handlePromotion = useCallback((promotion) => {
+    if (contestFlow.step === "A6") {
+      setContestStep("A7");
+    }
+
     if (promotion?.link) {
       if (isNativePlatform()) {
         Browser.open({ url: promotion.link }).catch(() => {
@@ -460,11 +528,59 @@ export default function App() {
       } else {
         window.open(promotion.link, "_blank", "noopener,noreferrer");
       }
-      notify("제휴 혜택 페이지를 열었어요.");
+      notify("공식 혜택 출처를 열었어요.");
     } else {
       navigate("promotions");
     }
-  }, [navigate, notify]);
+  }, [contestFlow.step, navigate, notify, setContestStep]);
+
+  const resetContestExperience = useCallback(() => {
+    setContestHeadsUp(null);
+    setQuickAddData(null);
+    setAddOpen(false);
+    closeCancellation();
+    setNotificationCenterOpen(false);
+    setHighlightCancelId(null);
+    setSubscriptions(
+      createMockSubscriptions().filter((subscription) =>
+        (subscription.serviceId || subscription.id) !== "netflix"
+      )
+    );
+    resetContestFlow();
+    navigate("contest");
+  }, [
+    closeCancellation,
+    navigate,
+    resetContestFlow,
+    setHighlightCancelId,
+    setNotificationCenterOpen,
+    setSubscriptions,
+  ]);
+
+  const navigateFromContest = useCallback((targetRoute) => {
+    if (contestFlow.step === "A5" && targetRoute === "promotions") {
+      setContestStep("A6");
+    } else if (contestFlow.step === "B6" && targetRoute === "subscriptions") {
+      setContestStep("B7");
+    }
+    setHighlightCancelId(null);
+    navigate(targetRoute);
+  }, [contestFlow.step, navigate, setContestStep, setHighlightCancelId]);
+
+  const openNotificationCenter = useCallback(() => {
+    if (contestFlow.step === "A7") {
+      setContestStep("A8");
+    }
+    setNotificationCenterOpen(true);
+  }, [contestFlow.step, setContestStep, setNotificationCenterOpen]);
+
+  const triggerContestReminder = useCallback(() => {
+    const spotify = subscriptions.find((subscription) => (subscription.serviceId || subscription.id) === "spotify");
+    const result = handleTriggerTestNotification(spotify, notify, "billing_d1");
+    if (result && contestFlow.step === "A8") {
+      setContestStep("A9");
+    }
+  }, [contestFlow.step, handleTriggerTestNotification, notify, setContestStep, subscriptions]);
 
   let content;
   if (screen.route === "landing") {
@@ -477,16 +593,17 @@ export default function App() {
   } else if (screen.route === "contest") {
     content = (
       <ContestExperienceScreen
-        onSimulatePayment={handleTestPaymentDetection}
+        flow={contestFlow}
+        onStartScenario={startContestScenario}
+        onRunPayment={handleTestPaymentDetection}
+        onSampleReady={() => setContestStep("B2")}
         onOpenImageRegistration={() => {
           setAddInitialMode("ai");
+          setQuickAddData(null);
           setAddOpen(true);
+          setContestStep("B3");
         }}
-        onOpenPromotions={() => navigate("promotions")}
-        onTestReminder={() => handleTriggerTestNotification(null, notify)}
-        onOpenCancellationGuide={() => {
-          window.location.hash = "#/detail/seed-spotify?highlight=cancel";
-        }}
+        onReset={resetContestExperience}
       />
     );
   } else if (screen.route === "register") {
@@ -520,7 +637,7 @@ export default function App() {
             notify
           )
         }
-        onOpenNotificationCenter={() => setNotificationCenterOpen(true)}
+        onOpenNotificationCenter={openNotificationCenter}
         onTestPaymentDetection={handleTestPaymentDetection}
         onRequestPaymentCapture={handleRequestPaymentCapture}
         onOpenTerms={handleOpenTerms}
@@ -533,7 +650,12 @@ export default function App() {
     content = (
       <SubscriptionListScreen
         subscriptions={subscriptions}
-        onOpen={(id) => navigate("detail", id)}
+        onOpen={(id) => {
+          if (contestFlow.step === "B7" && id === "seed-spotify") {
+            setContestStep("B8");
+          }
+          navigate("detail", id);
+        }}
         onAdd={() => { setAddInitialMode("manual"); setAddOpen(true); }}
         onStartCancel={startCancellation}
         onMute={(id) => muteSubscription(id, notify)}
@@ -544,14 +666,26 @@ export default function App() {
   } else if (screen.route === "calendar") {
     content = <CalendarScreen subscriptions={subscriptions} onOpen={(id) => navigate("detail", id)} />;
   } else if (screen.route === "promotions") {
-    content = <PromotionScreen subscriptions={subscriptions} promotions={promotionCatalog} onOpenPromotion={handlePromotion} />;
+    content = (
+      <PromotionScreen
+        subscriptions={subscriptions}
+        promotions={promotionCatalog}
+        onOpenPromotion={handlePromotion}
+        contestMode={contestFlow.scenario === "A"}
+      />
+    );
   } else if (screen.route === "detail") {
     content = (
       <SubscriptionDetailScreen
         subscription={selectedSubscription}
         subscriptions={subscriptions}
         onUpdate={(id, update) => updateSubscription(id, update, notify)}
-        onStartCancel={startCancellation}
+        onStartCancel={(id, promotion, options) => {
+          startCancellation(id, promotion, options);
+          if (contestFlow.step === "B8") {
+            setContestStep("B9");
+          }
+        }}
         onBack={() => {
           setHighlightCancelId(null);
           navigate("subscriptions");
@@ -565,6 +699,7 @@ export default function App() {
         promotion={promotionCatalog.find((p) => p.sourceServiceIds?.includes(selectedSubscription?.id))}
         onTriggerNotification={(sub) => handleTriggerTestNotification(sub, notify)}
         highlightCancel={highlightCancelId === selectedSubscription?.subscriptionId}
+        contestMode={contestFlow.scenario === "B"}
       />
     );
   } else {
@@ -579,7 +714,7 @@ export default function App() {
 
   return (
     <div className="app-shell" data-screen={screen.route} data-hash={typeof window !== "undefined" ? window.location.hash : ""}>
-      {showSplash && screen.route !== "contest" && (
+      {showSplash && screen.route !== "contest" && !contestFlowActive && profile?.provider !== "Contest" && (
         <SplashScreen
           onFinish={() => {
             if (typeof window !== "undefined") {
@@ -599,7 +734,8 @@ export default function App() {
           rightSlot={
             <button
               type="button"
-              onClick={() => setNotificationCenterOpen(true)}
+              data-contest-target="notification-center-button"
+              onClick={openNotificationCenter}
               className="relative grid h-9 w-9 place-items-center rounded-lg text-[#71717A] hover:bg-[#F4F4F5] hover:text-black transition-colors"
               aria-label="알림 센터 열기"
             >
@@ -618,10 +754,7 @@ export default function App() {
       {hasAppChrome && screen.route !== "detail" && (
         <BottomNavigation
           route={screen.route}
-          onNavigate={(targetRoute) => {
-            setHighlightCancelId(null);
-            navigate(targetRoute);
-          }}
+          onNavigate={navigateFromContest}
           onOpenAdd={() => { setAddInitialMode("manual"); setAddOpen(true); }}
           onOpenNotifications={() => setNotificationCenterOpen(true)}
           onOpenAccount={() => setAccountOpen(true)}
@@ -637,10 +770,34 @@ export default function App() {
             setAddOpen(false);
             setQuickAddData(null);
           }}
+          onRecognitionStart={() => {
+            if (contestFlow.scenario === "B") {
+              setContestStep("B3");
+            }
+          }}
+          onRecognitionComplete={({ recognized }) => {
+            if (contestFlow.scenario === "B") {
+              setContestStep("B4", { ocrResult: recognized });
+            }
+          }}
+          onRecognitionError={(error) => {
+            if (contestFlow.scenario === "B") {
+              notify(error?.message || "AI 인식에 실패했습니다. 같은 이미지를 다시 선택해주세요.");
+            }
+          }}
           onAdd={(data) => {
-            const result = handleAddSubscription(data, notify);
+            const created = handleAddSubscription(data, notify);
             setQuickAddData(null);
-            return result;
+            if (!created) return false;
+
+            if (contestFlow.scenario === "A" && ["A3", "A4"].includes(contestFlow.step)) {
+              setContestStep("A5", { addedSubscriptionId: created.subscriptionId });
+              navigate("home");
+            } else if (contestFlow.scenario === "B" && ["B4", "B5"].includes(contestFlow.step)) {
+              setContestStep("B6", { addedSubscriptionId: created.subscriptionId });
+              navigate("home");
+            }
+            return created;
           }}
         />
       )}
@@ -654,9 +811,14 @@ export default function App() {
             if (screen.route === "detail") navigate("subscriptions");
           })}
           onToast={notify}
+          onExternalOpen={() => {
+            if (contestFlow.step === "B9") {
+              setContestStep("B10");
+            }
+          }}
         />
       )}
-      {renewalSubscription && !addOpen && !cancelSubscription && !notificationCenterOpen && !termsOpen && (
+      {renewalSubscription && !contestFlowActive && !addOpen && !cancelSubscription && !notificationCenterOpen && !termsOpen && (
         <RenewalSheet
           subscription={renewalSubscription}
           onKeep={() => handleRenewal(true, notify)}
@@ -675,7 +837,7 @@ export default function App() {
           })}
           onMarkAllRead={markAllRead}
           onClearAll={clearAll}
-          onTriggerTest={() => handleTriggerTestNotification(null, notify)}
+          onTriggerTest={triggerContestReminder}
           notificationPermission={notificationPermission}
           onRequestPermission={() =>
             handleRequestPermission(
@@ -702,6 +864,23 @@ export default function App() {
           onTestPaymentDetection={handleTestPaymentDetection}
           onRequestPaymentCapture={handleRequestPaymentCapture}
           onLogout={handleLogout}
+        />
+      )}
+      {contestHeadsUp && (
+        <ContestPaymentHeadsUp
+          payment={contestHeadsUp}
+          onOpen={openContestParsedPayment}
+          onDismiss={() => setContestHeadsUp(null)}
+        />
+      )}
+      {contestFlowActive && !(
+        screen.route === "contest" &&
+        ["A1", "B1", "B2"].includes(contestFlow.step)
+      ) && (
+        <ContestGuideOverlay
+          flow={contestFlow}
+          onStep={setContestStep}
+          onExit={resetContestExperience}
         />
       )}
       <Toast toast={toast} onClose={() => setToast(null)} />

@@ -748,6 +748,7 @@ export function BottomNavigation({
 
       <button
         type="button"
+        data-contest-target="nav-subscriptions"
         onClick={() => onNavigate("subscriptions")}
         className={cx(
           "flex flex-1 flex-col items-center gap-1 py-1 text-[11px] tracking-tight transition-all active:scale-[0.95]",
@@ -785,6 +786,7 @@ export function BottomNavigation({
 
       <button
         type="button"
+        data-contest-target="nav-promotions"
         onClick={() => onNavigate("promotions")}
         className={cx(
           "flex flex-1 flex-col items-center gap-1 py-1 text-[11px] tracking-tight transition-all active:scale-[0.95]",
@@ -842,6 +844,7 @@ export function SubscriptionCard({
   return (
     <button
       type="button"
+      data-contest-target={`subscription-${subscription.subscriptionId || subscription.id}`}
       onClick={onOpen}
       className={cx(
         "flex w-full items-center justify-between text-left transition-colors cursor-pointer group/card",

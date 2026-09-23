@@ -20,7 +20,7 @@ const baseSteps = [
   "해지 신청 후 완료 화면 확인하기",
 ];
 
-export function CancelModal({ subscription: rawSub, promotion, autoOpen = false, onClose, onComplete, onToast }) {
+export function CancelModal({ subscription: rawSub, promotion, autoOpen = false, onClose, onComplete, onToast, onExternalOpen }) {
   // DB 구독 데이터에 guideSteps나 cancelUrl이 누락되어도 serviceCatalog에서 100% 매칭 보강
   const subscription = useMemo(() => {
     const targetName = (rawSub.name || "").toLowerCase().replace(/\s+/g, "");
@@ -41,6 +41,9 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
   const steps = (subscription.guideSteps && subscription.guideSteps.length > 0)
     ? subscription.guideSteps.map((s) => ({ title: s.title, description: s.description }))
     : baseSteps.map((s) => ({ title: "", description: s }));
+  const annualCost = subscription.billingCycle === "매년"
+    ? Number(subscription.amount) || 0
+    : (Number(subscription.amount) || 0) * 12;
 
   const [checked, setChecked] = useState(() => new Array(steps.length).fill(false));
   const [celebrating, setCelebrating] = useState(false);
@@ -65,6 +68,7 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
   const goToCancel = async () => {
     if (!subscription.cancelUrl) return;
 
+    onExternalOpen?.(subscription);
     setCancelSessionActive(true);
     if (!Capacitor.isNativePlatform()) {
       window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
@@ -243,26 +247,26 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
         <div className="min-w-0"><h2 className="truncate text-[20px] font-extrabold tracking-tight text-[#191F28]">{subscription.name} 해지하기</h2><p className="mt-0.5 text-[12px] font-medium text-[#6B7684]">직접 해지 페이지와 단계별 안내를 준비했어요.</p></div>
       </div>
 
-      {/* 연간 절약 예상액 헤더 배너 */}
-      <div className="rounded-2xl bg-[#F2F4F6] p-4 text-center mt-4">
-        <p className="text-[12px] font-semibold text-[#6B7684]">지금 해지하면 1년에</p>
+      {/* 현재 결제 주기를 1년 유지할 때의 지출을 가정한 금액 */}
+      {annualCost > 0 && <div className="rounded-2xl bg-[#F2F4F6] p-4 text-center mt-4">
+        <p className="text-[12px] font-semibold text-[#6B7684]">해지 후 결제를 멈추면 줄일 수 있는 지출</p>
         <h3 className="mt-0.5 text-[24px] font-extrabold tracking-tight text-[#3182F6]">
-          {formatWon(subscription.amount * 12)}
-          <span className="text-[16px] font-bold text-[#191F28]"> 절약돼요</span>
+          {formatWon(annualCost)}
+          <span className="text-[16px] font-bold text-[#191F28]"> / 1년 예상</span>
         </h3>
         <p className="mt-0.5 text-[11px] text-[#8B95A1]">
-          월 {formatWon(subscription.amount)}씩 고정 지출을 줄일 수 있어요
+          현재 요금과 결제 주기를 1년 유지한다고 가정했어요. 해지·환불 조건은 공식 사이트에서 확인해주세요.
         </p>
-      </div>
+      </div>}
 
       {promotion && (
         <div className="mt-4 flex items-center justify-between rounded-2xl border border-[#FFD8A8] bg-[#FFF9F2] p-3.5 shadow-2xs">
           <div className="min-w-0 pr-2">
             <span className="inline-block rounded-md bg-[#FFE8CC] px-1.5 py-0.5 text-[10px] font-bold text-[#FF6F0F]">
-              추천 환승 혜택
+              관련 혜택 · 조건 확인
             </span>
             <h4 className="mt-1 truncate text-[13px] font-bold text-[#191F28]">{promotion.title}</h4>
-            <p className="text-[11px] text-[#8B95A1] truncate">더 알뜰한 요금제로 갈아타기</p>
+            <p className="text-[11px] text-[#8B95A1] truncate">적용 조건을 보고 변경 여부를 판단해주세요</p>
           </div>
           <button
             type="button"
@@ -298,15 +302,17 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
         </div>
       ) : (
         <div className="mt-5 space-y-2">
-          <Button
-            size="large"
-            fullWidth
-            disabled={!subscription.cancelUrl}
-            onClick={goToCancel}
-            prefixIcon={<ExternalLink size={17} />}
-          >
-            {subscription.cancelUrl ? "해지 페이지로 바로 이동 (가이드 포함)" : "해지 링크를 찾지 못했어요"}
-          </Button>
+          <div data-contest-target="cancel-open-site">
+            <Button
+              size="large"
+              fullWidth
+              disabled={!subscription.cancelUrl}
+              onClick={goToCancel}
+              prefixIcon={<ExternalLink size={17} />}
+            >
+              {subscription.cancelUrl ? "해지 페이지로 바로 이동 (가이드 포함)" : "해지 링크를 찾지 못했어요"}
+            </Button>
+          </div>
           <Button
             size="large"
             fullWidth

@@ -51,7 +51,7 @@ function VisualPromoCarousel({ promotions, onOpenPromotion }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const scrollRef = useRef(null);
 
-  const naverPromo = promotions.find((p) => p.id === "tving-naver" || p.id === "netflix") || promotions[0];
+  const naverPromo = promotions.find((p) => p.id === "naverplus-netflix");
   const youtubePromo = promotions.find((p) => p.id === "youtube-promo") || promotions[1] || promotions[0];
   const heroPromo = promotions.find((p) => p.id === "tving-naver" || p.id === "naverplus-netflix") || promotions[0];
 
@@ -61,8 +61,8 @@ function VisualPromoCarousel({ promotions, onOpenPromotion }) {
       promo: naverPromo,
       tag: "네이버플러스 멤버십 제휴",
       tagBg: "bg-[#DCFCE7] text-[#15803D]",
-      title: "네이버 멤버십으로\n넷플릭스 매월 0원!",
-      desc: "월 4,900원에 쇼핑 적립 + 넷플릭스 무료",
+      title: "네이버플러스 회원이라면\n넷플릭스 선택 가능",
+      desc: "월 4,900원 멤버십 · 광고형 스탠다드",
       bgGradient: "from-[#F0FDF4] via-white to-[#E8F9EF] border-[#DCFCE7]",
       visual: (
         <div className="relative h-20 w-28 shrink-0 flex items-center justify-center select-none">
@@ -73,7 +73,7 @@ function VisualPromoCarousel({ promotions, onOpenPromotion }) {
             NETFLIX
           </div>
           <div className="absolute top-1 right-2.5 h-[30px] w-[30px] rounded-full bg-[#22C55E] text-white flex items-center justify-center shadow-md text-[10px] font-black border-2 border-white">
-            0원
+            선택
           </div>
         </div>
       ),
@@ -122,7 +122,7 @@ function VisualPromoCarousel({ promotions, onOpenPromotion }) {
         </div>
       ),
     },
-  ];
+  ].filter((slide) => slide.promo);
 
   const handleScroll = () => {
     if (!scrollRef.current) return;

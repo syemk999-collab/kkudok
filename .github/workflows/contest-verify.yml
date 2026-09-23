@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/contest-landing
+      - feature/contest-experience-v2
       - main
   workflow_dispatch:
 
@@ -42,6 +43,28 @@ jobs:
       - name: Production build
         run: pnpm build
 
+      - name: Setup Java for Android verification
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Verify preinstalled Android SDK
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          test -n "$ANDROID_HOME"
+          test -x "$ANDROID_HOME/platform-tools/adb" || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version || sdkmanager --version
+
+      - name: Sync Capacitor Android
+        run: pnpm exec cap sync android
+
+      - name: Compile Android debug APK
+        run: |
+          chmod +x android/gradlew
+          cd android
+          ./gradlew assembleDebug --stacktrace
+
       - name: Start preview
         run: |
           pnpm preview --host 127.0.0.1 --port 4173 > /tmp/kkudok-preview.log 2>&1 &
@@ -61,12 +84,14 @@ jobs:
           pnpm exec playwright install --with-deps chromium
 
       - name: Responsive and scenario smoke test
-        run: timeout 90s node scripts/contest-smoke.cjs
+        run: timeout 180s node scripts/contest-smoke.cjs
 
       - name: Resolve Vercel deployment target
         run: |
           if [ "$GITHUB_REF_NAME" = "main" ]; then
             TARGET_URL="https://kkudok-kohl.vercel.app"
+          elif [ "$GITHUB_REF_NAME" = "feature/contest-experience-v2" ]; then
+            TARGET_URL="https://kkudok-git-feature-contest-experience-v2-remix33.vercel.app"
           else
             TARGET_URL="https://kkudok-git-feature-contest-landing-remix33.vercel.app"
           fi
@@ -84,7 +109,7 @@ jobs:
           exit 1
 
       - name: Vercel deployed-site smoke test
-        run: CONTEST_BASE_URL="$TARGET_URL" timeout 90s node scripts/contest-smoke.cjs
+        run: CONTEST_BASE_URL="$TARGET_URL" CONTEST_VERIFY_OCR=1 timeout 240s node scripts/contest-smoke.cjs
 
       - name: Upload contest verification screenshots
         if: always()
