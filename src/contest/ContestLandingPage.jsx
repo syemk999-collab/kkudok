@@ -43,6 +43,15 @@ function HeroPhoneDemo({ onPlay, videoRef, started, onStarted }) {
   return (
     <div className="contest-hero-device-wrap" id="full-demo">
       <div className="contest-hero-orbit" aria-hidden="true" />
+      <div className="contest-demo-editorial">
+        <span>PAYMENT → GUIDANCE → BENEFITS</span>
+        <h1 id="contest-hero-title">
+          <span>결제는 <em>AI로 읽고,</em></span>
+          <span>절약액은 <em>검증해서 보여줍니다.</em></span>
+        </h1>
+        <p>구독을 읽은 뒤, 다음 선택에 필요한 근거까지.</p>
+        <button type="button" onClick={onPlay} aria-controls="contest-hero-demo-player">전체 서비스 시연 보기 <span aria-hidden="true">↗</span></button>
+      </div>
       <div className="contest-hero-phone">
         <div className="contest-hero-phone-camera" aria-hidden="true" />
         <video
@@ -68,7 +77,7 @@ function HeroPhoneDemo({ onPlay, videoRef, started, onStarted }) {
           </button>
         )}
       </div>
-      <p>전체 서비스 시연 · 02:13</p>
+      <p className="contest-demo-duration">전체 서비스 시연 · 02:13</p>
     </div>
   );
 }
@@ -161,6 +170,7 @@ export default function ContestLandingPage() {
             <a className="contest-hero-nav-cta" href="#experience-qr">QR로 체험하기 ↓</a>
           </header>
           <div className="contest-hero-layout">
+          <HeroPhoneDemo onPlay={() => playFullDemo()} videoRef={demoVideoRef} started={demoStarted} onStarted={() => setDemoStarted(true)} />
           <div className="contest-hero-copy">
             <div className="contest-top-badges">
               <span className="contest-top-badge is-primary">윈터드 AI Championship 2026 출품작</span>
@@ -171,12 +181,13 @@ export default function ContestLandingPage() {
               <div><span>구독 관리 서비스</span><b>꾸독</b></div>
             </div>
 
-            <h1 id="contest-hero-title">
-              <span>결제는 <em>AI로 읽고,</em></span>
-              <span>절약액은 <em>검증해서 보여줍니다.</em></span>
-            </h1>
-
             <p className="contest-hero-intro">결제 정보를 정리하고, 해지 경로를 안내하며, 내 구독과 연결될 수 있는 혜택을 찾습니다. 등록·변경·해지는 직접 결정하세요.</p>
+
+            <nav className="contest-hero-shortcuts" aria-label="꾸독의 세 단계">
+              <a href="#method-heading"><span>01</span> 결제를 읽어 등록 부담 줄이기</a>
+              <a href="#scenario-heading"><span>02</span> 꾸독이와 해지 방법 찾기</a>
+              <a href="#benefit-heading"><span>03</span> 혜택의 조건과 출처 확인하기</a>
+            </nav>
 
             <div className="contest-hero-example" aria-label="Netflix 구독과 연결되는 혜택 예시">
               <span>NETFLIX 구독을 등록했다면</span>
@@ -195,15 +206,12 @@ export default function ContestLandingPage() {
               </div>
             </div>
 
-            <button className="contest-hero-demo-link" type="button" onClick={() => playFullDemo(true)}>먼저 전체 서비스 시연 보기 <span aria-hidden="true">▶</span></button>
-
             <div className="contest-tech-row" aria-label="기술 스택">
               {TECH_STACK.map((item) => <span key={item}>{item}</span>)}
             </div>
 
           </div>
 
-          <HeroPhoneDemo onPlay={() => playFullDemo()} videoRef={demoVideoRef} started={demoStarted} onStarted={() => setDemoStarted(true)} />
           </div>
           <div className="contest-hero-footer" aria-hidden="true">
             <span>SCROLL TO EXPLORE <i>↓</i></span>
