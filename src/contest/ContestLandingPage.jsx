@@ -287,9 +287,16 @@ export default function ContestLandingPage() {
               꾸독은 “얼마를 썼는지”에서 끝나지 않고, 등록된 구독과 연결될 수 있는 혜택 후보를 찾고
               조건과 공식 출처를 함께 보여줍니다. 적용 여부와 실제 절약액은 사용자의 요금제와 멤버십 상태에 따라 달라집니다.
             </p>
+            <p className="contest-benefit-term">*파싱 : 결제 문장에서 서비스명·금액·결제수단을 찾아 정리하는 과정입니다.</p>
           </div>
 
           {verifiedBenefit && (
+            <>
+            <div className="contest-benefit-checks" aria-label="혜택을 확인하는 순서">
+              <div><span>01 · 연결 이유</span><strong>등록한 Netflix와 연결되는 혜택</strong></div>
+              <div><span>02 · 적용 조건</span><strong>{verifiedBenefit.campaignPeriod}</strong></div>
+              <div><span>03 · 공식 출처</span><strong>{sourceHost || "공식 안내 페이지"}에서 조건 확인</strong></div>
+            </div>
             <article className="contest-benefit-proof">
               <div className="contest-benefit-current">
                 <span>현재 구독과 연결</span>
@@ -299,7 +306,7 @@ export default function ContestLandingPage() {
               <div className="contest-benefit-arrow" aria-hidden="true">→</div>
               <div className="contest-benefit-evidence">
                 <div className="contest-benefit-evidence-top">
-                  <span>{verifiedBenefit.verifiedStatus === "LIVE_CONFIRMED" ? "공식 출처 확인" : "조건 확인 필요"}</span>
+                  <span>{verifiedBenefit.link ? "공식 안내 링크 제공" : "조건 확인 필요"}</span>
                   <small>{sourceHost}</small>
                 </div>
                 <h3>{verifiedBenefit.title}</h3>
@@ -320,6 +327,8 @@ export default function ContestLandingPage() {
                 {verifiedBenefit.priceSourceUrl && <a href={verifiedBenefit.priceSourceUrl} target="_blank" rel="noreferrer">넷플릭스 별도 요금 확인하기 →</a>}
               </div>
             </article>
+            <p className="contest-benefit-freshness">*크롤링 : 공개된 페이지에서 혜택 정보를 자동으로 모으는 과정입니다. 현재 정보 수집의 정확도를 개선 중입니다. 적용 전 공식 출처에서 최신 조건을 확인해 주세요.</p>
+            </>
           )}
         </div>
       </section>

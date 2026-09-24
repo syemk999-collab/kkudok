@@ -251,7 +251,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
       {contestMode && contestDirectPromotion && (
         <section className="mb-5 overflow-hidden rounded-[22px] border border-[#D9E7F8] bg-[#F7FBFF]">
           <div className="border-b border-[#E4EDF7] px-4 py-4">
-            <span className="text-[10px] font-black tracking-[0.14em] text-[#3182F6]">WHY THIS BENEFIT</span>
+            <span className="text-[10px] font-black tracking-[0.14em] text-[#467BA0]">내 구독과 연결된 혜택</span>
             <h2 className="mt-1 text-[18px] font-black tracking-tight text-[#191F28]">
               등록한 {contestMatchedSubscription?.name || "구독"} 기준으로 확인할 수 있는 혜택이에요.
             </h2>
@@ -262,8 +262,8 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
 
           <div className="px-4 py-4">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-[#E8F3FF] px-2.5 py-1 text-[10px] font-black text-[#1B64DA]">
-                {contestDirectPromotion.verifiedStatus === "LIVE_CONFIRMED" ? "공식 출처 확인" : "조건 확인 필요"}
+              <span className="rounded-full bg-[#E5F2F9] px-2.5 py-1 text-[10px] font-black text-[#315976]">
+                {contestDirectPromotion.link ? "공식 안내 링크 제공" : "조건 확인 필요"}
               </span>
               {contestSourceHost && (
                 <span className="rounded-full bg-white px-2.5 py-1 text-[10px] font-bold text-[#6B7684] ring-1 ring-[#E5E8EB]">
@@ -275,7 +275,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
             <h3 className="mt-3 text-[17px] font-black tracking-tight text-[#191F28]">
               {contestDirectPromotion.title}
             </h3>
-            <p className="mt-1 text-[13px] font-bold text-[#3182F6]">
+            <p className="mt-1 text-[13px] font-bold text-[#467BA0]">
               {contestDirectPromotion.subtitle || contestDirectPromotion.kind}
             </p>
             <p className="mt-2 text-[12px] leading-5 text-[#4E5968]">
@@ -308,8 +308,11 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
             </dl>
 
             <p className="mt-3 text-[10px] leading-4 text-[#8B95A1]">
-              *상품 별도 가격 : 멤버십과 별개로 해당 상품을 구독할 때의 가격입니다. *검증 상태 : 공식 페이지에서 혜택을 확인했다는 뜻이며, 내 계정에 적용됐다는 의미는 아닙니다.
-              실제 절약액은 현재 요금제와 기존 멤버십 보유 여부, 선택하는 이용권에 따라 달라집니다.
+              *혜택 가치 : 안내된 상품의 별도 가격을 기준으로 한 값이며 내 확정 절약액은 아닙니다. *상품 별도 가격 : 멤버십 없이 해당 상품을 구독할 때의 가격입니다.
+              실제 절약액은 현재 요금제·기존 멤버십 여부·선택 상품에 따라 달라집니다.
+            </p>
+            <p className="mt-2 text-[10px] leading-4 text-[#767B80]">
+              *크롤링 : 공개된 페이지의 정보를 자동으로 모으는 과정입니다. 현재 혜택 정보 수집의 정확도를 개선 중이므로, 적용 전 공식 출처의 최신 조건을 확인해 주세요.
             </p>
 
             <button
