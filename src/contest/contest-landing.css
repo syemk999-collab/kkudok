@@ -504,18 +504,7 @@
   line-height: 1.45;
   word-break: keep-all;
 }
-.contest-page .contest-benefit-proof { grid-template-columns: minmax(190px, .5fr) 34px minmax(0, 1.5fr); gap: 14px; }
-.contest-page .contest-benefit-current {
-  padding: 26px;
-  border: 1px solid rgba(248,252,254,.35);
-  border-radius: 6px;
-  background: var(--contest-blue);
-  box-shadow: none;
-}
-.contest-page .contest-benefit-current span { color: var(--contest-paper); }
-.contest-page .contest-benefit-current strong { color: white; }
-.contest-page .contest-benefit-current p { color: #edf5f9; }
-.contest-page .contest-benefit-arrow { color: var(--contest-paper); }
+.contest-page .contest-benefit-proof { display: block; }
 .contest-page .contest-benefit-evidence {
   min-width: 0;
   padding: clamp(25px, 3vw, 42px);
@@ -580,9 +569,6 @@
   .contest-page .contest-hero-nav-cta { background: var(--contest-blue); color: white; }
   .contest-page .contest-benefit-checks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .contest-page .contest-benefit-checks > div:last-child { grid-column: 1 / -1; }
-  .contest-page .contest-benefit-proof { grid-template-columns: 1fr; }
-  .contest-page .contest-benefit-arrow { transform: rotate(90deg); }
-  .contest-page .contest-benefit-current { min-height: 125px; }
 }
 @media (max-width: 820px) {
   .contest-page .contest-shell { width: min(100% - 36px, 680px); }

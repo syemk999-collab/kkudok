@@ -298,12 +298,6 @@ export default function ContestLandingPage() {
               <div><span>03 · 공식 출처</span><strong>{sourceHost || "공식 안내 페이지"}에서 조건 확인</strong></div>
             </div>
             <article className="contest-benefit-proof">
-              <div className="contest-benefit-current">
-                <span>현재 구독과 연결</span>
-                <strong>Netflix</strong>
-                <p>체험 A에서 등록된 서비스와 직접 연결되는 혜택 예시</p>
-              </div>
-              <div className="contest-benefit-arrow" aria-hidden="true">→</div>
               <div className="contest-benefit-evidence">
                 <div className="contest-benefit-evidence-top">
                   <span>{verifiedBenefit.link ? "공식 안내 링크 제공" : "조건 확인 필요"}</span>
