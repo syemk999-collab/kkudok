@@ -129,7 +129,12 @@
   line-height: 1.11;
   letter-spacing: -.061em;
 }
-.contest-page .contest-hero h1 > span { white-space: normal; }
+.contest-page .contest-demo-editorial h1 {
+  font-size: clamp(36px, 3.05vw, 46px);
+  text-wrap: balance;
+  word-break: keep-all;
+}
+.contest-page .contest-hero h1 > span { display: inline; white-space: normal; }
 .contest-page .contest-hero h1 em {
   background: none;
   -webkit-background-clip: border-box;
@@ -348,6 +353,8 @@
   color: var(--contest-ink);
   font-size: clamp(35px, 4.2vw, 58px);
   line-height: 1.17;
+  text-wrap: balance;
+  word-break: keep-all;
 }
 .contest-page .contest-section-heading p,
 .contest-page .contest-direct-copy p { color: #506b79; font-size: 15px; }

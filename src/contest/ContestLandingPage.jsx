@@ -46,7 +46,7 @@ function HeroPhoneDemo({ onPlay, videoRef, started, onStarted }) {
       <div className="contest-demo-editorial">
         <span>결제 읽기 → 해지 안내 → 혜택 확인</span>
         <h1 id="contest-hero-title">
-          <span>결제는 <em>AI로 읽고,</em></span>
+          <span>결제는 <em>AI로 읽고,</em></span>{" "}
           <span>절약액은 <em>검증해서 보여줍니다.</em></span>
         </h1>
         <p>구독을 읽은 뒤, 다음 선택에 필요한 근거까지.</p>

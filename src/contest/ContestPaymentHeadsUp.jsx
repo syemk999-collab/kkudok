@@ -15,7 +15,7 @@ export function ContestPaymentHeadsUp({ payment, onOpen, onDismiss }) {
         <button type="button" className="contest-headsup-body" onClick={onOpen}>
           <strong>⚡ {payment.serviceName} 결제 감지 ({amount}원)</strong>
           <span>결제 알림에서 구독 정보를 찾았습니다. 눌러서 읽어낸 내용을 확인해주세요.</span>
-          <small>웹 체험용 화면 알림 · Android 앱에서는 시스템 알림을 사용합니다</small>
+          <small>웹 체험용 화면 알림 · 안드로이드 앱에서는 시스템 알림을 사용합니다</small>
         </button>
       </div>
     </div>
