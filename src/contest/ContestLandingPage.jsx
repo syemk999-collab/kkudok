@@ -28,8 +28,8 @@ const HERO_FEATURES = [
   },
   {
     icon: "03",
-    title: "놓치기 쉬운 혜택의 조건 확인하기",
-    description: "내 구독과 연결될 수 있는 혜택 후보의 조건·기간·공식 출처를 보고 직접 판단합니다.",
+    title: "내 구독에서 절약할 선택지 살펴보기",
+    description: "내 구독에 연결되는 혜택을 찾고, 비용·변경 조건·공식 출처를 비교해 절약 가능성을 직접 판단합니다.",
     term: "*혜택 가치 : 혜택에 포함된 상품의 별도 가격입니다. 내 확정 절약액은 아닙니다.",
     tone: "cyan",
   },
@@ -189,7 +189,7 @@ export default function ContestLandingPage() {
             <nav className="contest-hero-shortcuts" aria-label="꾸독의 세 단계">
               <a href="#method-heading"><span>01</span> 결제를 읽어 등록 부담 줄이기</a>
               <a href="#scenario-heading"><span>02</span> 꾸독이와 해지 방법 찾기</a>
-              <a href="#benefit-heading"><span>03</span> 혜택의 조건과 출처 확인하기</a>
+              <a href="#benefit-heading"><span>03</span> 내 구독에서 절약할 선택지 찾기</a>
             </nav>
 
             <div className="contest-hero-example" aria-label="Netflix 구독과 연결되는 혜택 예시">
@@ -282,10 +282,10 @@ export default function ContestLandingPage() {
         <div className="contest-shell">
           <div className="contest-section-heading is-left">
             <span>조건과 출처로 확인하는 혜택 · 03 / 03</span>
-            <h2 id="benefit-heading">파싱은 시작이고, 차이는 그 다음에 있습니다.</h2>
+            <h2 id="benefit-heading">내 구독에서 절약할 선택지를 찾아보세요.</h2>
             <p>
-              꾸독은 “얼마를 썼는지”에서 끝나지 않고, 등록된 구독과 연결될 수 있는 혜택 후보를 찾고
-              조건과 공식 출처를 함께 보여줍니다. 적용 여부와 실제 절약액은 사용자의 요금제와 멤버십 상태에 따라 달라집니다.
+              꾸독은 결제를 정리한 뒤 내 구독과 연결될 수 있는 혜택을 찾습니다. 지금 내는 구독료와 멤버십 이용료·변경될 상품을 비교하고,
+              적용 조건과 공식 출처를 확인해 유지하거나 바꿀지 직접 결정하세요. 실제 절약액은 요금제·기존 멤버십 여부·선택 상품에 따라 달라집니다.
             </p>
             <p className="contest-benefit-term">*파싱 : 결제 문장에서 서비스명·금액·결제수단을 찾아 정리하는 과정입니다.</p>
           </div>

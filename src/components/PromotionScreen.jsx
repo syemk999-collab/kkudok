@@ -239,10 +239,12 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
           <span>{isPersonalized ? "내 구독 맞춤 혜택 진단" : "AI 숨은 혜택 발굴 진단"}</span>
         </div>
         <h1 className="mt-1 text-[22px] font-black tracking-tight text-[#191F28]">
-          놓치고 있던 숨은 혜택
+          {contestMode && contestDirectPromotion ? "절약할 선택지 살펴보기" : "놓치고 있던 숨은 혜택"}
         </h1>
         <p className="mt-1 text-[13.5px] text-[#6B7684] font-medium leading-relaxed">
-          {isPersonalized
+          {contestMode && contestDirectPromotion
+            ? "등록한 구독과 연결된 혜택을 살펴보고, 내게 적용되는 조건과 공식 출처를 확인해 보세요."
+            : isPersonalized
             ? `회원님이 이용 중인 ${categorySummary} 카테고리 기반으로 놓치고 있던 제휴 및 할인 혜택을 분석했어요.`
             : "구독 중인 서비스가 없어 전체 혜택을 보여드려요. 구독을 추가하면 연결 가능한 혜택과 조건을 함께 확인할 수 있어요."}
         </p>
@@ -257,7 +259,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
               등록한 {contestMatchedSubscription?.name || "구독"} 기준으로 확인할 수 있는 혜택이에요.
             </h2>
             <p className="mt-1.5 text-[12px] leading-5 text-[#6B7684]">
-              꾸독은 혜택 이름만 보여주지 않고, 어떤 구독과 연결되는지와 적용 조건·출처를 함께 확인하는 방향으로 정확도를 높이고 있어요.
+              지금 내는 구독료와 혜택에 필요한 비용·상품 변경 조건을 비교해 보세요. 꾸독은 적용 조건과 공식 출처를 보여주고, 유지하거나 바꿀지는 직접 결정하도록 돕습니다.
             </p>
           </div>
 
@@ -282,6 +284,13 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
             <p className="mt-2 text-[12px] leading-5 text-[#4E5968]">
               {contestDirectPromotion.description}
             </p>
+
+            {Number(contestMatchedSubscription?.amount) > 0 && (
+              <p className="mt-3 rounded-xl bg-[#E8F3F9] px-3.5 py-3 text-[12px] font-semibold leading-5 text-[#315976]">
+                비교할 내 결제액 · {contestMatchedSubscription.name} {Number(contestMatchedSubscription.amount).toLocaleString("ko-KR")}원
+                {contestMatchedSubscription.billingCycle ? ` / ${contestMatchedSubscription.billingCycle}` : ""}
+              </p>
+            )}
 
             <dl className="mt-4 overflow-hidden rounded-2xl border border-[#E5E8EB] bg-white text-[11px]">
               <div className="grid grid-cols-[84px_1fr] gap-3 border-b border-[#F2F4F6] px-3.5 py-3">
