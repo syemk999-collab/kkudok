@@ -1821,16 +1821,14 @@
    All rules are scoped to the landing page; the interactive experience is untouched. */
 .contest-page {
   background:
-    radial-gradient(ellipse at 75% 5%, rgba(121, 154, 161, .12), transparent 34%),
-    linear-gradient(180deg, #101617 0%, #0b141b 32%, #061525 66%, #020a14 100%);
+    radial-gradient(ellipse 70rem 55rem at 82% 22rem, rgba(190, 216, 208, .14), transparent 78%),
+    #101617;
 }
 
 .contest-page .contest-hero {
   min-height: 100vh;
   padding: clamp(18px, 2.8vw, 44px) 0;
-  background:
-    radial-gradient(ellipse at 83% 36%, rgba(190, 216, 208, .14), transparent 38%),
-    #101415;
+  background: transparent;
 }
 
 .contest-page .contest-hero::before,
@@ -1844,24 +1842,11 @@
   width: min(1560px, calc(100% - 72px));
   min-height: min(900px, calc(100vh - 72px));
   padding: 18px clamp(25px, 3.6vw, 58px) 20px;
-  border: 1px solid rgba(221, 242, 236, .11);
-  border-radius: 28px;
-  background:
-    radial-gradient(ellipse 54% 53% at 86% 23%, rgba(191, 221, 213, .20), transparent 73%),
-    radial-gradient(ellipse 33% 48% at 3% 91%, rgba(80, 121, 140, .13), transparent 80%),
-    linear-gradient(120deg, #080d0f 12%, #101a1c 67%, #0a1012 100%);
-  box-shadow: 0 26px 90px rgba(0, 0, 0, .25), inset 0 1px 0 rgba(255, 255, 255, .07);
+  background: transparent;
 }
 
 .contest-hero-frame::before {
-  content: "";
-  position: absolute;
-  z-index: -1;
-  inset: 110px 0 56px;
-  background:
-    linear-gradient(90deg, transparent 9%, rgba(176, 206, 207, .05) 9.07%, transparent 9.13%),
-    linear-gradient(90deg, transparent 90%, rgba(176, 206, 207, .05) 90.07%, transparent 90.13%);
-  pointer-events: none;
+  display: none;
 }
 
 .contest-hero-nav {
@@ -2123,12 +2108,10 @@
 }
 .contest-page .contest-section {
   padding: clamp(88px, 9vw, 132px) 0;
-  background: #0d1415;
+  background: transparent;
 }
-.contest-page .contest-section:nth-of-type(odd) { background: #10191a; }
 .contest-page .contest-section::before {
-  width: min(1560px, calc(100% - 72px));
-  background: linear-gradient(90deg, transparent, rgba(216, 239, 226, .19), transparent);
+  display: none;
 }
 .contest-page .contest-section-heading > span,
 .contest-page .contest-direct-copy > span {
@@ -2259,9 +2242,7 @@
 }
 .contest-page .contest-demo-video > div { color: #a7b8ae; }
 .contest-page .contest-benefit-section {
-  background:
-    radial-gradient(ellipse at 83% 44%, rgba(176, 220, 192, .09), transparent 45%),
-    #0c1415;
+  background: transparent;
 }
 .contest-page .contest-benefit-section .contest-section-heading { width: min(1200px, 100%); }
 .contest-page .contest-benefit-arrow { color: #c7dfcf; }
@@ -2285,7 +2266,7 @@
 
 .contest-page .contest-direct-section {
   padding-bottom: clamp(100px, 11vw, 160px);
-  background: radial-gradient(ellipse at 23% 40%, rgba(183, 219, 194, .11), transparent 53%), #0c1314;
+  background: transparent;
 }
 .contest-page .contest-direct-card {
   grid-template-columns: minmax(240px, .48fr) minmax(0, 1fr);
