@@ -62,7 +62,7 @@ const GUIDE = {
     target: "contest-b-sample",
     eyebrow: "SCENARIO B · 1/9",
     title: "이번에는 알림을 놓친 결제가 있다고 가정해볼게요.",
-    body: "준비된 실제 결제 캡처를 열어 휴대폰에 저장해주세요. 이 이미지는 다음 단계에서 직접 업로드합니다.",
+    body: "Netflix 결제 캡처를 저장해 직접 업로드합니다. 등록 후에는 기존 Spotify 구독의 해지 방법을 살펴봅니다.",
   },
   B2: {
     target: "contest-b-upload-start",
@@ -88,7 +88,7 @@ const GUIDE = {
     target: "contest-add-save",
     eyebrow: "SCENARIO B · 5/9",
     title: "확인한 정보를 실제 구독으로 등록해주세요.",
-    body: "등록이 끝나면 기존 구독 중 하나를 직접 선택해 해지 가이드까지 이어갑니다.",
+    body: "등록이 끝나면 기존 Spotify 구독을 선택해 해지 가이드까지 이어갑니다.",
   },
   B6: {
     target: "nav-subscriptions",

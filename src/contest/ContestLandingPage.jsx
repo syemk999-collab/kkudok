@@ -27,8 +27,8 @@ const HERO_FEATURES = [
   },
   {
     icon: "03",
-    title: "내 구독에 연결되는 혜택 발견하기",
-    description: "혜택의 조건·기간·공식 출처를 확인하고, 유지·변경·해지 중 무엇이 나을지 직접 판단합니다.",
+    title: "놓치기 쉬운 혜택의 조건 확인하기",
+    description: "내 구독과 연결될 수 있는 혜택 후보의 조건·기간·공식 출처를 보고 직접 판단합니다.",
     term: "*혜택 가치 : 혜택에 포함된 상품의 별도 가격입니다. 내 확정 절약액은 아닙니다.",
     tone: "cyan",
   },
@@ -176,7 +176,13 @@ export default function ContestLandingPage() {
               <span>절약액은 <em>검증해서 보여줍니다.</em></span>
             </h1>
 
-            <p className="contest-hero-intro">등록의 번거로움부터 해지의 막막함, 놓치기 쉬운 혜택까지. 꾸독이 덜어주는 세 가지 부담입니다.</p>
+            <p className="contest-hero-intro">결제 정보를 정리하고, 해지 경로를 안내하며, 내 구독과 연결될 수 있는 혜택을 찾습니다. 등록·변경·해지는 직접 결정하세요.</p>
+
+            <div className="contest-hero-example" aria-label="Netflix 구독과 연결되는 혜택 예시">
+              <span>NETFLIX 구독을 등록했다면</span>
+              <strong>네이버플러스 연계 혜택의 조건과 출처를 확인</strong>
+              <small>혜택 적용과 실제 절약액은 요금제·멤버십 상태에 따라 달라집니다.</small>
+            </div>
 
             <div className="contest-hero-experience" id="experience-qr">
               {experienceQr ? <img src={experienceQr} alt="휴대폰 카메라로 스캔하면 꾸독 공모전 체험으로 이동하는 QR 코드" /> : <span className="contest-qr-pending">QR 준비 중</span>}
@@ -184,7 +190,8 @@ export default function ContestLandingPage() {
                 <span className="contest-qr-eyebrow">SCAN TO EXPERIENCE · 01 / 02</span>
                 <strong>휴대폰 카메라로 QR을 스캔해주세요.</strong>
                 <span>설치 없이 Scenario A와 B를 직접 체험할 수 있어요.</span>
-                <a className="contest-browser-link" href={EXPERIENCE_URL}>이 기기에서 웹으로 열기 ↗</a>
+                <span className="contest-mobile-open-hint">이 휴대폰에서 보고 있다면 아래 링크로 시작하세요.</span>
+                <a className="contest-browser-link" href={EXPERIENCE_URL}>이 기기에서 바로 체험하기 ↗</a>
               </div>
             </div>
 
@@ -258,7 +265,7 @@ export default function ContestLandingPage() {
           <div className="contest-section-heading is-left">
             <span>REAL-WORLD SCENARIOS</span>
             <h2 id="scenario-heading">구독을 발견하는 순간은 모두 같지 않습니다.</h2>
-            <p>새로운 결제는 바로 감지하고, 놓친 결제는 실제 캡처를 다시 읽어 관리 가능한 정보로 복원합니다.</p>
+            <p>웹에서는 새 결제를 테스트 문장으로 읽고, 놓친 결제는 직접 선택한 캡처에서 확인합니다.</p>
           </div>
 
           <div className="contest-scenario-grid">
@@ -271,7 +278,7 @@ export default function ContestLandingPage() {
             <ScenarioSummary
               label="SCENARIO B · 보완 플로우"
               title="놓친 결제가 있다면"
-              description="결제 캡처를 직접 선택하고 이미지 글자 인식 결과를 확인·수정한 뒤 등록합니다. 이어서 기존 구독의 해지 방법을 살펴볼 수 있습니다."
+              description="Netflix 결제 캡처를 직접 선택해 분석 결과를 확인·수정하고 등록합니다. 이어서 기존 Spotify 구독의 해지 경로를 살펴봅니다."
               steps={["결제 캡처 저장", "직접 이미지 선택", "실제 이미지 글자 인식", "사용자 확인 후 등록", "꾸독이 해지 안내"]}
             />
           </div>
@@ -285,7 +292,7 @@ export default function ContestLandingPage() {
             <span>VERIFIED BENEFIT</span>
             <h2 id="benefit-heading">파싱은 시작이고, 차이는 그 다음에 있습니다.</h2>
             <p>
-              꾸독은 “얼마를 썼는지”에서 끝나지 않고, 등록된 구독을 기준으로 실제 적용 가능한 혜택을 찾고
+              꾸독은 “얼마를 썼는지”에서 끝나지 않고, 등록된 구독과 연결될 수 있는 혜택 후보를 찾고
               조건과 공식 출처를 함께 보여줍니다. 적용 여부와 실제 절약액은 사용자의 요금제와 멤버십 상태에 따라 달라집니다.
             </p>
           </div>
@@ -366,7 +373,7 @@ export default function ContestLandingPage() {
             <span>DIRECT EXPERIENCE · SCAN TO BEGIN</span>
             <h2 id="direct-heading">이번에는 직접 경험해보세요.</h2>
             <p>휴대폰 카메라로 QR을 스캔하면 Scenario A와 B를 직접 체험할 수 있습니다. 결제 정보 확인부터 꾸독이의 해지 안내, 혜택의 공식 근거까지 살펴보세요.</p>
-            <a className="contest-browser-link" href={EXPERIENCE_URL}>이 기기에서 웹으로 열기 ↗</a>
+            <a className="contest-browser-link" href={EXPERIENCE_URL}>이 기기에서 바로 체험하기 ↗</a>
           </div>
         </div>
       </section>

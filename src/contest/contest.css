@@ -2157,6 +2157,23 @@
   font-size: clamp(16px, 1.45vw, 19px);
   line-height: 1.4;
 }
+.contest-page .contest-hero-example {
+  display: grid;
+  gap: 3px;
+  margin: 15px 0 3px;
+  padding-left: 13px;
+  border-left: 2px solid #a9d9bb;
+  line-height: 1.45;
+}
+.contest-page .contest-hero-example span {
+  color: #b5d7c1;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: .07em;
+}
+.contest-page .contest-hero-example strong { color: #f0f8f1; font-size: 13px; }
+.contest-page .contest-hero-example small { color: #b6c9bd; font-size: 11px; }
+.contest-page .contest-mobile-open-hint { display: none; }
 .contest-page .contest-hero-experience span { color: #b5c7bd; font-size: 11px; line-height: 1.5; }
 .contest-page .contest-hero-experience .contest-qr-eyebrow {
   margin: 0 0 8px;
@@ -2321,7 +2338,18 @@
     aspect-ratio: 1;
   }
   .contest-page .contest-hero-experience strong { max-width: none; font-size: 16px; }
-  .contest-page .contest-hero-experience .contest-browser-link { margin-left: auto; margin-right: auto; }
+  .contest-page .contest-hero-example { margin: 13px 0 2px; }
+  .contest-page .contest-hero-example strong { font-size: 12px; }
+  .contest-page .contest-hero-example small { font-size: 10px; }
+  .contest-page .contest-hero-experience .contest-mobile-open-hint { display: block; color: #d4e6da; }
+  .contest-page .contest-hero-experience .contest-browser-link,
+  .contest-page .contest-direct-copy .contest-browser-link {
+    margin-left: auto;
+    margin-right: auto;
+    color: #e0f2e6;
+    font-size: 13px;
+    text-decoration-color: rgba(224, 242, 230, .75);
+  }
   .contest-page .contest-direct-card { padding: 27px 16px; }
   .contest-page .contest-direct-qr { width: min(100%, 270px); }
   .contest-page .contest-direct-qr img,
