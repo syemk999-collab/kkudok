@@ -487,14 +487,17 @@
   gap: 10px;
   margin: 0 0 24px;
 }
-.contest-page .contest-benefit-checks > div {
+.contest-page .contest-benefit-checks > :is(div, a) {
+  display: block;
   min-width: 0;
   padding: 15px 17px;
   border-top: 3px solid var(--contest-copper);
   background: var(--contest-paper);
 }
-.contest-page .contest-benefit-checks > div:nth-child(2) { border-color: var(--contest-sky); background: #e8f3f9; }
-.contest-page .contest-benefit-checks > div:nth-child(3) { border-color: var(--contest-slate); background: #e5edf1; }
+.contest-page .contest-benefit-checks > :nth-child(2) { border-color: var(--contest-sky); background: #e8f3f9; }
+.contest-page .contest-benefit-checks > :nth-child(3) { border-color: var(--contest-slate); background: #e5edf1; }
+.contest-page .contest-benefit-checks > a:hover,
+.contest-page .contest-benefit-checks > a:focus-visible { background: #d6e7f0; outline: 2px solid var(--contest-copper); outline-offset: 2px; }
 .contest-page .contest-benefit-checks span { display: block; color: #77533f; font-size: 11px; font-weight: 800; }
 .contest-page .contest-benefit-checks strong {
   display: block;
@@ -568,7 +571,7 @@
   .contest-page .contest-hero-nav nav a { color: var(--contest-blue-ink); }
   .contest-page .contest-hero-nav-cta { background: var(--contest-blue); color: white; }
   .contest-page .contest-benefit-checks { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .contest-page .contest-benefit-checks > div:last-child { grid-column: 1 / -1; }
+  .contest-page .contest-benefit-checks > :last-child { grid-column: 1 / -1; }
 }
 @media (max-width: 820px) {
   .contest-page .contest-shell { width: min(100% - 36px, 680px); }
@@ -584,7 +587,7 @@
   .contest-page .contest-scenario-grid { grid-template-columns: 1fr; }
   .contest-page .contest-direct-card { grid-template-columns: minmax(0, 1fr) 180px; }
   .contest-page .contest-benefit-checks { grid-template-columns: 1fr; }
-  .contest-page .contest-benefit-checks > div:last-child { grid-column: auto; }
+  .contest-page .contest-benefit-checks > :last-child { grid-column: auto; }
 }
 @media (max-width: 620px) {
   .contest-page .contest-hero { padding-top: 10px; }

@@ -295,7 +295,9 @@ export default function ContestLandingPage() {
             <div className="contest-benefit-checks" aria-label="혜택을 확인하는 순서">
               <div><span>01 · 연결 이유</span><strong>등록한 Netflix와 연결되는 혜택</strong></div>
               <div><span>02 · 적용 조건</span><strong>{verifiedBenefit.campaignPeriod}</strong></div>
-              <div><span>03 · 공식 출처</span><strong>{sourceHost || "공식 안내 페이지"}에서 조건 확인</strong></div>
+              <a href={verifiedBenefit.link} target="_blank" rel="noreferrer" aria-label={`공식 출처 ${sourceHost}에서 혜택 조건 확인하기 (새 탭)`}>
+                <span>03 · 공식 출처 ↗</span><strong>{sourceHost || "공식 안내 페이지"}에서 조건 확인</strong>
+              </a>
             </div>
             <article className="contest-benefit-proof">
               <div className="contest-benefit-evidence">
