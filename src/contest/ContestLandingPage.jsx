@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import QRCode from "qrcode";
 import { promotionCatalog } from "../data/subscriptionData";
 import "./contest.css";
+import "./contest-landing.css";
 
 const EXPERIENCE_URL = "/#/contest";
 const DEMO_VIDEO_URL = import.meta.env.VITE_CONTEST_DEMO_URL || "/assets/contest/kkudok-demo.mp4";
@@ -162,8 +163,7 @@ export default function ContestLandingPage() {
           <div className="contest-hero-layout">
           <div className="contest-hero-copy">
             <div className="contest-top-badges">
-              <span className="contest-top-badge is-primary">🏆 윈터드 AI Championship 2026 출품작</span>
-              <span className="contest-top-badge">↗ kkudok-kohl.vercel.app</span>
+              <span className="contest-top-badge is-primary">윈터드 AI Championship 2026 출품작</span>
             </div>
 
             <div className="contest-brand-lockup">
@@ -197,19 +197,6 @@ export default function ContestLandingPage() {
 
             <button className="contest-hero-demo-link" type="button" onClick={() => playFullDemo(true)}>먼저 전체 서비스 시연 보기 <span aria-hidden="true">▶</span></button>
 
-            <div className="contest-hero-features" aria-label="꾸독이 덜어주는 세 가지 부담">
-              {HERO_FEATURES.map((feature) => (
-                <article key={feature.title}>
-                  <div className={"contest-feature-symbol is-" + feature.tone} aria-hidden="true">{feature.icon}</div>
-                  <div>
-                    <h2>{feature.title}</h2>
-                    <p>{feature.description}</p>
-                    <p className="contest-feature-term">{feature.term}</p>
-                  </div>
-                </article>
-              ))}
-            </div>
-
             <div className="contest-tech-row" aria-label="기술 스택">
               {TECH_STACK.map((item) => <span key={item}>{item}</span>)}
             </div>
@@ -222,6 +209,30 @@ export default function ContestLandingPage() {
             <span>SCROLL TO EXPLORE <i>↓</i></span>
             <span>PAYMENT · GUIDANCE · BENEFITS</span>
             <span>01 / 03</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="contest-section contest-method-section" aria-labelledby="method-heading">
+        <div className="contest-shell contest-method-layout">
+          <div className="contest-section-heading is-left">
+            <span>THE WAY KKUDOK WORKS · 01 / 03</span>
+            <h2 id="method-heading">읽고, 안내하고,<br />근거를 보여줍니다.</h2>
+            <p>AI가 결정을 대신하지 않습니다. 결제 정리부터 해지 안내, 혜택 확인까지 선택에 필요한 정보를 모읍니다.</p>
+            <a className="contest-method-link" href="#scenario-heading">직접 체험할 과정 살펴보기 <span aria-hidden="true">↗</span></a>
+          </div>
+          <div className="contest-hero-features" aria-label="꾸독이 덜어주는 세 가지 부담">
+            {HERO_FEATURES.map((feature) => (
+              <article key={feature.title}>
+                <div className={"contest-feature-symbol is-" + feature.tone} aria-hidden="true">{feature.icon}</div>
+                <div>
+                  <h3>{feature.title}</h3>
+                  <p>{feature.description}</p>
+                  <p className="contest-feature-term">{feature.term}</p>
+                </div>
+                {feature.icon === "02" && <img className="contest-feature-character" src="/assets/kkudok/kkudok_official.png" alt="해지 방법을 안내하는 공식 캐릭터 꾸독이" loading="lazy" />}
+              </article>
+            ))}
           </div>
         </div>
       </section>
@@ -249,6 +260,10 @@ export default function ContestLandingPage() {
             />
           </div>
           <p className="contest-scenario-note">*OCR : 이미지에 담긴 글자를 읽어 결제 정보로 정리하는 기술입니다. 이미지를 선택하면 실제 /api/ocr 요청으로 분석합니다.</p>
+          <div className="contest-scenario-sample">
+            <img src="/sample_receipt_netflix.png" alt="Scenario B에서 직접 선택해 분석할 수 있는 Netflix 결제 캡처 예시" loading="lazy" />
+            <div><span>SCENARIO B · SAMPLE INPUT</span><strong>예시 캡처를 저장한 뒤 직접 선택해 보세요.</strong><p>이미지 선택 → 분석 중 → 추출 결과 확인 및 수정 → 등록 순서로 진행됩니다.</p></div>
+          </div>
         </div>
       </section>
 
@@ -295,36 +310,6 @@ export default function ContestLandingPage() {
               </div>
             </article>
           )}
-        </div>
-      </section>
-
-      <section className="contest-section contest-parsing-section" aria-labelledby="parsing-heading">
-        <div className="contest-shell">
-          <div className="contest-section-heading">
-            <span>AI PARSING</span>
-            <h2 id="parsing-heading">결제 정보에서, 필요한 것만 읽습니다.</h2>
-            <p>AI가 결과를 확정하지 않습니다. 실제 이미지에서 필요한 정보를 정리하고 사용자가 확인한 뒤 등록합니다.</p>
-            <p className="contest-section-term">*파싱 : 결제 문장에서 필요한 정보를 찾아 정리하는 일입니다. *OCR : 이미지 속 글자를 읽는 기술입니다.</p>
-          </div>
-
-          <div className="contest-parsing-layout">
-            <div className="contest-parsing-input">
-              <span>INPUT</span>
-              <img src="/sample_receipt_netflix.png" alt="Scenario B에서 실제 OCR 입력으로 사용하는 Netflix 결제 캡처" loading="lazy" />
-              <strong>실제 업로드 이미지</strong>
-            </div>
-            <div className="contest-parsing-steps">
-              {[
-                ["01", "IMAGE UPLOAD", "사용자가 직접 JPG · PNG · WEBP 이미지를 선택"],
-                ["02", "/api/ocr", "브라우저에서 서버 API로 이미지를 전송"],
-                ["03", "AI / OCR", "서비스명 · 금액 · 결제일 · 결제수단을 구조화"],
-                ["04", "USER REVIEW", "사용자가 결과를 확인하고 필요한 경우 수정"],
-                ["05", "SUBSCRIPTION", "확인된 정보만 구독 데이터로 등록"],
-              ].map(([n, title, body]) => (
-                <article key={n}><span>{n}</span><h3>{title}</h3><p>{body}</p></article>
-              ))}
-            </div>
-          </div>
         </div>
       </section>
 
