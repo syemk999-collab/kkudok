@@ -241,7 +241,7 @@ export default function ContestLandingPage() {
         <div className="contest-shell">
           <div className="contest-section-heading is-left">
             <span>REAL-WORLD SCENARIOS</span>
-            <h2 id="scenario-heading">구독을 발견하는 순간은 모두 같지 않습니다.</h2>
+            <h2 id="scenario-heading">새 결제도, 놓친 결제도.<br />직접 확인하고 등록하세요.</h2>
             <p>웹에서는 새 결제를 테스트 문장으로 읽고, 놓친 결제는 직접 선택한 캡처에서 확인합니다.</p>
           </div>
 
@@ -271,7 +271,7 @@ export default function ContestLandingPage() {
         <div className="contest-shell">
           <div className="contest-section-heading is-left">
             <span>VERIFIED BENEFIT</span>
-            <h2 id="benefit-heading">파싱은 시작이고, 차이는 그 다음에 있습니다.</h2>
+            <h2 id="benefit-heading">파싱은 시작이고,<br />차이는 그 다음에 있습니다.</h2>
             <p>
               꾸독은 “얼마를 썼는지”에서 끝나지 않고, 등록된 구독과 연결될 수 있는 혜택 후보를 찾고
               조건과 공식 출처를 함께 보여줍니다. 적용 여부와 실제 절약액은 사용자의 요금제와 멤버십 상태에 따라 달라집니다.

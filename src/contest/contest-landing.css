@@ -113,7 +113,7 @@
   max-width: 690px;
   margin: 0 0 21px;
   color: var(--contest-ink);
-  font-size: clamp(35px, 3.65vw, 56px);
+  font-size: clamp(35px, 3.25vw, 52px);
   line-height: 1.16;
   letter-spacing: -.067em;
 }
