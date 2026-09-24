@@ -1,4 +1,11 @@
 /* Carry the landing's editorial blue, navy panels and quiet rules into the QR experience. */
+.app-shell[data-screen="contest"] {
+  max-width: none;
+  border: 0;
+  box-shadow: none;
+  background: #d8e8ef;
+}
+
 .contest-experience-shell {
   min-height: 100dvh;
   padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
