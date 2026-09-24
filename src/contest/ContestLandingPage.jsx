@@ -38,24 +38,36 @@ function formatWon(value) {
   return Number(value || 0).toLocaleString("ko-KR") + "원";
 }
 
-function HeroPhoneDemo({ onPlay }) {
+function HeroPhoneDemo({ onPlay, videoRef, started, onStarted }) {
   return (
-    <div className="contest-hero-device-wrap">
+    <div className="contest-hero-device-wrap" id="full-demo">
       <div className="contest-hero-orbit" aria-hidden="true" />
       <div className="contest-hero-phone">
         <div className="contest-hero-phone-camera" aria-hidden="true" />
-        <img src={DEMO_POSTER_URL} alt="꾸독 전체 서비스 시연 영상 미리보기" />
-        <button
-          type="button"
-          className="contest-hero-play"
-          onClick={onPlay}
-          aria-label="전체 서비스 시연 영상 재생"
-          aria-controls="contest-full-demo-player"
-        >
-          ▶
-        </button>
+        <video
+          id="contest-hero-demo-player"
+          ref={videoRef}
+          src={DEMO_VIDEO_URL}
+          poster={DEMO_POSTER_URL}
+          controls={started}
+          playsInline
+          preload="metadata"
+          onPlay={onStarted}
+          aria-label="꾸독 전체 서비스 시연 영상"
+        />
+        {!started && (
+          <button
+            type="button"
+            className="contest-hero-play"
+            onClick={onPlay}
+            aria-label="전체 서비스 시연 영상 재생"
+            aria-controls="contest-hero-demo-player"
+          >
+            ▶
+          </button>
+        )}
       </div>
-      <p>미리보기 · 누르면 아래 전체 시연 영상이 재생됩니다</p>
+      <p>전체 서비스 시연 · 02:13</p>
     </div>
   );
 }
@@ -81,12 +93,16 @@ function ScenarioSummary({ label, title, description, steps }) {
 export default function ContestLandingPage() {
   const [experienceQr, setExperienceQr] = useState("");
   const demoVideoRef = useRef(null);
+  const [demoStarted, setDemoStarted] = useState(false);
 
-  const playFullDemo = () => {
+  const playFullDemo = (scrollToVideo = false) => {
     const video = demoVideoRef.current;
     if (!video) return;
+    setDemoStarted(true);
     video.play().catch(() => video.focus());
-    video.scrollIntoView({ behavior: "smooth", block: "center" });
+    if (scrollToVideo) {
+      video.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
   };
 
   useEffect(() => {
@@ -179,7 +195,7 @@ export default function ContestLandingPage() {
               </div>
             </div>
 
-            <a className="contest-hero-demo-link" href="#full-demo">먼저 전체 서비스 시연 보기 <span aria-hidden="true">↘</span></a>
+            <button className="contest-hero-demo-link" type="button" onClick={() => playFullDemo(true)}>먼저 전체 서비스 시연 보기 <span aria-hidden="true">▶</span></button>
 
             <div className="contest-hero-features" aria-label="꾸독이 덜어주는 세 가지 부담">
               {HERO_FEATURES.map((feature) => (
@@ -200,48 +216,12 @@ export default function ContestLandingPage() {
 
           </div>
 
-          <HeroPhoneDemo onPlay={playFullDemo} />
+          <HeroPhoneDemo onPlay={() => playFullDemo()} videoRef={demoVideoRef} started={demoStarted} onStarted={() => setDemoStarted(true)} />
           </div>
           <div className="contest-hero-footer" aria-hidden="true">
             <span>SCROLL TO EXPLORE <i>↓</i></span>
             <span>PAYMENT · GUIDANCE · BENEFITS</span>
             <span>01 / 03</span>
-          </div>
-        </div>
-      </section>
-
-      <section className="contest-section contest-demo-section" id="full-demo" aria-labelledby="full-demo-title">
-        <div className="contest-shell">
-          <div className="contest-section-heading">
-            <span>FULL PRODUCT DEMO</span>
-            <h2 id="full-demo-title">꾸독은 이렇게 작동합니다.</h2>
-            <p>
-              결제를 읽어 구독으로 정리하고, 연결되는 혜택을 확인합니다.
-              해지를 원할 때는 꾸독이가 공식 경로를 안내합니다.
-            </p>
-          </div>
-
-          <div className="contest-demo-stage">
-            <div className="contest-demo-story">
-              <strong>영상에서 확인할 흐름</strong>
-              {[
-                ["01", "결제 읽고 등록하기", "결제 알림이나 캡처에서 필요한 정보를 읽고, 사용자가 확인한 뒤 등록합니다."],
-                ["02", "혜택의 조건 확인하기", "등록된 구독에 연결되는 혜택의 조건·기간·공식 출처를 살펴봅니다."],
-                ["03", "다음 행동 결정하기", "유지·변경·해지를 스스로 판단하고, 해지를 원하면 꾸독이가 경로를 안내합니다."],
-              ].map(([n, title, body]) => (
-                <div className="contest-demo-story-row" key={n}>
-                  <span>{n}</span>
-                  <div><b>{title}</b><p>{body}</p></div>
-                </div>
-              ))}
-            </div>
-
-            <div className="contest-demo-media">
-              <div className="contest-demo-video">
-                <video id="contest-full-demo-player" ref={demoVideoRef} controls playsInline preload="metadata" src={DEMO_VIDEO_URL} poster={DEMO_POSTER_URL} aria-label="꾸독 전체 서비스 시연 영상" />
-              </div>
-              <p className="contest-demo-caption"><strong>전체 서비스 시연</strong><span>02:13 · 세로 원본 비율 유지</span></p>
-            </div>
           </div>
         </div>
       </section>
