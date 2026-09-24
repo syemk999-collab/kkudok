@@ -356,7 +356,7 @@
   background: #143649;
 }
 .contest-page .contest-method-section .contest-section-heading > span { color: #a4cddd; }
-.contest-page .contest-method-section .contest-section-heading h2 { color: #f4fbfe; }
+.contest-page .contest-method-section .contest-section-heading h2 { color: #f4fbfe; font-size: clamp(36px, 3.25vw, 46px); }
 .contest-page .contest-method-section .contest-section-heading p { color: #c3dae4; }
 .contest-page .contest-method-link {
   display: inline-flex;
@@ -594,6 +594,7 @@
   .contest-page .contest-hero-features article { padding: 23px 18px; gap: 11px; }
   .contest-page .contest-hero-features article:nth-child(2) { padding-right: 85px; }
   .contest-page .contest-method-section .contest-section-heading { min-height: 0; padding: 27px 21px; }
+  .contest-page .contest-method-section .contest-section-heading h2 { font-size: clamp(29px, 8vw, 36px); }
   .contest-page .contest-method-link { margin-top: 17px; padding-top: 0; }
   .contest-page .contest-scenario-section .contest-shell { padding: 25px 15px; }
   .contest-feature-character { width: 65px; height: 65px; right: 9px; }

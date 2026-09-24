@@ -225,7 +225,7 @@ export default function ContestLandingPage() {
         <div className="contest-shell contest-method-layout">
           <div className="contest-section-heading is-left">
             <span>THE WAY KKUDOK WORKS · 01 / 03</span>
-            <h2 id="method-heading">읽고, 안내하고,<br />근거를 보여줍니다.</h2>
+            <h2 id="method-heading">읽고, 안내하고,<br />근거를 보여줘요.</h2>
             <p>AI가 결정을 대신하지 않습니다. 결제 정리부터 해지 안내, 혜택 확인까지 선택에 필요한 정보를 모읍니다.</p>
             <a className="contest-method-link" href="#scenario-heading">직접 체험할 과정 살펴보기 <span aria-hidden="true">↗</span></a>
           </div>
