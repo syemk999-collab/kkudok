@@ -38,48 +38,24 @@ function formatWon(value) {
   return Number(value || 0).toLocaleString("ko-KR") + "원";
 }
 
-function HeroPhoneDemo() {
-  const videoRef = useRef(null);
-  const [playing, setPlaying] = useState(false);
-
-  const toggle = async () => {
-    const video = videoRef.current;
-    if (!video) return;
-    if (video.paused) {
-      try {
-        await video.play();
-      } catch {}
-    } else {
-      video.pause();
-    }
-  };
-
+function HeroPhoneDemo({ onPlay }) {
   return (
     <div className="contest-hero-device-wrap">
       <div className="contest-hero-orbit" aria-hidden="true" />
       <div className="contest-hero-phone">
         <div className="contest-hero-phone-camera" aria-hidden="true" />
-        <video
-          ref={videoRef}
-          src={DEMO_VIDEO_URL}
-          poster={DEMO_POSTER_URL}
-          playsInline
-          preload="auto"
-          onPlay={() => setPlaying(true)}
-          onPause={() => setPlaying(false)}
-          onEnded={() => setPlaying(false)}
-          aria-label="꾸독 전체 서비스 시연 영상"
-        />
+        <img src={DEMO_POSTER_URL} alt="꾸독 전체 서비스 시연 영상 미리보기" />
         <button
           type="button"
-          className={"contest-hero-play " + (playing ? "is-playing" : "")}
-          onClick={toggle}
-          aria-label={playing ? "시연 영상 일시정지" : "시연 영상 재생"}
+          className="contest-hero-play"
+          onClick={onPlay}
+          aria-label="전체 서비스 시연 영상 재생"
+          aria-controls="contest-full-demo-player"
         >
-          {playing ? "Ⅱ" : "▶"}
+          ▶
         </button>
       </div>
-      <p>실제 서비스 시연 영상입니다 · 휴대폰 화면에서 바로 재생</p>
+      <p>미리보기 · 누르면 아래 전체 시연 영상이 재생됩니다</p>
     </div>
   );
 }
@@ -104,6 +80,14 @@ function ScenarioSummary({ label, title, description, steps }) {
 
 export default function ContestLandingPage() {
   const [experienceQr, setExperienceQr] = useState("");
+  const demoVideoRef = useRef(null);
+
+  const playFullDemo = () => {
+    const video = demoVideoRef.current;
+    if (!video) return;
+    video.play().catch(() => video.focus());
+    video.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -216,7 +200,7 @@ export default function ContestLandingPage() {
 
           </div>
 
-          <HeroPhoneDemo />
+          <HeroPhoneDemo onPlay={playFullDemo} />
           </div>
           <div className="contest-hero-footer" aria-hidden="true">
             <span>SCROLL TO EXPLORE <i>↓</i></span>
@@ -252,9 +236,11 @@ export default function ContestLandingPage() {
               ))}
             </div>
 
-            <div className="contest-demo-video">
-              <video controls playsInline preload="metadata" src={DEMO_VIDEO_URL} poster={DEMO_POSTER_URL} aria-label="꾸독 전체 서비스 시연 영상" />
-              <div><strong>전체 서비스 시연</strong><span>02:13 · 세로 원본 비율 유지 · crop 없음</span></div>
+            <div className="contest-demo-media">
+              <div className="contest-demo-video">
+                <video id="contest-full-demo-player" ref={demoVideoRef} controls playsInline preload="metadata" src={DEMO_VIDEO_URL} poster={DEMO_POSTER_URL} aria-label="꾸독 전체 서비스 시연 영상" />
+              </div>
+              <p className="contest-demo-caption"><strong>전체 서비스 시연</strong><span>02:13 · 세로 원본 비율 유지</span></p>
             </div>
           </div>
         </div>

@@ -421,7 +421,7 @@
   box-shadow: 0 0 0 3px rgba(0,0,0,.10);
 }
 
-.contest-hero-phone video {
+.contest-hero-phone img {
   display: block;
   position: absolute;
   inset: 10px;
@@ -455,10 +455,6 @@
 
 .contest-hero-play:hover {
   transform: translate(-50%, -50%) scale(1.045);
-}
-
-.contest-hero-play.is-playing {
-  opacity: .12;
 }
 
 .contest-hero-device-wrap > p {
@@ -565,9 +561,13 @@
   line-height: 1.65;
 }
 
-.contest-demo-video {
-  width: min(430px, 100%);
+.contest-demo-media {
+  width: min(310px, 38vh, 100%);
   margin: 0 auto;
+}
+
+.contest-demo-video {
+  width: 100%;
   padding: 11px;
   border: 1px solid rgba(93, 174, 255, .26);
   border-radius: 38px;
@@ -578,23 +578,24 @@
 .contest-demo-video video {
   display: block;
   width: 100%;
-  max-height: 78vh;
+  height: auto;
   aspect-ratio: 720 / 1552;
   border-radius: 29px;
   background: #02070c;
   object-fit: contain;
 }
 
-.contest-demo-video > div {
+.contest-demo-caption {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding: 13px 8px 4px;
+  margin: 0;
+  padding: 13px 8px 0;
   color: #8299b1;
   font-size: 10px;
 }
 
-.contest-demo-video strong {
+.contest-demo-caption strong {
   color: #edf5ff;
   font-size: 11px;
 }
@@ -1555,7 +1556,7 @@
     width: min(560px, 100%);
   }
 
-  .contest-demo-video {
+  .contest-demo-media {
     order: -1;
   }
 
@@ -1704,7 +1705,7 @@
     border-radius: 39px;
   }
 
-  .contest-hero-phone video {
+  .contest-hero-phone img {
     border-radius: 31px;
     inset: 9px;
     width: calc(100% - 18px);
@@ -2257,7 +2258,8 @@
   background: linear-gradient(145deg, rgba(189, 213, 200, .17), #0a1112 55%);
   box-shadow: 0 34px 90px rgba(0, 0, 0, .37), 0 0 70px rgba(196, 231, 211, .07);
 }
-.contest-page .contest-demo-video > div { color: #a7b8ae; }
+.contest-page .contest-demo-caption { color: #a7b8ae; }
+.contest-page .contest-demo-caption strong { color: #edf5ff; }
 .contest-page .contest-benefit-section {
   background: transparent;
 }
@@ -2320,6 +2322,7 @@
   .contest-page .contest-direct-copy .contest-browser-link { margin-left: auto; margin-right: auto; }
 }
 @media (max-width: 620px) {
+  .contest-page .contest-demo-media { width: min(300px, 100%); }
   .contest-page .contest-section { padding: 78px 0; }
   .contest-page .contest-section::before { width: calc(100% - 28px); }
   .contest-page .contest-section-heading h2,
