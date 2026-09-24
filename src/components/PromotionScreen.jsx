@@ -246,6 +246,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
             ? `회원님이 이용 중인 ${categorySummary} 카테고리 기반으로 놓치고 있던 제휴 및 할인 혜택을 분석했어요.`
             : "구독 중인 서비스가 없어 전체 혜택을 보여드려요. 구독을 추가하면 연결 가능한 혜택과 조건을 함께 확인할 수 있어요."}
         </p>
+        {categorySummary.includes("SaaS") && <p className="mt-1 text-[11px] text-[#697987]">*SaaS : 설치하지 않고 인터넷에서 이용하는 소프트웨어 서비스입니다.</p>}
       </div>
 
       {contestMode && contestDirectPromotion && (
