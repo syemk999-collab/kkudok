@@ -38,7 +38,7 @@ const GUIDE = {
     target: "contest-benefit-source",
     eyebrow: "체험 A · 6/8",
     title: "혜택은 ‘얼마나 싸다’보다 근거와 조건을 함께 봅니다.",
-    body: "현재 구독과 연결된 이유, 적용 조건, 혜택 기간, 검증 상태를 먼저 확인한 뒤 ‘공식 출처 확인’을 눌러주세요.",
+    body: "현재 구독과 연결된 이유, 적용 조건, 혜택 기간과 공식 안내 링크를 확인한 뒤 ‘공식 출처에서 조건 확인하기’를 눌러주세요.",
   },
   A7: {
     target: "notification-center-button",
