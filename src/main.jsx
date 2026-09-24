@@ -5,6 +5,7 @@ import App from "./App";
 import ContestLandingPage from "./contest/ContestLandingPage";
 import { isAppRouteHash } from "./hooks/useNavigation";
 import "./index.css";
+import "./contest/contest-experience.css";
 
 function RootRouter() {
   const [hasHashRoute, setHasHashRoute] = useState(() =>

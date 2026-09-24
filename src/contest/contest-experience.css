@@ -1,0 +1,130 @@
+/* Carry the landing's editorial blue, navy panels and quiet rules into the QR experience. */
+.contest-experience-shell {
+  min-height: 100dvh;
+  padding: max(24px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right))
+    max(40px, calc(env(safe-area-inset-bottom) + 24px)) max(16px, env(safe-area-inset-left));
+  background: linear-gradient(155deg, #d8e8ef 0%, #c8dce7 48%, #e7eff2 100%);
+  color: #142d3c;
+}
+
+.contest-experience-header {
+  align-items: center;
+  max-width: 900px;
+  min-height: 148px;
+  padding: 28px clamp(22px, 5vw, 48px);
+  border-radius: 12px;
+  background: #15394e;
+  color: #f4fbfe;
+}
+.contest-experience-header span,
+.contest-concierge-intro span,
+.contest-focus-copy > span,
+.contest-scenario-picker span {
+  color: #8ebfd5;
+  font-size: 12px;
+  letter-spacing: .06em;
+}
+.contest-experience-header h1 {
+  margin-top: 10px;
+  font-size: clamp(25px, 3.3vw, 38px);
+  line-height: 1.22;
+  overflow-wrap: break-word;
+}
+.contest-experience-header a,
+.contest-experience-header button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid #7896a6;
+  border-radius: 4px;
+  color: #eaf6fa;
+  font-size: 13px;
+}
+.contest-experience-header :is(a,button):focus-visible,
+.contest-experience-shell :is(a,button):focus-visible {
+  outline: 3px solid #40a5ce;
+  outline-offset: 3px;
+}
+
+.contest-concierge-intro,
+.contest-focus-card {
+  max-width: 900px;
+  border-color: #c7d9e2;
+  border-radius: 10px;
+  background: #f9fcfd;
+  box-shadow: 0 16px 36px rgba(20,60,82,.07);
+}
+.contest-concierge-intro { grid-template-columns: 112px minmax(0, 1fr); padding: clamp(20px, 4vw, 32px); }
+.contest-concierge-intro img { width: 112px; height: 112px; }
+.contest-concierge-intro span,
+.contest-focus-copy > span { color: #376f8b; }
+.contest-concierge-intro h2,
+.contest-focus-copy h2 { font-size: clamp(20px, 2.4vw, 26px); line-height: 1.35; }
+.contest-concierge-intro p,
+.contest-focus-copy > p { color: #465f6d; font-size: 14px; line-height: 1.65; }
+
+.contest-scenario-picker {
+  max-width: 900px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+.contest-scenario-picker > button {
+  min-width: 0;
+  min-height: 180px;
+  padding: 24px;
+  border-color: #c5d8e1;
+  border-radius: 10px;
+  box-shadow: none;
+}
+.contest-scenario-picker span { color: #376f8b; }
+.contest-scenario-picker strong { color: #142d3c; font-size: 21px; line-height: 1.3; }
+.contest-scenario-picker p { color: #496472; font-size: 14px; line-height: 1.55; }
+.contest-scenario-picker small { color: #587582; font-size: 12px; line-height: 1.4; }
+
+.contest-experience-glossary,
+.contest-experience-truth { max-width: 900px; }
+.contest-experience-glossary { color: #3b6074; font-size: 13px; line-height: 1.55; }
+.contest-experience-glossary p { margin: 3px 0; }
+.contest-experience-truth {
+  padding: 17px 21px;
+  border-left: 3px solid #528ba5;
+  border-radius: 0 7px 7px 0;
+  background: #e7f2f7;
+  color: #2c5063;
+}
+.contest-experience-truth strong { font-size: 14px; }
+.contest-experience-truth p { font-size: 13px; line-height: 1.65; }
+
+.contest-focus-card { grid-template-columns: 120px minmax(0, 1fr); padding: clamp(20px, 4vw, 36px); }
+.contest-focus-card-receipt { display: block; }
+.contest-raw-event,
+.contest-sample-receipt { border-radius: 6px; }
+.contest-raw-event span,
+.contest-sample-receipt span { color: #496472; font-size: 12px; }
+.contest-raw-event strong,
+.contest-sample-receipt strong { font-size: 14px; }
+.contest-focus-primary { border-radius: 5px; font-size: 14px; }
+
+@media (max-width: 620px) {
+  .contest-experience-header { min-height: 124px; gap: 9px; padding: 20px; }
+  .contest-experience-header h1 { font-size: clamp(22px, 6vw, 29px); }
+  .contest-experience-header a,
+  .contest-experience-header button { padding: 0 8px; font-size: 12px; }
+  .contest-scenario-picker { grid-template-columns: 1fr; gap: 11px; }
+  .contest-scenario-picker > button { min-height: 0; padding: 19px; }
+  .contest-concierge-intro { grid-template-columns: 78px minmax(0, 1fr); gap: 12px; padding: 18px; }
+  .contest-concierge-intro img { width: 78px; height: 78px; }
+  .contest-focus-card { grid-template-columns: 1fr; gap: 12px; }
+  .contest-focus-card > img { width: 82px; height: 82px; }
+  .contest-focus-card-receipt .contest-focus-character-small { width: 74px; height: 74px; }
+}
+
+@media (max-width: 360px) {
+  .contest-experience-header { padding: 17px; }
+  .contest-experience-header h1 { font-size: 22px; }
+  .contest-concierge-intro { grid-template-columns: 1fr; }
+  .contest-concierge-intro img { width: 72px; height: 72px; }
+}

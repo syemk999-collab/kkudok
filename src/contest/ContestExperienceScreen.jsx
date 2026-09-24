@@ -16,7 +16,7 @@ export function ContestExperienceScreen({
       <main className="contest-experience-shell">
         <header className="contest-experience-header">
           <div>
-            <span>CONTEST EXPERIENCE</span>
+          <span>꾸독 직접 체험</span>
             <h1>꾸독을 직접 경험해보세요.</h1>
           </div>
           <a href="/">랜딩으로 돌아가기</a>
@@ -37,27 +37,30 @@ export function ContestExperienceScreen({
 
         <section className="contest-scenario-picker" aria-label="체험 시나리오 선택">
           <button type="button" onClick={() => onStartScenario?.("A")}>
-            <span>SCENARIO A</span>
+            <span>체험 A · 새 결제</span>
             <strong>새로운 결제가 발생했다면</strong>
             <p>결제 정보 읽기 → 사용자 확인 후 등록 → 혜택 조건 확인 → 결제 하루 전 알림</p>
             <small>웹 테스트 결제와 혜택 조건 확인</small>
           </button>
           <button type="button" onClick={() => onStartScenario?.("B")}>
-            <span>SCENARIO B</span>
+            <span>체험 B · 지난 결제</span>
             <strong>놓친 결제가 있다면</strong>
             <p>Netflix 캡처 선택·등록 → 기존 Spotify 해지 경로 확인</p>
             <small>지난 결제 등록과 기존 구독 정리</small>
           </button>
         </section>
 
-        <p className="contest-experience-glossary">*파싱 : 결제 문장에서 구독에 필요한 정보를 찾아 정리합니다. *OCR : 이미지 속 글자를 읽어 결제 정보를 정리합니다.</p>
+        <div className="contest-experience-glossary">
+          <p>*파싱 : 결제 문장에서 구독에 필요한 정보를 찾아 정리하는 과정입니다.</p>
+          <p>*OCR : 이미지 속 글자를 읽어 결제 정보를 정리하는 기술입니다.</p>
+        </div>
 
         <div className="contest-experience-truth">
           <strong>체험 환경을 실제 기능과 구분해 보여드립니다.</strong>
           <p>
-            모바일 웹은 다른 앱의 알림을 직접 읽을 수 없기 때문에 Scenario A의 웹 체험은
+            모바일 웹은 다른 앱의 알림을 직접 읽을 수 없기 때문에 체험 A에서는
             카드사 테스트 결제 문장을 실제 결제 정보 읽기 기능으로 처리해 화면 알림으로 보여줍니다.
-            Android 앱에서는 사용자가 허용한 시스템 결제 알림을 감지합니다.
+            안드로이드 앱에서는 사용자가 허용한 시스템 결제 알림을 감지합니다.
           </p>
         </div>
       </main>
@@ -69,7 +72,7 @@ export function ContestExperienceScreen({
       <main className="contest-experience-shell contest-experience-focus">
         <header className="contest-experience-header">
           <div>
-            <span>SCENARIO A · START</span>
+            <span>체험 A · 시작</span>
             <h1>새로운 결제가 발생한 상황</h1>
           </div>
           <button type="button" onClick={onReset}>처음으로</button>
@@ -109,7 +112,7 @@ export function ContestExperienceScreen({
       <main className="contest-experience-shell contest-experience-focus">
         <header className="contest-experience-header">
           <div>
-            <span>SCENARIO B · START</span>
+            <span>체험 B · 시작</span>
             <h1>놓친 결제를 다시 불러오는 상황</h1>
           </div>
           <button type="button" onClick={onReset}>처음으로</button>
@@ -119,15 +122,15 @@ export function ContestExperienceScreen({
           <img className="contest-focus-character-small" src={DEFAULT_CHARACTER_SRC} alt="꾸독이" />
           <div className="contest-focus-copy">
             <span>꾸독 컨시어지</span>
-            <h2>{ready ? "이제 저장한 이미지를 직접 업로드해주세요." : "먼저 실제 결제 캡처를 준비해주세요."}</h2>
+            <h2>{ready ? "이제 저장한 이미지를 직접 선택해주세요." : "먼저 실제 결제 캡처를 준비해주세요."}</h2>
             <p>
               Netflix 샘플 이미지를 직접 선택해 분석한 뒤 결과를 확인·수정하고 등록합니다.
               마지막에는 기존 Spotify 구독의 해지 방법을 살펴봅니다.
             </p>
-            <p>*OCR : 사진이나 캡처에 담긴 글자를 읽는 기술입니다. 선택한 이미지는 실제 /api/ocr로 전송합니다.</p>
+            <p>*OCR : 사진이나 캡처에 담긴 글자를 읽는 기술입니다. 직접 선택한 이미지를 실제 분석 기능으로 처리합니다.</p>
 
             <div className="contest-sample-receipt">
-              <img src="/sample_receipt_netflix.png" alt="Scenario B용 Netflix 결제 캡처 샘플" />
+              <img src="/sample_receipt_netflix.png" alt="체험 B용 Netflix 결제 캡처 샘플" />
               <div>
                 <strong>공모전용 실제 입력 이미지</strong>
                 <span>PNG · 이미 분석된 결과가 아닌 이미지 원본</span>
