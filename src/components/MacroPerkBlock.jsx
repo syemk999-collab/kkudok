@@ -43,9 +43,15 @@ export function MacroPerkBlock({
   return (
     <article
       onClick={onAction}
-      className={`group flex w-full items-center justify-between gap-5 sm:gap-7 py-5 sm:py-6 px-2 sm:px-3.5 transition-colors hover:bg-[#F9FAFB] rounded-2xl cursor-pointer select-none ${className}`}
-      role="button"
-      tabIndex={0}
+      onKeyDown={onAction ? (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onAction();
+        }
+      } : undefined}
+      className={`group flex w-full items-center justify-between gap-5 sm:gap-7 py-5 sm:py-6 px-2 sm:px-3.5 transition-colors rounded-2xl select-none ${onAction ? "cursor-pointer hover:bg-[#F9FAFB]" : ""} ${className}`}
+      role={onAction ? "button" : undefined}
+      tabIndex={onAction ? 0 : undefined}
     >
       {/* 1. 좌측: 대형 서비스 로고 (74x74px) */}
       <div className="relative shrink-0">
@@ -95,7 +101,7 @@ export function MacroPerkBlock({
       {/* 3. 우측: 원형 바로가기 쉐브론 버튼 */}
       <div className="shrink-0 pl-1 sm:pl-2">
         <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-[#F2F4F6] text-[#4E5968] transition-all group-hover:bg-[#FF6F0F] group-hover:text-white">
-          <ChevronRight size={22} className="stroke-[2.5]" />
+          {onAction ? <ChevronRight size={22} className="stroke-[2.5]" /> : <span aria-hidden="true">—</span>}
         </div>
       </div>
     </article>

@@ -536,7 +536,7 @@ export default function App() {
       } else {
         window.open(promotion.link, "_blank", "noopener,noreferrer");
       }
-      notify("공식 혜택 출처를 열었어요.");
+      notify("혜택 안내 페이지를 열었어요. 최신 조건을 확인해 주세요.");
     } else {
       navigate("promotions");
     }

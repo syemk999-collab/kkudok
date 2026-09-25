@@ -39,10 +39,15 @@ function getServiceDisplayInfo(promotion) {
     serviceName = primaryService.name;
   }
 
-  let solutionTitle = promotion.subtitle;
-  if (!solutionTitle || solutionTitle === promotion.title) {
-    solutionTitle = promotion.kind || promotion.title;
-  }
+  // The catalog does not encode a reliable price period or a verification date.
+  // Keep the list useful for discovery without repeating unverified price claims.
+  const solutionTitle = promotion.membershipRequired
+    ? "멤버십 연계 혜택 후보"
+    : promotion.category === "학생/연간"
+      ? "학생·연간 혜택 후보"
+      : promotion.category === "100원/무료"
+        ? "체험·할인 혜택 후보"
+        : "구독 혜택 후보";
 
   return {
     serviceId: primaryServiceId,
@@ -53,25 +58,10 @@ function getServiceDisplayInfo(promotion) {
 }
 
 function getBadgeInfo(promotion, isUserSubscribed) {
-  const isPartnership =
-    (promotion.sourceServiceIds || []).length > 1 ||
-    (promotion.title || "").includes("X") ||
-    (promotion.kind || "").includes("제휴") ||
-    (promotion.kind || "").includes("결합");
-
-  if (isUserSubscribed && isPartnership) {
-    return { text: "내 구독 연결 · 제휴 혜택", isHighlight: true };
-  }
-  if (isUserSubscribed && (promotion.kind?.includes("연간") || promotion.category === "학생/연간")) {
-    return { text: "내 구독 연결 · 연간 혜택", isHighlight: true };
-  }
-  if (isUserSubscribed && (promotion.kind?.includes("무료 체험") || promotion.category === "100원/무료")) {
-    return { text: "신규 가입 혜택", isHighlight: false };
-  }
-  if (isUserSubscribed) {
-    return { text: "내 구독 연결 혜택", isHighlight: true };
-  }
-  return { text: promotion.kind || (promotion.category + " 추천"), isHighlight: false };
+  if (!promotion.link) return { text: "안내 링크 확인 필요", isHighlight: false };
+  return isUserSubscribed
+    ? { text: "내 구독 관련 후보", isHighlight: true }
+    : { text: "적용 조건 확인 필요", isHighlight: false };
 }
 
 export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPromotion, contestMode = false }) {
@@ -157,8 +147,8 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
     if (!isPersonalized) {
       return [
         { id: "all", label: "전체" },
-        { id: "100원/무료", label: "0원 · 무료" },
-        { id: "OTT", label: "OTT 환승" },
+        { id: "100원/무료", label: "체험·할인" },
+        { id: "OTT", label: "OTT" },
         { id: "음악", label: "음악" },
         { id: "통신사/결합", label: "통신사 결합" },
         { id: "학생/연간", label: "학생 · 연간" },
@@ -180,7 +170,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
       (p) => !p.membershipRequired && (p.offerPrice === 0 || p.offerPrice === 100 || p.category === "100원/무료")
     );
     if (hasFree) {
-      items.push({ id: "100원/무료", label: "0원 · 무료" });
+      items.push({ id: "100원/무료", label: "체험·할인" });
     }
 
     return items;
@@ -209,7 +199,6 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
       candidatePromotions.find(
         (promotion) => promotion.id === "naverplus-netflix" && promotion.isDirectMatch
       ) ||
-      candidatePromotions.find((promotion) => promotion.isDirectMatch) ||
       null,
     [candidatePromotions]
   );
@@ -236,17 +225,17 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
       <div className="pb-4">
         <div className="flex items-center gap-1.5 text-[12px] font-extrabold text-[#FF6F0F] tracking-tight">
           <Sparkles size={14} />
-          <span>{isPersonalized ? "내 구독 맞춤 혜택 진단" : "AI 숨은 혜택 발굴 진단"}</span>
+          <span>{isPersonalized ? "내 구독 관련 혜택 후보" : "혜택 후보 살펴보기"}</span>
         </div>
         <h1 className="mt-1 text-[22px] font-black tracking-tight text-[#191F28]">
-          {contestMode && contestDirectPromotion ? "절약할 선택지 살펴보기" : "놓치고 있던 숨은 혜택"}
+          {contestMode && contestDirectPromotion ? "절약할 선택지 살펴보기" : "혜택 후보 살펴보기"}
         </h1>
         <p className="mt-1 text-[13.5px] text-[#6B7684] font-medium leading-relaxed">
           {contestMode && contestDirectPromotion
             ? "등록한 구독과 연결된 혜택을 살펴보고, 내게 적용되는 조건과 공식 출처를 확인해 보세요."
             : isPersonalized
-            ? `회원님이 이용 중인 ${categorySummary} 카테고리 기반으로 놓치고 있던 제휴 및 할인 혜택을 분석했어요.`
-            : "구독 중인 서비스가 없어 전체 혜택을 보여드려요. 구독을 추가하면 연결 가능한 혜택과 조건을 함께 확인할 수 있어요."}
+            ? `등록한 ${categorySummary || "구독"} 관련 혜택 후보를 모았어요. 적용 대상·기간·요금은 안내 링크에서 확인해 주세요.`
+            : "구독을 추가하면 관련 혜택 후보를 살펴볼 수 있어요. 적용 조건과 요금은 안내 링크에서 확인해 주세요."}
         </p>
         {categorySummary.includes("SaaS") && <p className="mt-1 text-[11px] text-[#697987]">*SaaS : 설치하지 않고 인터넷에서 이용하는 소프트웨어 서비스입니다.</p>}
       </div>
@@ -304,15 +293,15 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
               <div className="grid grid-cols-[84px_1fr] gap-3 px-3.5 py-3">
                 <dt className="font-semibold text-[#8B95A1]">{contestDirectPromotion.membershipRequired ? "상품 별도 가격" : "혜택 가치"}</dt>
                 <dd className="m-0 font-semibold leading-5 text-[#333D4B]">
-                  {Number(contestDirectPromotion.saving) > 0
-                    ? `${Number(contestDirectPromotion.saving).toLocaleString("ko-KR")}원 / 월`
+                  {Number(contestDirectPromotion.originalPrice) > 0
+                    ? `${Number(contestDirectPromotion.originalPrice).toLocaleString("ko-KR")}원 / 월`
                     : "조건 확인 필요"}
                 </dd>
               </div>
               {contestDirectPromotion.membershipRequired && (
                 <div className="grid grid-cols-[84px_1fr] gap-3 border-t border-[#F2F4F6] px-3.5 py-3">
                   <dt className="font-semibold text-[#8B95A1]">멤버십 이용료</dt>
-                  <dd className="m-0 font-semibold leading-5 text-[#333D4B]">{Number(contestDirectPromotion.membershipMonthlyPrice).toLocaleString("ko-KR")}원 / 월</dd>
+                  <dd className="m-0 font-semibold leading-5 text-[#333D4B]">{Number(contestDirectPromotion.membershipMonthlyPrice) > 0 ? `${Number(contestDirectPromotion.membershipMonthlyPrice).toLocaleString("ko-KR")}원 / 월` : "공식 안내에서 확인 필요"}</dd>
                 </div>
               )}
             </dl>
@@ -341,6 +330,10 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
           </div>
         </section>
       )}
+
+      <p className="mb-4 rounded-xl bg-[#F2F6F8] px-3.5 py-3 text-[12px] leading-5 text-[#4E5968]">
+        아래 목록은 내 구독과 관련될 수 있는 혜택 후보입니다. 가격·진행 여부·적용 대상은 안내 링크에서 확인한 뒤 현재 결제액과 비교해 주세요.
+      </p>
 
       {/* 2. 심플 필터 탭 */}
       <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-none mb-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
@@ -375,33 +368,17 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
             const displayInfo = getServiceDisplayInfo(promotion);
             const badgeInfo = getBadgeInfo(promotion, promotion.isDirectMatch);
 
-            // 통일된 절약 금액 양식 산출
-            const savingAmount = Number(promotion.saving) || 0;
-            const isAnnual = promotion.kind?.includes("연간") || promotion.category === "학생/연간";
-            const savingText = promotion.membershipRequired
-              ? `별도 가격 월 ${Number(promotion.originalPrice).toLocaleString("ko-KR")}원 · 멤버십 필요`
-              : savingAmount > 0
-              ? (isAnnual ? `연 ${savingAmount.toLocaleString("ko-KR")}원 혜택 가치` : `월 ${savingAmount.toLocaleString("ko-KR")}원 혜택 가치`)
-              : (promotion.offerPrice === 0 ? "0원 무료" : null);
-
-            const offerPriceText = promotion.membershipRequired
-              ? `멤버십 월 ${Number(promotion.membershipMonthlyPrice).toLocaleString("ko-KR")}원 필요`
-              : promotion.offerPrice === 0
-              ? "0원 무료"
-              : (promotion.offerPrice ? `${Number(promotion.offerPrice).toLocaleString("ko-KR")}원` : null);
-
             return (
               <div key={promotion.id} className="w-full">
                 <MacroPerkBlock
                   serviceId={displayInfo.serviceId}
                   serviceName={displayInfo.serviceName}
                   solutionTitle={displayInfo.solutionTitle}
-                  description={promotion.description}
-                  savingText={savingText}
-                  offerPriceText={offerPriceText}
+                  description="현재 가격·이용 기간·적용 대상은 안내 링크에서 확인해 주세요."
+                  savingText={promotion.link ? "조건 확인하기" : "조건 확인 필요"}
                   isDirectMatch={badgeInfo.isHighlight}
                   badgeText={badgeInfo.text}
-                  onAction={() => onOpenPromotion(promotion)}
+                  onAction={promotion.link ? () => onOpenPromotion(promotion) : undefined}
                 />
                 {/* 마지막 아이템 뒤에는 구분선을 두지 않음 */}
                 {index < filtered.length - 1 && <HanddrawnHatchedDivider />}
