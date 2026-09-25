@@ -23,7 +23,8 @@ import { RenewalSheet } from "./components/RenewalSheet";
 import { CalendarScreen, SubscriptionDetailScreen, SubscriptionListScreen } from "./components/SubscriptionScreens";
 import { NotificationCenterModal } from "./components/NotificationComponents";
 import { AppHeader, BottomNavigation, Toast } from "./components/ui";
-import { createMockSubscriptions, promotionCatalog, serviceCatalog } from "./data/subscriptionData";
+import { promotionCatalog, serviceCatalog } from "./data/subscriptionData";
+import { CONTEST_CANCELLATION_SUBSCRIPTION_ID, createContestSubscriptions } from "./contest/contestSubscriptions";
 import { removeDemoSubscriptions, getStoredUsers, saveUser, findUser, storageKeys, readStoredValue } from "./lib/storage";
 import { generateSubscriptionAlerts } from "./lib/notifications";
 import { useNavigation } from "./hooks/useNavigation";
@@ -270,7 +271,7 @@ export default function App() {
     togglePinSubscription,
     muteSubscription,
     deleteSubscription,
-  } = useSubscriptions({ currentRoute: screen.route, contestMode: isContestMode });
+  } = useSubscriptions({ currentRoute: screen.route, contestMode: isContestMode, contestScenario: contestFlow.scenario });
 
   // Notifications domain state
   const {
@@ -549,11 +550,7 @@ export default function App() {
     closeCancellation();
     setNotificationCenterOpen(false);
     setHighlightCancelId(null);
-    setSubscriptions(
-      createMockSubscriptions().filter((subscription) =>
-        (subscription.serviceId || subscription.id) !== "netflix"
-      )
-    );
+    setSubscriptions(createContestSubscriptions());
     resetContestFlow();
     navigate("contest");
   }, [
@@ -602,7 +599,10 @@ export default function App() {
     content = (
       <ContestExperienceScreen
         flow={contestFlow}
-        onStartScenario={startContestScenario}
+        onStartScenario={(scenario) => {
+          setSubscriptions(createContestSubscriptions(scenario));
+          startContestScenario(scenario);
+        }}
         onRunPayment={handleTestPaymentDetection}
         onSampleReady={() => setContestStep("B2")}
         onOpenImageRegistration={() => {
@@ -659,7 +659,7 @@ export default function App() {
       <SubscriptionListScreen
         subscriptions={subscriptions}
         onOpen={(id) => {
-          if (contestFlow.step === "B7" && id === "seed-spotify") {
+          if (contestFlow.step === "B7" && id === CONTEST_CANCELLATION_SUBSCRIPTION_ID) {
             setContestStep("B8");
           }
           navigate("detail", id);

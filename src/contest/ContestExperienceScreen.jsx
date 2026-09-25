@@ -45,7 +45,7 @@ export function ContestExperienceScreen({
           <button type="button" onClick={() => onStartScenario?.("B")}>
             <span>체험 B · 지난 결제</span>
             <strong>놓친 결제가 있다면</strong>
-            <p>Netflix 캡처 선택·등록 → 기존 Spotify 해지 경로 확인</p>
+            <p>Netflix 캡처 선택·등록 → 네이버플러스 멤버십 해지 안내</p>
             <small>지난 결제 등록과 기존 구독 정리</small>
           </button>
         </section>
@@ -125,7 +125,7 @@ export function ContestExperienceScreen({
             <h2>{ready ? "이제 저장한 이미지를 직접 선택해주세요." : "먼저 실제 결제 캡처를 준비해주세요."}</h2>
             <p>
               Netflix 샘플 이미지를 직접 선택해 분석한 뒤 결과를 확인·수정하고 등록합니다.
-              마지막에는 기존 Spotify 구독의 해지 방법을 살펴봅니다.
+              마지막에는 체험용 네이버플러스 멤버십의 해지 안내를 살펴봅니다.
             </p>
             <p>*OCR : 사진이나 캡처에 담긴 글자를 읽는 기술입니다. 직접 선택한 이미지를 실제 분석 기능으로 처리합니다.</p>
 
