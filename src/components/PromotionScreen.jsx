@@ -2,6 +2,123 @@ import { useMemo, useState, useEffect } from "react";
 import { Sparkles } from "lucide-react";
 import { MacroPerkBlock, HanddrawnHatchedDivider } from "./MacroPerkBlock";
 import { serviceCatalog } from "../data/subscriptionData";
+import { evaluateBenefitComparison, isPromotionExpired } from "../lib/benefitComparison";
+
+const won = (amount) => `${amount.toLocaleString("ko-KR")}원`;
+
+function getSubscriptionServiceId(subscription) {
+  const id = subscription.serviceId || subscription.service_id || subscription.id;
+  if (serviceCatalog.some((service) => service.id === id)) return id;
+  const name = String(subscription.name || "").toLowerCase().replace(/\s+/g, "");
+  return serviceCatalog.find((service) => service.name.toLowerCase().replace(/\s+/g, "") === name ||
+    (service.aliases || []).some((alias) => alias.toLowerCase().replace(/\s+/g, "") === name))?.id;
+}
+
+function BenefitComparison({ promotion, subscription }) {
+  const [checks, setChecks] = useState({});
+  const details = promotion.comparison;
+  const comparisonSubscription = subscription ? { ...subscription, serviceId: getSubscriptionServiceId(subscription) } : null;
+  const result = evaluateBenefitComparison({ offer: promotion, subscription: comparisonSubscription, userChecks: checks });
+  const canCompare = result.status === "comparable";
+  const amount = Number(subscription?.amount);
+
+  return (
+    <div className="min-w-0 rounded-2xl border border-[#E2E8EE] bg-white px-4 py-4 text-[12px] leading-5 text-[#333D4B]">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <strong className="text-[14px] text-[#191F28]">지금 내는 요금과 비교</strong>
+        <span className={`rounded-full px-2.5 py-1 text-[11px] font-bold ${canCompare ? "bg-[#E5F5EA] text-[#256B42]" : "bg-[#FFF2E9] text-[#865027]"}`}>
+          {canCompare ? "조건부 예상 비교" : "조건 확인 필요"}
+        </span>
+      </div>
+      <dl className="mt-3 grid grid-cols-[minmax(0,105px)_minmax(0,1fr)] gap-x-2 gap-y-2">
+        <dt className="text-[#637080]">현재 결제액</dt>
+        <dd className="min-w-0 font-semibold break-words">{subscription && Number.isFinite(amount) && amount > 0
+          ? `${subscription.plan ? `${subscription.plan} · ` : ""}${won(amount)} / ${subscription.billingCycle || "주기 확인 필요"}`
+          : "등록된 결제액 확인 필요"}</dd>
+        <dt className="text-[#637080]">혜택 적용 중</dt>
+        <dd className="min-w-0 break-words">{canCompare
+          ? `${result.periodCycles}회 결제 기준 · 대안 총 ${won(result.alternativeTotal)}`
+          : "가격·적용 기간 확인 필요"}</dd>
+        <dt className="text-[#637080]">필수 멤버십</dt>
+        <dd className="min-w-0 break-words">{canCompare
+          ? result.membership
+            ? `${result.membership.name} ${won(result.membership.monthlyAmount)} / 월 · ${result.membershipStatus === "already-paid" ? "이미 결제 중, 새로 드는 비용 0원" : `새로 가입, 비교에 ${won(result.addedMembershipMonthly)} / 월 포함`}`
+            : "없음 (공식 조건 확인)"
+          : details?.requiredMembership?.name
+            ? `${details.requiredMembership.name} · 추가 비용 및 기존 이용 여부 확인 필요`
+            : promotion.membershipRequired && Number(promotion.membershipMonthlyPrice) > 0
+              ? `기존 안내: ${won(Number(promotion.membershipMonthlyPrice))} / 월 · 가입 여부와 최신 요금 확인 필요`
+            : "필요 여부와 추가 비용 확인 필요"}</dd>
+        <dt className="text-[#637080]">추가 비용</dt>
+        <dd className="min-w-0 break-words">{canCompare ? won(result.oneTimeCost) : "확인 필요"}</dd>
+        <dt className="text-[#637080]">종료 후 요금</dt>
+        <dd className="min-w-0 break-words">{canCompare && result.afterMonthly !== null
+          ? `${won(result.afterMonthly)} / 월 (멤버십 추가 비용 별도)`
+          : result.ongoing ? "종료일 미정 · 다음 결제 후 요금은 재확인" : "확인 필요"}</dd>
+        <dt className="text-[#637080]">상품 조건 차이</dt>
+        <dd className="min-w-0 break-words">{canCompare
+          ? result.planChanges.length ? result.planChanges.join(" · ") : "동일 상품 조건 (공식 안내 기준)"
+          : details?.planChanges?.length ? details.planChanges.join(" · ")
+            : promotion.description?.includes("광고형 스탠다드로 변경")
+              ? "기존 안내: 광고형 스탠다드로 변경 · 광고·화질 차이 확인 필요"
+              : "광고·화질·이용 조건 확인 필요"}</dd>
+        <dt className="text-[#637080]">신청 자격</dt>
+        <dd className="min-w-0 break-words">{details?.eligibilityRules?.length
+          ? details.eligibilityRules.join(" · ") : "공식 안내에서 확인 필요"}</dd>
+      </dl>
+      {details && (
+        <fieldset className="mt-3 space-y-2 border-t border-[#E7EBEF] pt-3">
+          <legend className="sr-only">혜택 비교를 위한 계정 정보 확인</legend>
+          <label className="flex min-h-11 items-center gap-2">
+            <input type="checkbox" checked={checks.currentPlanConfirmed === true} onChange={(e) => setChecks((old) => ({ ...old, currentPlanConfirmed: e.target.checked }))} />
+            현재 요금제와 결제액을 직접 확인했어요
+          </label>
+          <label className="flex min-h-11 items-center gap-2">
+            <input type="checkbox" checked={checks.eligibilityConfirmed === true} onChange={(e) => setChecks((old) => ({ ...old, eligibilityConfirmed: e.target.checked }))} />
+            공식 페이지에서 내 계정의 신청 자격을 확인했어요
+          </label>
+          {details.requiredMembership && (
+            <label className="block">멤버십 이용 여부
+              <select className="mt-1 min-h-11 w-full rounded-lg border border-[#C8D3DD] bg-white px-2" value={checks.membershipStatus || ""} onChange={(e) => setChecks((old) => ({ ...old, membershipStatus: e.target.value }))}>
+                <option value="">선택해 주세요</option><option value="already-paid">이미 결제 중</option><option value="new">새로 가입</option>
+              </select>
+            </label>
+          )}
+          {details.exclusiveGroupId && (
+            <label className="flex min-h-11 items-center gap-2">
+              <input type="checkbox" checked={checks.exclusiveChoiceConfirmed === true} onChange={(e) => setChecks((old) => ({ ...old, exclusiveChoiceConfirmed: e.target.checked }))} />
+              함께 쓸 수 없는 혜택을 선택해 확인했어요
+            </label>
+          )}
+        </fieldset>
+      )}
+      {canCompare ? (
+        <div className="mt-3 rounded-xl bg-[#F1F6F3] p-3">
+          <p className="font-bold">{result.periodCycles}회 결제 예상 지출 차이 · {result.difference > 0
+            ? `${won(result.difference)} 적게 낼 가능성` : result.difference < 0
+              ? `${won(-result.difference)} 더 낼 가능성` : "차이 없음"}</p>
+          <p className="mt-1">현재 {won(result.currentTotal)} → 대안 {won(result.alternativeTotal)} (멤버십 신규 가입비·추가 비용 포함)</p>
+          {result.currentPriceAssumption && <p className="mt-1">*현재 요금은 비교 기간 동안 지금 확인한 금액이 유지된다고 가정했어요.</p>}
+          <p className="mt-1">*예상 지출 차이 : 직접 확인한 조건을 바탕으로 한 비용 비교입니다. 신청이 완료됐거나 실제 절약이 확정됐다는 뜻은 아닙니다.</p>
+          {result.annual && (
+            <details className="mt-2 border-t border-[#D3E0D8] pt-2">
+              <summary className="cursor-pointer font-semibold">12개월 가정 비교 보기</summary>
+              <p className="mt-1">현재 요금제를 유지하고, 확인된 각 회차 가격·전환 조건과 멤버십 상태가 12개월 동안 그대로 적용되며, 추가 비용은 첫 회에만 드는 경우: 현재 {won(result.annual.currentTotal)} · 대안 {won(result.annual.alternativeTotal)} · {result.annual.difference >= 0 ? "차이" : "비용 증가"} {won(Math.abs(result.annual.difference))}</p>
+            </details>
+          )}
+        </div>
+      ) : (
+        <div className="mt-3 rounded-xl bg-[#FFF8F1] p-3 text-[#704A2A]">
+          <p className="font-bold">개인 예상 금액을 아직 계산할 수 없어요.</p>
+          <ul className="mt-1 list-disc pl-4">{result.reasons.slice(0, 2).map((reason) => <li key={reason}>{reason}</li>)}</ul>
+          {result.reasons.length > 2 && <details className="mt-1"><summary className="cursor-pointer">확인할 항목 {result.reasons.length - 2}개 더 보기</summary><ul className="list-disc pl-4">{result.reasons.slice(2).map((reason) => <li key={reason}>{reason}</li>)}</ul></details>}
+        </div>
+      )}
+      {/^https:\/\//.test(details?.sourceUrl || "") && <a className="mt-3 inline-flex min-h-11 items-center font-bold text-[#245B84] underline" href={details.sourceUrl} target="_blank" rel="noopener noreferrer">가격과 조건의 출처 열기</a>}
+      <p className="mt-2 text-[11px] text-[#637080]">공식 안내에 혜택이 있어도 내 계정에 적용된 것은 아닙니다. 적용 전 공식 출처에서 조건을 확인해 주세요.</p>
+    </div>
+  );
+}
 
 function getPromoCategories(promotion) {
   const cats = new Set();
@@ -70,7 +187,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
   const userSubscribedServiceIds = useMemo(() => {
     const ids = new Set();
     subscriptions.forEach((sub) => {
-      const sId = sub.service_id || sub.serviceId || sub.id;
+      const sId = getSubscriptionServiceId(sub);
       if (sId) ids.add(sId);
       const nameKey = String(sub.name || "").toLowerCase().replace(/\s+/g, "");
       const matched = serviceCatalog.find(
@@ -89,7 +206,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
   const userSubscribedCategories = useMemo(() => {
     const cats = new Set();
     subscriptions.forEach((sub) => {
-      const sId = sub.service_id || sub.serviceId || sub.id;
+      const sId = getSubscriptionServiceId(sub);
       const nameKey = String(sub.name || "").toLowerCase().replace(/\s+/g, "");
       const matched = serviceCatalog.find(
         (s) =>
@@ -106,14 +223,17 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
   const isPersonalized = subscriptions.length > 0;
 
   const candidatePromotions = useMemo(() => {
+    // Application deadlines only decide whether an item can still be offered.
+    // Legacy catalog prices and its `saving` estimate never enter comparison.
+    const activePromotions = promotions.filter((promo) => !isPromotionExpired(promo));
     if (!isPersonalized) {
-      return promotions.map((p) => ({ ...p, isDirectMatch: false, isCategoryMatch: false }));
+      return activePromotions.map((p) => ({ ...p, isDirectMatch: false, isCategoryMatch: false }));
     }
 
     const matched = [];
     const seenIds = new Set();
 
-    for (const promo of promotions) {
+    for (const promo of activePromotions) {
       const promoCats = getPromoCategories(promo);
       const isDirectMatch = (promo.sourceServiceIds || []).some((id) =>
         userSubscribedServiceIds.has(id)
@@ -137,7 +257,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
     matched.sort((a, b) => {
       if (a.isDirectMatch && !b.isDirectMatch) return -1;
       if (!a.isDirectMatch && b.isDirectMatch) return 1;
-      return (b.saving || 0) - (a.saving || 0);
+      return 0;
     });
 
     return matched;
@@ -185,9 +305,10 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
 
   const filtered = useMemo(() => {
     return candidatePromotions.filter((promo) =>
-      resolveFilter(promo, filter, userSubscribedServiceIds)
+      resolveFilter(promo, filter, userSubscribedServiceIds) &&
+      !(contestMode && promo.id === "naverplus-netflix" && promo.isDirectMatch)
     );
-  }, [candidatePromotions, filter, userSubscribedServiceIds]);
+  }, [candidatePromotions, filter, userSubscribedServiceIds, contestMode]);
 
   const categorySummary = useMemo(() => {
     if (!isPersonalized) return "";
@@ -214,8 +335,8 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
   const contestMatchedSubscription = useMemo(() => {
     if (!contestDirectPromotion) return null;
     return subscriptions.find((subscription) => {
-      const id = subscription.serviceId || subscription.service_id || subscription.id;
-      return (contestDirectPromotion.sourceServiceIds || []).includes(id);
+      const id = getSubscriptionServiceId(subscription);
+      return id === (contestDirectPromotion.comparison?.currentServiceId || contestDirectPromotion.sourceServiceIds?.[0]);
     }) || null;
   }, [contestDirectPromotion, subscriptions]);
 
@@ -314,6 +435,8 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
               *크롤링 : 공개된 페이지의 정보를 자동으로 모으는 과정입니다. 현재 혜택 정보 수집의 정확도를 개선 중이므로, 적용 전 공식 출처의 최신 조건을 확인해 주세요.
             </p>
 
+            <div className="mt-3"><BenefitComparison promotion={contestDirectPromotion} subscription={contestMatchedSubscription} /></div>
+
             <button
               type="button"
               data-contest-target="contest-benefit-source"
@@ -332,7 +455,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
       )}
 
       <p className="mb-4 rounded-xl bg-[#F2F6F8] px-3.5 py-3 text-[12px] leading-5 text-[#4E5968]">
-        아래 목록은 내 구독과 관련될 수 있는 혜택 후보입니다. 가격·진행 여부·적용 대상은 안내 링크에서 확인한 뒤 현재 결제액과 비교해 주세요.
+        아래 목록은 내 구독과 관련될 수 있는 혜택 후보입니다. 혜택 수집 정보의 정확도를 개선 중이에요. 공식 안내의 최신 가격·기간·적용 대상을 확인한 뒤 현재 결제액과 비교해 주세요.
       </p>
 
       {/* 2. 심플 필터 탭 */}
@@ -367,6 +490,8 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
           filtered.map((promotion, index) => {
             const displayInfo = getServiceDisplayInfo(promotion);
             const badgeInfo = getBadgeInfo(promotion, promotion.isDirectMatch);
+            const subscription = subscriptions.find((item) => getSubscriptionServiceId(item) ===
+              (promotion.comparison?.currentServiceId || promotion.sourceServiceIds?.[0]));
 
             return (
               <div key={promotion.id} className="w-full">
@@ -380,6 +505,9 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
                   badgeText={badgeInfo.text}
                   onAction={promotion.link ? () => onOpenPromotion(promotion) : undefined}
                 />
+                {subscription ? <BenefitComparison promotion={promotion} subscription={subscription} /> : (
+                  <p className="px-3 pb-3 text-[12px] leading-5 text-[#704A2A]">조건 확인 필요 · 현재 구독 요금과 혜택 가격을 확인하면 비교할 수 있어요.</p>
+                )}
                 {/* 마지막 아이템 뒤에는 구분선을 두지 않음 */}
                 {index < filtered.length - 1 && <HanddrawnHatchedDivider />}
               </div>
