@@ -5,6 +5,7 @@ import { App } from "@capacitor/app";
 import { BottomSheet, Button, ServiceMark } from "./ui";
 import { CancelBrowserModal } from "./CancelBrowserModal";
 import { serviceCatalog } from "../data/subscriptionData";
+import { NAVER_PLUS_CANCEL_STEPS, isNaverPlusSubscription } from "../lib/naverPlusCancelGuide";
 import {
   openCancelBrowser,
   checkOverlayPermission,
@@ -33,7 +34,9 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
     return {
       ...rawSub,
       cancelUrl: rawSub.cancelUrl || matched?.cancelUrl || "",
-      guideSteps: (rawSub.guideSteps && rawSub.guideSteps.length > 0) ? rawSub.guideSteps : (matched?.guideSteps || []),
+      guideSteps: isNaverPlusSubscription(rawSub)
+        ? NAVER_PLUS_CANCEL_STEPS
+        : (rawSub.guideSteps && rawSub.guideSteps.length > 0) ? rawSub.guideSteps : (matched?.guideSteps || []),
     };
   }, [rawSub]);
 

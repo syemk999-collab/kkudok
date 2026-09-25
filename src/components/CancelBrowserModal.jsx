@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Capacitor } from "@capacitor/core";
 import { openCancelBrowser } from "../lib/cancelBrowser";
 import { DEFAULT_CHARACTER_SRC } from "../lib/characterAsset";
+import { NAVER_PLUS_CANCEL_STEPS, isNaverPlusSubscription } from "../lib/naverPlusCancelGuide";
 import {
   Lock,
   X,
@@ -14,34 +15,6 @@ import {
   CheckCircle2,
   Compass,
 } from "lucide-react";
-
-const NAVER_PLUS_CANCEL_STEPS = [
-  {
-    stepNumber: 1,
-    title: "설정",
-    description: "네이버플러스 마이 멤버십 오른쪽 위 [설정]을 누르세요.",
-  },
-  {
-    stepNumber: 2,
-    title: "네이버플러스 멤버십 관리",
-    description: "설정 화면에서 [네이버플러스 멤버십 관리]를 누르세요.",
-  },
-  {
-    stepNumber: 3,
-    title: "네이버플러스 멤버십 해지하기",
-    description: "멤버십 관리 화면에서 [네이버플러스 멤버십 해지하기]를 누르세요.",
-  },
-  {
-    stepNumber: 4,
-    title: "정기결제 해지",
-    description: "이번 이용 기간을 확인한 뒤 [정기결제 해지]를 누르세요.",
-  },
-  {
-    stepNumber: 5,
-    title: "해지하기",
-    description: "최종 확인 화면의 [해지하기]는 사용자가 직접 눌러야 실제 해지가 완료됩니다.",
-  },
-];
 
 const NAVER_PLUS_TUTORIAL_HINTS = [
   {
@@ -270,10 +243,7 @@ export function CancelBrowserModal({
     },
   ];
 
-  const isNaverPlus =
-    subscription.id === "naverplus" ||
-    subscription.id === "naver" ||
-    subscription.name?.includes("네이버플러스");
+  const isNaverPlus = isNaverPlusSubscription(subscription);
 
   const steps = isNaverPlus
     ? NAVER_PLUS_CANCEL_STEPS
@@ -622,4 +592,3 @@ export function CancelBrowserModal({
     </div>
   );
 }
-
