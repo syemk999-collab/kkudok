@@ -3,7 +3,6 @@ import { Check, CheckCircle2, ExternalLink, ShieldCheck, Layers, Sparkles, Globe
 import { Capacitor } from "@capacitor/core";
 import { App } from "@capacitor/app";
 import { BottomSheet, Button, ServiceMark } from "./ui";
-import { formatWon } from "../lib/dates";
 import { CancelBrowserModal } from "./CancelBrowserModal";
 import { serviceCatalog } from "../data/subscriptionData";
 import {
@@ -41,10 +40,6 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
   const steps = (subscription.guideSteps && subscription.guideSteps.length > 0)
     ? subscription.guideSteps.map((s) => ({ title: s.title, description: s.description }))
     : baseSteps.map((s) => ({ title: "", description: s }));
-  const annualCost = subscription.billingCycle === "매년"
-    ? Number(subscription.amount) || 0
-    : (Number(subscription.amount) || 0) * 12;
-
   const [checked, setChecked] = useState(() => new Array(steps.length).fill(false));
   const [celebrating, setCelebrating] = useState(false);
   const [showBrowserModal, setShowBrowserModal] = useState(() => Boolean(autoOpen && rawSub.cancelUrl));
@@ -149,9 +144,8 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
       >
         <div className="flex flex-col items-center px-2 pb-5 pt-3 text-center">
           <span className="grid h-16 w-16 place-items-center rounded-3xl bg-[#191F28] text-white shadow-md"><CheckCircle2 size={31} /></span>
-          <h2 className="mt-5 text-[22px] font-extrabold tracking-tight text-[#191F28]">월 {formatWon(subscription.amount)}<br />절약 성공!</h2>
-          <p className="mt-2 text-[14px] font-semibold text-[#3182F6]">☕ 커피 4잔 / 🍗 1년이면 치킨 10마리 값을 아꼈어요!</p>
-          <p className="mt-2 text-[13px] leading-relaxed text-[#6B7684]">{subscription.name}을 구독 목록에서 정리했어요. 절약한 금액은 통계에서 계속 확인할 수 있어요.</p>
+          <h2 className="mt-5 text-[22px] font-extrabold tracking-tight text-[#191F28]">구독 목록에서 정리할게요</h2>
+          <p className="mt-2 text-[13px] leading-relaxed text-[#6B7684]">{subscription.name}의 실제 해지 완료 여부는 공식 사이트에서 확인해주세요. 꾸독에서 확인을 누르면 구독 목록에서 정리됩니다.</p>
           {promotion && (
             <div className="mt-4 w-full rounded-2xl border border-[#FFE8CC] bg-[#FFF9F2] p-3.5 text-left">
               <span className="rounded bg-[#FFE8CC] px-1.5 py-0.5 text-[10px] font-bold text-[#FF6F0F]">추천 혜택</span>
@@ -247,17 +241,12 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
         <div className="min-w-0"><h2 className="truncate text-[20px] font-extrabold tracking-tight text-[#191F28]">{subscription.name} 해지하기</h2><p className="mt-0.5 text-[12px] font-medium text-[#6B7684]">직접 해지 페이지와 단계별 안내를 준비했어요.</p></div>
       </div>
 
-      {/* 현재 결제 주기를 1년 유지할 때의 지출을 가정한 금액 */}
-      {annualCost > 0 && <div className="rounded-2xl bg-[#F2F4F6] p-4 text-center mt-4">
-        <p className="text-[12px] font-semibold text-[#6B7684]">해지 후 결제를 멈추면 줄일 수 있는 지출</p>
-        <h3 className="mt-0.5 text-[24px] font-extrabold tracking-tight text-[#3182F6]">
-          {formatWon(annualCost)}
-          <span className="text-[16px] font-bold text-[#191F28]"> / 1년 예상</span>
-        </h3>
-        <p className="mt-0.5 text-[11px] text-[#8B95A1]">
-          현재 요금과 결제 주기를 1년 유지한다고 가정했어요. 해지·환불 조건은 공식 사이트에서 확인해주세요.
+      <div className="mt-4 rounded-2xl bg-[#F2F4F6] p-4">
+        <p className="text-[13px] font-bold text-[#191F28]">해지 전 확인할 점</p>
+        <p className="mt-1 text-[12px] leading-relaxed text-[#6B7684]">
+          결제 중단 시점과 환불 여부는 서비스마다 달라요. 공식 사이트에서 조건을 확인하고 직접 결정해주세요.
         </p>
-      </div>}
+      </div>
 
       {promotion && (
         <div className="mt-4 flex items-center justify-between rounded-2xl border border-[#FFD8A8] bg-[#FFF9F2] p-3.5 shadow-2xs">
