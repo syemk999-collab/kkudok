@@ -79,8 +79,8 @@ const GUIDE = {
   B4: {
     target: "contest-add-review",
     eyebrow: "체험 B · 4/9",
-    title: "AI가 실제 이미지에서 읽어낸 결과입니다.",
-    body: "서비스명·금액·결제일·결제수단을 확인해주세요. 틀린 값은 사용자가 수정할 수 있습니다.",
+    title: "분석된 내용을 확인해 주세요.",
+    body: "서비스명·금액·결제일·결제수단을 살펴보고, 누락되거나 틀린 값은 직접 수정해주세요.",
     continueLabel: "등록 단계로",
     next: "B5",
   },
