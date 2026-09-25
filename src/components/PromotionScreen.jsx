@@ -46,6 +46,8 @@ function BenefitComparison({ promotion, subscription }) {
             : "없음 (공식 조건 확인)"
           : details?.requiredMembership?.name
             ? `${details.requiredMembership.name} · 추가 비용 및 기존 이용 여부 확인 필요`
+            : promotion.membershipRequired && Number(promotion.membershipMonthlyPrice) > 0
+              ? `기존 안내: ${won(Number(promotion.membershipMonthlyPrice))} / 월 · 가입 여부와 최신 요금 확인 필요`
             : "필요 여부와 추가 비용 확인 필요"}</dd>
         <dt className="text-[#637080]">추가 비용</dt>
         <dd className="min-w-0 break-words">{canCompare ? won(result.oneTimeCost) : "확인 필요"}</dd>
@@ -56,7 +58,10 @@ function BenefitComparison({ promotion, subscription }) {
         <dt className="text-[#637080]">상품 조건 차이</dt>
         <dd className="min-w-0 break-words">{canCompare
           ? result.planChanges.length ? result.planChanges.join(" · ") : "동일 상품 조건 (공식 안내 기준)"
-          : details?.planChanges?.length ? details.planChanges.join(" · ") : "광고·화질·이용 조건 확인 필요"}</dd>
+          : details?.planChanges?.length ? details.planChanges.join(" · ")
+            : promotion.description?.includes("광고형 스탠다드로 변경")
+              ? "기존 안내: 광고형 스탠다드로 변경 · 광고·화질 차이 확인 필요"
+              : "광고·화질·이용 조건 확인 필요"}</dd>
         <dt className="text-[#637080]">신청 자격</dt>
         <dd className="min-w-0 break-words">{details?.eligibilityRules?.length
           ? details.eligibilityRules.join(" · ") : "공식 안내에서 확인 필요"}</dd>
@@ -300,9 +305,10 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
 
   const filtered = useMemo(() => {
     return candidatePromotions.filter((promo) =>
-      resolveFilter(promo, filter, userSubscribedServiceIds)
+      resolveFilter(promo, filter, userSubscribedServiceIds) &&
+      !(contestMode && promo.id === "naverplus-netflix" && promo.isDirectMatch)
     );
-  }, [candidatePromotions, filter, userSubscribedServiceIds]);
+  }, [candidatePromotions, filter, userSubscribedServiceIds, contestMode]);
 
   const categorySummary = useMemo(() => {
     if (!isPersonalized) return "";
@@ -499,7 +505,9 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
                   badgeText={badgeInfo.text}
                   onAction={promotion.link ? () => onOpenPromotion(promotion) : undefined}
                 />
-                <BenefitComparison promotion={promotion} subscription={subscription} />
+                {subscription ? <BenefitComparison promotion={promotion} subscription={subscription} /> : (
+                  <p className="px-3 pb-3 text-[12px] leading-5 text-[#704A2A]">조건 확인 필요 · 현재 구독 요금과 혜택 가격을 확인하면 비교할 수 있어요.</p>
+                )}
                 {/* 마지막 아이템 뒤에는 구분선을 두지 않음 */}
                 {index < filtered.length - 1 && <HanddrawnHatchedDivider />}
               </div>
