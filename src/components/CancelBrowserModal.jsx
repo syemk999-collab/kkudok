@@ -237,7 +237,7 @@ const TUTORIAL_HINTS = [
   {
     locationBadge: "📍 목표 위치: 혜택 제안 넘긴 후 최종 완료 팝업 (✓)",
     dialogue: () => `할인해 주겠다며 붙잡는 혜택 제안들을 넘기고 최종 [해지 완료] 메시지를 확인하면 완벽해! 다 했으면 아래 [해지 완료했습니다]를 눌러줘!`,
-    tip: "최종 완료 화면을 확인한 후 아래 '해지 완료했습니다'를 누르면 절약 금액이 반영돼요.",
+    tip: "공식 사이트에서 완료 여부를 확인한 뒤 꾸독의 구독 목록을 정리해주세요.",
   },
 ];
 
@@ -546,7 +546,7 @@ export function CancelBrowserModal({
                 className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-[#3182F6] py-3 text-[13px] font-extrabold text-white shadow-md hover:bg-[#1B64DA] active:scale-98 transition-all cursor-pointer animate-pulse"
               >
                 <CheckCircle2 size={16} />
-                <span>해지를 완료했습니다 (절약 금액 반영)</span>
+                <span>해지를 완료했습니다 (목록에서 정리)</span>
               </button>
             )}
           </div>
