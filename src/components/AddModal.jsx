@@ -920,6 +920,15 @@ export function AddModal({
       const recognized =
         result?.data || {};
 
+      // An empty OCR response is a failed analysis, not a reviewable subscription.
+      if (!String(recognized.name || "").trim() &&
+          !(Number(recognized.amount) > 0) &&
+          !(Number(recognized.dueDay) > 0) &&
+          !String(recognized.nextBillingDate || "").trim() &&
+          !String(recognized.paymentMethod || "").trim()) {
+        throw new Error("이미지에서 결제 정보를 찾지 못했어요. 다른 결제 캡처를 선택하거나 직접 입력해 주세요.");
+      }
+
       const serviceMatch =
         recognized.name
           ? findServiceMatch(
