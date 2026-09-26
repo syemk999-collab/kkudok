@@ -22,7 +22,7 @@ export function createContestSubscriptions(scenario = null) {
       billingCycle: "매월",
       status: "active",
       dueDay: 15,
-      cancelUrl: "https://nid.naver.com/membership/my",
+      cancelUrl: "https://nid.naver.com/membership/subscribe?m=checkCancel",
       alertD1: false,
       alertD3: false,
       alertEnabled: false,

@@ -18,6 +18,7 @@ import com.submate.app.webguide.target.GuideStep;
 import com.submate.app.webguide.target.TargetResolution;
 import com.submate.app.webguide.target.TargetResolutionStatus;
 import com.submate.app.webguide.target.TargetResolver;
+import com.submate.app.webguide.target.TargetVerificationStatus;
 
 import java.util.Arrays;
 
@@ -173,9 +174,17 @@ public final class KkudokNaverGuideController {
         }
 
         int stepNumber = stepNumber(step.getStepId());
-        if (stepNumber > 0) stepBadge.setText(stepNumber + "/5단계");
+        boolean directStep = NaverMonthlyCancelRoute.STEP_RECURRING_CANCEL.equals(step.getStepId())
+                || NaverMonthlyCancelRoute.STEP_FINAL_CONFIRM.equals(step.getStepId());
+        if (stepNumber > 0) stepBadge.setText(stepNumber + "/" + (directStep ? 2 : 5) + "단계");
         stepDescription.setText(step.getInstruction());
         applyManualGuidePreference();
+        if (step.getVerificationStatus() != TargetVerificationStatus.LIVE_VERIFIED) {
+            overlay.setVisibility(View.GONE);
+            lastPresentedStepId = null;
+            lastPresentedRect = null;
+            return;
+        }
         resolveTarget(requestGeneration, requestUrl, step, 0);
     }
 
@@ -289,8 +298,8 @@ public final class KkudokNaverGuideController {
         if (NaverMonthlyCancelRoute.STEP_SETTINGS.equals(stepId)) return 1;
         if (NaverMonthlyCancelRoute.STEP_MANAGE.equals(stepId)) return 2;
         if (NaverMonthlyCancelRoute.STEP_CANCEL_ENTRY.equals(stepId)) return 3;
-        if (NaverMonthlyCancelRoute.STEP_RECURRING_CANCEL.equals(stepId)) return 4;
-        if (NaverMonthlyCancelRoute.STEP_FINAL_CONFIRM.equals(stepId)) return 5;
+        if (NaverMonthlyCancelRoute.STEP_RECURRING_CANCEL.equals(stepId)) return 1;
+        if (NaverMonthlyCancelRoute.STEP_FINAL_CONFIRM.equals(stepId)) return 2;
         return 0;
     }
 }

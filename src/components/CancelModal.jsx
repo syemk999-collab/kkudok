@@ -5,7 +5,7 @@ import { App } from "@capacitor/app";
 import { BottomSheet, Button, ServiceMark } from "./ui";
 import { CancelBrowserModal } from "./CancelBrowserModal";
 import { serviceCatalog } from "../data/subscriptionData";
-import { NAVER_PLUS_CANCEL_STEPS, isNaverPlusSubscription } from "../lib/naverPlusCancelGuide";
+import { NAVER_PLUS_CANCEL_STEPS, getCancelUrl, isNaverPlusSubscription, usesNaverPlusCancelEntry } from "../lib/naverPlusCancelGuide";
 import {
   openCancelBrowser,
   checkOverlayPermission,
@@ -33,9 +33,10 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
 
     return {
       ...rawSub,
-      cancelUrl: rawSub.cancelUrl || matched?.cancelUrl || "",
-      guideSteps: isNaverPlusSubscription(rawSub)
+      cancelUrl: getCancelUrl({ ...rawSub, cancelUrl: rawSub.cancelUrl || matched?.cancelUrl || "" }),
+      guideSteps: usesNaverPlusCancelEntry(rawSub)
         ? NAVER_PLUS_CANCEL_STEPS
+        : isNaverPlusSubscription(rawSub) ? []
         : (rawSub.guideSteps && rawSub.guideSteps.length > 0) ? rawSub.guideSteps : (matched?.guideSteps || []),
     };
   }, [rawSub]);
@@ -45,7 +46,7 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
     : baseSteps.map((s) => ({ title: "", description: s }));
   const [checked, setChecked] = useState(() => new Array(steps.length).fill(false));
   const [celebrating, setCelebrating] = useState(false);
-  const [showBrowserModal, setShowBrowserModal] = useState(() => Boolean(autoOpen && rawSub.cancelUrl));
+  const [showBrowserModal, setShowBrowserModal] = useState(() => Boolean(autoOpen && getCancelUrl(rawSub)));
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
   const [cancelSessionActive, setCancelSessionActive] = useState(false);
 
@@ -92,7 +93,9 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
       return;
     }
 
-    setChecked((current) => [true, ...current.slice(1)]);
+    if (!usesNaverPlusCancelEntry(subscription)) {
+      setChecked((current) => [true, ...current.slice(1)]);
+    }
   };
 
   const openInSystemBrowser = () => {
@@ -100,7 +103,9 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
     setCancelSessionActive(true);
     window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
     onToast?.(`${subscription.name} 해지 페이지를 기본 브라우저(Chrome)에서 열었어요.`);
-    setChecked((current) => [true, ...current.slice(1)]);
+    if (!usesNaverPlusCancelEntry(subscription)) {
+      setChecked((current) => [true, ...current.slice(1)]);
+    }
   };
 
   const proceedWithoutOverlay = async () => {
@@ -122,7 +127,9 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
     }
     window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
     onToast?.(`${subscription.name} 해지 페이지를 브라우저에서 열었어요.`);
-    setChecked((current) => [true, ...current.slice(1)]);
+    if (!usesNaverPlusCancelEntry(subscription)) {
+      setChecked((current) => [true, ...current.slice(1)]);
+    }
   };
 
   const handleRequestPermission = async () => {
@@ -249,6 +256,11 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
         <p className="mt-1 text-[12px] leading-relaxed text-[#6B7684]">
           결제 중단 시점과 환불 여부는 서비스마다 달라요. 공식 사이트에서 조건을 확인하고 직접 결정해주세요.
         </p>
+        {usesNaverPlusCancelEntry(subscription) && (
+          <p className="mt-2 text-[12px] leading-relaxed text-[#6B7684]">
+            가입 계정으로 로그인하면 네이버 해지 화면으로 이동해요. 다른 화면이 나오면 마이 멤버십 → 설정 → 네이버플러스 멤버십 관리 → 멤버십 해지하기 순서로 찾아가세요.
+          </p>
+        )}
       </div>
 
       {promotion && (

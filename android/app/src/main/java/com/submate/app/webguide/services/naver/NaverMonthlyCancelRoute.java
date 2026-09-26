@@ -27,9 +27,9 @@ public final class NaverMonthlyCancelRoute {
             case MEMBERSHIP_MANAGEMENT:
                 return step(STEP_CANCEL_ENTRY, state, "네이버플러스 멤버십 해지하기를 누르세요.", STEP_RECURRING_CANCEL);
             case CANCELLATION_ENTRY:
-                return step(STEP_RECURRING_CANCEL, state, "정기결제 해지를 누르세요.", STEP_FINAL_CONFIRM);
+                return step(STEP_RECURRING_CANCEL, state, "이번 이용 기간을 확인한 뒤 정기결제 해지를 펼치세요.", STEP_FINAL_CONFIRM);
             case FINAL_CANCEL_CONFIRM:
-                return step(STEP_FINAL_CONFIRM, state, "해지하기를 누르세요.", STEP_COMPLETE);
+                return step(STEP_FINAL_CONFIRM, state, "이용 종료일을 확인하고 해지하기를 직접 누르세요.", STEP_COMPLETE);
             case CANCEL_COMPLETE:
                 return new GuideStep(
                         STEP_COMPLETE, state,

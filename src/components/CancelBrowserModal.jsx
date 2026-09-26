@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Capacitor } from "@capacitor/core";
 import { openCancelBrowser } from "../lib/cancelBrowser";
 import { DEFAULT_CHARACTER_SRC } from "../lib/characterAsset";
-import { NAVER_PLUS_CANCEL_STEPS, isNaverPlusSubscription } from "../lib/naverPlusCancelGuide";
+import { NAVER_PLUS_CANCEL_STEPS, usesNaverPlusCancelEntry } from "../lib/naverPlusCancelGuide";
 import {
   Lock,
   X,
@@ -18,39 +18,21 @@ import {
 
 const NAVER_PLUS_TUTORIAL_HINTS = [
   {
-    locationBadge: "📍 목표 위치: 마이 멤버십 오른쪽 위 설정(⚙)",
-    dialogue: () => "로그인이 필요하면 먼저 로그인해줘. 마이 멤버십이 열리면 오른쪽 위 [설정]을 누르면 돼.",
-    tip: "NAVER 공식 안내의 시작점은 '네이버플러스 마이 멤버십 > 오른쪽 위 설정'입니다.",
+    locationBadge: "목표: 네이버 해지 화면의 [정기결제 해지]",
+    dialogue: () => "가입 계정으로 로그인하고 이번 이용 기간을 확인해줘. [정기결제 해지]를 펼치면 마지막 버튼이 나와.",
+    tip: "[멤버십 즉시 종료]는 환불을 동반하는 별도 선택이에요. 다음 결제만 멈추려면 [정기결제 해지]를 선택하세요.",
   },
   {
-    locationBadge: "📍 목표 위치: 네이버플러스 멤버십 관리",
-    dialogue: () => "설정 화면에서 [네이버플러스 멤버십 관리]를 찾아 눌러줘.",
-    tip: "프로필이나 일반 계정 설정이 아니라 '네이버플러스 멤버십 관리' 항목을 선택합니다.",
-  },
-  {
-    locationBadge: "📍 목표 위치: 네이버플러스 멤버십 해지하기",
-    dialogue: () => "멤버십 관리 화면에서 [네이버플러스 멤버십 해지하기]를 눌러 다음 화면으로 이동해줘.",
-    tip: "이 단계에서는 아직 최종 해지가 완료되지 않습니다.",
-  },
-  {
-    locationBadge: "📍 목표 위치: 정기결제 해지",
-    dialogue: () => "이번 이용 기간을 확인하고 [정기결제 해지]를 눌러줘.",
-    tip: "다음 결제부터 중단하려는 경우 '멤버십 즉시 종료'가 아니라 '정기결제 해지'를 선택합니다.",
-  },
-  {
-    locationBadge: "📍 목표 위치: 최종 해지하기",
-    dialogue: () => "마지막 [해지하기] 버튼은 실제 해지가 실행되는 단계야. 내용 확인 후 직접 선택해줘.",
-    tip: "꾸독은 최종 해지 버튼을 대신 누르지 않습니다.",
+    locationBadge: "목표: 펼친 영역 안의 마지막 [해지하기]",
+    dialogue: () => "이용 종료 예정일과 유의사항을 확인해줘. 해지를 원하면 마지막 [해지하기]는 직접 눌러줘.",
+    tip: "네이버 화면에서 해지 완료를 확인하기 전까지 꾸독은 해지됐다고 판단하지 않아요.",
   },
 ];
 
 function NaverPlusStepUiIllustration({ stepNumber, large = false }) {
   const config = {
-    1: { section: "마이 멤버십", action: "설정 ⚙", note: "오른쪽 위" },
-    2: { section: "멤버십 설정", action: "네이버플러스 멤버십 관리", note: "관리 메뉴" },
-    3: { section: "멤버십 관리", action: "네이버플러스 멤버십 해지하기", note: "해지 진입" },
-    4: { section: "이번 이용 기간 확인", action: "정기결제 해지", note: "다음 결제 중단" },
-    5: { section: "최종 확인", action: "해지하기", note: "사용자가 직접 선택" },
+    1: { section: "네이버 해지 화면", action: "정기결제 해지", note: "이번 이용 기간 확인 후 펼치기" },
+    2: { section: "이용 종료 예정일 확인", action: "해지하기", note: "사용자가 직접 선택" },
   }[stepNumber] || { section: "네이버플러스 멤버십", action: "다음 단계", note: "" };
 
   return (
@@ -243,7 +225,7 @@ export function CancelBrowserModal({
     },
   ];
 
-  const isNaverPlus = isNaverPlusSubscription(subscription);
+  const isNaverPlus = usesNaverPlusCancelEntry(subscription);
 
   const steps = isNaverPlus
     ? NAVER_PLUS_CANCEL_STEPS
@@ -490,13 +472,21 @@ export function CancelBrowserModal({
             />
           </div>
 
-          {/* 보안 안심 안내 배지 (화면 인식 불가 사유 명시) */}
+          {/* 웹의 별도 탭은 상태를 읽을 수 없고, Android WebView는 버튼 위치만 확인한다. */}
           <div className="w-full rounded-xl bg-gray-100/90 px-3 py-2 border border-gray-200/60 flex items-center gap-2">
             <ShieldCheck size={16} className="text-gray-500 shrink-0" />
             <p className="text-[10px] text-gray-600 leading-tight">
-              <span className="font-bold text-gray-800">보안 안내:</span> 개인정보 및 금융 보안을 위해 외부 웹 화면을 캡처하거나 인식하지 않고 사전 검증된 튜토리얼 경로로 안내합니다.
+              <span className="font-bold text-gray-800">화면 안내:</span> {Capacitor.isNativePlatform()
+                ? "앱 안에서는 버튼 위치를 찾아 안내해요. 로그인 정보는 꾸독이 읽거나 저장하지 않아요."
+                : "별도 탭의 네이버 화면은 꾸독이 확인할 수 없어요. 실제 버튼과 이용 조건을 직접 확인해주세요."}
             </p>
           </div>
+
+          {isNaverPlus && (
+            <p className="w-full text-[11px] leading-relaxed text-[#6B7684]">
+              해지 화면 대신 다른 페이지가 열렸다면 마이 멤버십 → 설정 → 네이버플러스 멤버십 관리 → 멤버십 해지하기로 이동하세요.
+            </p>
+          )}
 
           {/* 주요 액션 버튼 */}
           <div className="w-full space-y-2">
@@ -505,7 +495,7 @@ export function CancelBrowserModal({
               onClick={openWebsite}
               className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#191F28] py-3 text-[13px] font-bold text-white shadow-xs hover:bg-black active:scale-98 transition-all cursor-pointer"
             >
-              <span>{subscription.name} 공식 웹사이트 열기</span>
+              <span>{isNaverPlus ? "네이버 해지 화면 열기" : `${subscription.name} 공식 웹사이트 열기`}</span>
               <ExternalLink size={14} />
             </button>
 

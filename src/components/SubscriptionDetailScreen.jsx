@@ -17,6 +17,7 @@ import {
   PaymentMethodTriggerField,
 } from "./ui";
 import { formatWon } from "../lib/dates";
+import { getCancelUrl } from "../lib/naverPlusCancelGuide";
 
 /**
  * 프리미엄 iOS/쿠퍼티노 스타일 스크롤 휠 드럼롤 컬럼
@@ -410,8 +411,8 @@ export function SubscriptionDetailScreen({
               type="button"
               data-contest-target="cancel-primary"
               onClick={() => {
-                if (!contestMode && subscription.cancelUrl && !Capacitor.isNativePlatform()) {
-                  window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
+                if (!contestMode && getCancelUrl(subscription) && !Capacitor.isNativePlatform()) {
+                  window.open(getCancelUrl(subscription), "_blank", "noopener,noreferrer");
                 }
                 onStartCancel(subscription.subscriptionId, promotion, { autoOpen: !contestMode });
               }}

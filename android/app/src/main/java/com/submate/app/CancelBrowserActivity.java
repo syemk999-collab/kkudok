@@ -111,8 +111,9 @@ public class CancelBrowserActivity extends AppCompatActivity {
         serviceId = getIntent().getStringExtra("serviceId");
         if (serviceId == null) serviceId = "";
         String serviceName = getIntent().getStringExtra("serviceName");
-        automaticGuideEnabled = isNaverPlus(serviceId, serviceName);
         currentCancelUrl = getIntent().getStringExtra("cancelUrl");
+        automaticGuideEnabled = isNaverPlus(serviceId, serviceName)
+                && isNaverCancelEntry(currentCancelUrl);
         String stepsJson = getIntent().getStringExtra("guideStepsJson");
 
         TextView tvServiceName = findViewById(R.id.tvServiceName);
@@ -154,12 +155,14 @@ public class CancelBrowserActivity extends AppCompatActivity {
             });
         }
 
-        // 외부 브라우저(Chrome/삼성인터넷 등)로 열기 버튼: 이미 로그인된 세션 및 구글 로그인 문제 회피용
+        // NAVER appends a session token to the WebView URL after login. Never
+        // forward that URL into another browser; reopen the original safe entry.
         if (btnOpenExternal != null) {
             btnOpenExternal.setOnClickListener(v -> {
-                String targetUrl = (webView != null && webView.getUrl() != null && !webView.getUrl().isEmpty())
-                    ? webView.getUrl()
-                    : currentCancelUrl;
+                String targetUrl = automaticGuideEnabled
+                    ? currentCancelUrl
+                    : (webView != null && webView.getUrl() != null && !webView.getUrl().isEmpty())
+                        ? webView.getUrl() : currentCancelUrl;
                 if (targetUrl != null && !targetUrl.isEmpty()) {
                     try {
                         Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(targetUrl));
@@ -430,6 +433,19 @@ public class CancelBrowserActivity extends AppCompatActivity {
         String sname = name == null ? "" : name.replace(" ", "").toLowerCase();
         return sid.contains("naverplus") || sid.equals("naver")
                 || sname.contains("네이버플러스") || sname.contains("naverplus");
+    }
+
+    private boolean isNaverCancelEntry(String url) {
+        if (url == null) return false;
+        try {
+            Uri uri = Uri.parse(url);
+            return "https".equalsIgnoreCase(uri.getScheme())
+                    && "nid.naver.com".equalsIgnoreCase(uri.getHost())
+                    && "/membership/subscribe".equals(uri.getPath())
+                    && "checkCancel".equals(uri.getQueryParameter("m"));
+        } catch (Exception ignored) {
+            return false;
+        }
     }
 
     private boolean handleCustomScheme(String url) {
