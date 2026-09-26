@@ -31,7 +31,6 @@ export function AccountModal({
   onClose,
   onUpdateNickname,
   onLogout,
-  onTestPaymentDetection,
   onRequestPaymentCapture,
 }) {
   const currentNickname = profile?.nickname || "사용자";
@@ -154,8 +153,8 @@ export function AccountModal({
         )}
       </div>
 
-      {/* Web runs a parser demonstration; notification access exists only in the Android app. */}
-      <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
+      {/* Notification access is an Android permission, separate from the isolated contest parser demonstration. */}
+      {isNative && <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-emerald-600 text-white font-bold text-xs shadow-xs">
@@ -163,26 +162,16 @@ export function AccountModal({
             </span>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <strong className="block text-[13px] font-bold text-emerald-950">{isNative ? "실시간 결제 알림 감지" : "결제 문장 읽기 체험"}</strong>
-                {isNative && <span className="rounded bg-emerald-200/80 px-1 py-0.2 text-[9px] font-bold text-emerald-800">Beta</span>}
+                <strong className="block text-[13px] font-bold text-emerald-950">실시간 결제 알림 감지</strong>
+                <span className="rounded bg-emerald-200/80 px-1 py-0.2 text-[9px] font-bold text-emerald-800">Beta</span>
               </div>
               <span className="block text-[11px] leading-4 text-emerald-700/80 break-keep">
-                {isNative ? "허용한 결제 알림에서 구독 등록 제안" : "웹에서는 다른 앱 알림을 읽지 않고 테스트 문장만 분석해요"}
+                허용한 결제 알림에서 구독 등록 제안
               </span>
             </div>
           </div>
           <div className="flex items-center gap-1.5 shrink-0">
-            {onTestPaymentDetection && (
-              <Button
-                size="compact"
-                variant="secondary"
-                className="!py-1.5 !px-2.5 !text-[11px] !bg-white !border-emerald-200 !text-emerald-900 cursor-pointer"
-                onClick={onTestPaymentDetection}
-              >
-                체험
-              </Button>
-            )}
-            {isNative && onRequestPaymentCapture && (
+            {onRequestPaymentCapture && (
               <Button
                 size="compact"
                 className="!py-1.5 !px-2.5 !text-[11px] !bg-emerald-600 !text-white hover:!bg-emerald-700 cursor-pointer"
@@ -193,7 +182,7 @@ export function AccountModal({
             )}
           </div>
         </div>
-      </div>
+      </div>}
 
       {/* 로그아웃 블록 */}
       <div className="mt-6 pt-2">

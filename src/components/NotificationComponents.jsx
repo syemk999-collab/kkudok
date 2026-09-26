@@ -196,6 +196,7 @@ export function NotificationCenterModal({
   onMarkAllRead,
   onClearAll,
   onTriggerTest,
+  showTestTrigger = false,
   notificationPermission,
   onRequestPermission,
   onOpenTerms,
@@ -254,7 +255,7 @@ export function NotificationCenterModal({
         </div>
 
         {/* Quick Test Trigger Bar */}
-        <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] p-3">
+        {showTestTrigger && <div className="mt-3 flex items-center justify-between gap-2 rounded-xl bg-[#FAFAFA] border border-[#E4E4E7] p-3">
           <div className="flex items-center gap-2 min-w-0">
             <Sparkles size={15} className="text-black shrink-0" />
             <div className="min-w-0">
@@ -273,7 +274,7 @@ export function NotificationCenterModal({
             <Send size={12} />
             테스트 알림 만들기
           </Button>
-        </div>
+        </div>}
 
         {/* Notification List */}
         <div className="mt-3 max-h-[340px] overflow-y-auto divide-y divide-[#F4F4F5]">

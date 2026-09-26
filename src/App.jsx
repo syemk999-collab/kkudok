@@ -896,6 +896,7 @@ export default function App() {
           onMarkAllRead={markAllRead}
           onClearAll={clearAll}
           onTriggerTest={triggerContestReminder}
+          showTestTrigger={contestFlow.step === "A8"}
           notificationPermission={notificationPermission}
           onRequestPermission={() =>
             handleRequestPermission(
@@ -917,7 +918,6 @@ export default function App() {
           profile={profile}
           onClose={() => setAccountOpen(false)}
           onUpdateNickname={handleUpdateNickname}
-          onTestPaymentDetection={handleTestPaymentDetection}
           onRequestPaymentCapture={handleRequestPaymentCapture}
           onLogout={handleLogout}
         />
