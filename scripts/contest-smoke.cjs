@@ -39,13 +39,9 @@ async function verifyLanding(page, label) {
   assert.ok(heroHeadingText.includes("절약액은 검증해서 보여줍니다."));
 
   for (const text of [
-    "AI 영수증 · 결제 문자 자동 파싱",
-    "공식 출처 검증 제휴 절약 혜택",
-    "선제적 결제 리마인더 & 간편 해지",
-    "꾸독은 이렇게 작동합니다.",
-    "구독을 발견하는 순간은 모두 같지 않습니다.",
-    "파싱은 시작이고, 차이는 그 다음에 있습니다.",
-    "결제 정보에서, 필요한 것만 읽습니다.",
+    "읽고, 안내하고, 근거를 보여줘요.",
+    "새 결제도, 놓친 결제도. 직접 확인하고 등록하세요.",
+    "내 구독에서 절약할 선택지를 찾아보세요.",
     "이번에는 직접 경험해보세요.",
   ]) {
     await page.getByText(text, { exact: true }).first().waitFor();
@@ -60,14 +56,7 @@ async function verifyLanding(page, label) {
   assert.equal(heroVideoState.objectFit, "contain");
   assert.ok(heroVideoState.src.includes("kkudok-demo.mp4"), "Hero must use the real demo video");
 
-  const fullVideo = page.locator(".contest-demo-video video");
-  await fullVideo.waitFor();
-  const fullVideoState = await fullVideo.evaluate((node) => ({
-    objectFit: getComputedStyle(node).objectFit,
-    src: node.getAttribute("src") || "",
-  }));
-  assert.equal(fullVideoState.objectFit, "contain");
-  assert.equal(fullVideoState.src, heroVideoState.src);
+  assert.equal(await page.locator("video").count(), 1, "landing must have one real video player");
 
   const videoUrl = new URL(heroVideoState.src, baseURL).toString();
   const videoResponse = await fetch(videoUrl);
@@ -88,18 +77,10 @@ async function verifyLanding(page, label) {
     naturalWidth: node.naturalWidth,
   }));
   assert.notEqual(qrState.parentTag, "A", "QR itself must not act as a desktop hyperlink");
-  assert.equal(qrState.src, "/assets/contest/contest-experience-qr.svg");
+  assert.ok(qrState.src.startsWith("data:image/png;base64,"), "QR must encode the current deployment URL");
   assert.equal(qrState.complete, true);
   assert.ok(qrState.naturalWidth > 0, "contest QR failed to render");
-
-  const qrResponse = await fetch(new URL(qrState.src, baseURL));
-  assert.equal(qrResponse.status, 200, "contest QR request did not return 200");
-  assert.ok(
-    (qrResponse.headers.get("content-type") || "").includes("image/svg+xml"),
-    "contest QR did not return SVG"
-  );
-
-  const browserCta = page.locator('a[href="/#/contest"]').filter({ hasText: "이 브라우저에서 체험하기" }).first();
+  const browserCta = page.locator('a[href="/#/contest"]').filter({ hasText: "이 기기에서 바로 체험하기" }).first();
   await browserCta.waitFor();
 
   await assertNoHorizontalOverflow(page, label);
@@ -117,7 +98,7 @@ async function enterContest(page) {
     );
   });
 
-  await page.locator('a[href="/#/contest"]').filter({ hasText: "이 브라우저에서 체험하기" }).first().click();
+  await page.locator('a[href="/#/contest"]').filter({ hasText: "이 기기에서 바로 체험하기" }).first().click();
   await page.waitForURL(/#\/contest$/);
   await page.getByRole("heading", { name: "꾸독을 직접 경험해보세요." }).waitFor();
   await page.getByText("꾸독 컨시어지", { exact: true }).waitFor();
@@ -132,7 +113,7 @@ async function enterContest(page) {
 }
 
 async function runScenarioA(page) {
-  await page.locator(".contest-scenario-picker button").filter({ hasText: "SCENARIO A" }).click();
+  await page.locator(".contest-scenario-picker button").filter({ hasText: "체험 A · 새 결제" }).click();
   await page.getByRole("heading", { name: "새로운 결제가 발생한 상황" }).waitFor();
 
   await page.locator('[data-contest-target="contest-a-start"]').click();
@@ -171,7 +152,9 @@ async function runScenarioA(page) {
   await page.waitForURL(/#\/promotions$/);
   await page.getByText("등록한 Netflix 기준으로 확인할 수 있는 혜택이에요.", { exact: true }).waitFor();
   await page.getByText("네이버플러스 X Netflix", { exact: true }).first().waitFor();
-  await page.getByText(/검증 상태 LIVE_CONFIRMED/).waitFor();
+  await page.getByText("적용 조건", { exact: true }).first().waitFor();
+  await page.getByText("혜택 기간", { exact: true }).first().waitFor();
+  await page.getByText("공식 안내 링크 제공", { exact: true }).first().waitFor();
   await page.getByText(/help\.naver\.com/).waitFor();
 
   flow = await readContestFlow(page);
@@ -196,7 +179,7 @@ async function runScenarioA(page) {
 
   flow = await readContestFlow(page);
   assert.equal(flow?.step, "A9");
-  await page.getByText("SCENARIO A · 완료", { exact: true }).waitFor();
+  await page.getByText("체험 A · 완료", { exact: true }).waitFor();
 
   await page.screenshot({ path: "artifacts/contest/scenario-a-complete.png", fullPage: true });
 }
@@ -210,7 +193,7 @@ async function resetToContestPicker(page) {
 }
 
 async function runScenarioB(page) {
-  await page.locator(".contest-scenario-picker button").filter({ hasText: "SCENARIO B" }).click();
+  await page.locator(".contest-scenario-picker button").filter({ hasText: "체험 B · 지난 결제" }).click();
   await page.getByRole("heading", { name: "놓친 결제를 다시 불러오는 상황" }).waitFor();
 
   const sampleLink = page.locator('[data-contest-target="contest-b-sample"]');
@@ -274,9 +257,9 @@ async function runScenarioB(page) {
   flow = await readContestFlow(page);
   assert.equal(flow?.step, "B7");
 
-  await page.locator('[data-contest-target="subscription-seed-spotify"]').click();
-  await page.waitForURL(/#\/detail\/seed-spotify$/);
-  await page.getByText("Spotify", { exact: true }).first().waitFor();
+  await page.locator('[data-contest-target="subscription-seed-naverplus"]').click();
+  await page.waitForURL(/#\/detail\/seed-naverplus$/);
+  await page.getByText("네이버플러스 멤버십", { exact: true }).first().waitFor();
   flow = await readContestFlow(page);
   assert.equal(flow?.step, "B8");
 
@@ -295,7 +278,14 @@ async function runScenarioB(page) {
 
   flow = await readContestFlow(page);
   assert.equal(flow?.step, "B10");
-  await page.getByText("SCENARIO B · 완료", { exact: true }).waitFor();
+  await page.getByText("웹에서는 별도 네이버 탭의 버튼 위치를 읽을 수 없어요.", { exact: false }).waitFor();
+  await page.getByText("네이버 해지 화면 열기", { exact: true }).waitFor();
+  await page.getByRole("button", { name: "다음" }).click();
+  await page.getByText("2/2", { exact: true }).first().waitFor();
+  await page.screenshot({ path: "artifacts/contest/scenario-b-naver-guide.png", fullPage: true });
+  await page.getByRole("button", { name: "닫기", exact: true }).click();
+  await page.locator(".sheet-backdrop").click({ position: { x: 2, y: 2 } });
+  await page.getByText("체험 B · 완료", { exact: true }).waitFor();
 
   const preserved = await page.evaluate(() => ({
     profile: JSON.parse(localStorage.getItem("submate-mvp:profile") || "null"),

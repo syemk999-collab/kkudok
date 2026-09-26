@@ -266,7 +266,7 @@ export default function ContestLandingPage() {
             <ScenarioSummary
               label="체험 B · 지난 결제"
               title="놓친 결제가 있다면"
-              description="Netflix 결제 캡처를 직접 선택해 분석 결과를 확인·수정하고 등록합니다. 이어서 기존 Spotify 구독의 해지 경로를 살펴봅니다."
+              description="Netflix 결제 캡처를 직접 선택해 분석 결과를 확인·수정하고 등록합니다. 이어서 체험용 네이버플러스 멤버십의 해지 안내를 살펴봅니다."
               steps={["결제 캡처 저장", "직접 이미지 선택", "실제 이미지 글자 인식", "사용자 확인 후 등록", "꾸독이 해지 안내"]}
             />
           </div>
