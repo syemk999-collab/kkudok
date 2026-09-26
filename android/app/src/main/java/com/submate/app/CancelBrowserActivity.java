@@ -149,6 +149,9 @@ public class CancelBrowserActivity extends AppCompatActivity {
         });
 
         if (btnComplete != null) {
+            // The cancellation-entry page is not proof of a completed cancellation.
+            // Keep the separate confirmation action in Kkudok's own guide instead.
+            if (automaticGuideEnabled) btnComplete.setVisibility(View.GONE);
             btnComplete.setOnClickListener(v -> {
                 setResult(RESULT_OK);
                 finish();

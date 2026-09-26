@@ -570,12 +570,22 @@ public class GuideOverlayContainer extends FrameLayout {
                 new RectF(width - edge - bubbleW, height - edge - bubbleH, width - edge, height - edge)
         };
 
-        RectF chosen = candidates[0];
+        RectF chosen = null;
         for (RectF candidate : candidates) {
-            if (!RectF.intersects(candidate, expandedTarget) && !RectF.intersects(candidate, character)) {
+            if (candidate.left >= edge && candidate.right <= width - edge
+                    && candidate.top >= edge && candidate.bottom <= height - edge
+                    && !RectF.intersects(candidate, expandedTarget)
+                    && !RectF.intersects(candidate, character)) {
                 chosen = candidate;
                 break;
             }
+        }
+
+        // The dock still shows the instruction when a small viewport cannot fit
+        // the bubble without covering the actual button.
+        if (chosen == null) {
+            bubbleCard.setVisibility(GONE);
+            return;
         }
 
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(

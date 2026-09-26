@@ -461,7 +461,16 @@ export function CancelBrowserModal({
             </div>
           </div>
 
-          {/* 중앙 실제 UI 단계 다이어그램 (표준 UI 와이어프레임) */}
+          {/* 네이버 화면의 좌표를 읽지 않는 웹에서는 단계 예시임을 분명히 한다. */}
+          {isNaverPlus && (
+            <p className="w-full rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-[12px] leading-relaxed text-blue-900">
+              {Capacitor.getPlatform() === "android"
+                ? "Android 앱 안의 네이버 화면에서는 아래 두 버튼을 차례로 찾아 테두리로 표시해요. 마지막 해지하기 버튼은 직접 누르세요."
+                : "웹에서는 별도 네이버 탭의 버튼 위치를 읽을 수 없어요. 아래는 찾을 버튼의 단계 예시이며, 실제 네이버 화면에서 직접 확인해주세요."}
+            </p>
+          )}
+
+          {/* 위치 예시. 실제 페이지의 버튼 위치 표시는 Android WebView에서만 가능하다. */}
           <div className="w-full h-40 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
             <StepUiIllustration
               stepNumber={currentStep.stepNumber}
@@ -476,7 +485,7 @@ export function CancelBrowserModal({
           <div className="w-full rounded-xl bg-gray-100/90 px-3 py-2 border border-gray-200/60 flex items-center gap-2">
             <ShieldCheck size={16} className="text-gray-500 shrink-0" />
             <p className="text-[10px] text-gray-600 leading-tight">
-              <span className="font-bold text-gray-800">화면 안내:</span> {Capacitor.isNativePlatform()
+              <span className="font-bold text-gray-800">화면 안내:</span> {Capacitor.getPlatform() === "android"
                 ? "앱 안에서는 버튼 위치를 찾아 안내해요. 로그인 정보는 꾸독이 읽거나 저장하지 않아요."
                 : "별도 탭의 네이버 화면은 꾸독이 확인할 수 없어요. 실제 버튼과 이용 조건을 직접 확인해주세요."}
             </p>
