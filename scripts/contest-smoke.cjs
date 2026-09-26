@@ -333,6 +333,23 @@ async function runCancellationExample(page) {
   flow = await readContestFlow(page);
   assert.equal(flow?.step, "C3");
   await page.screenshot({ path: "artifacts/contest/scenario-c-naver-guide.png", fullPage: true });
+  const popupPromise = page.waitForEvent("popup", { timeout: 10000 });
+  await page.locator('[data-contest-target="cancel-open-site"] button').click();
+  const popup = await popupPromise;
+  await popup.waitForURL(/nid\.naver\.com/, { timeout: 10000 });
+  assert.ok(popup.url().startsWith("https://nid.naver.com/"), "cancellation example must open the official Naver entry");
+  await popup.close();
+  await page.getByText("네이버 해지 화면 열기", { exact: true }).waitFor();
+  assert.equal((await readContestFlow(page))?.step, "C4");
+  await page.getByRole("button", { name: "닫기", exact: true }).click();
+  await page.locator(".sheet-backdrop").click({ position: { x: 2, y: 2 } });
+  await page.getByText("별도 체험 · 완료", { exact: true }).waitFor();
+  const preserved = await page.evaluate(() => ({
+    profile: JSON.parse(localStorage.getItem("submate-mvp:profile") || "null"),
+    subscriptions: JSON.parse(localStorage.getItem("submate-mvp:subscriptions") || "null"),
+  }));
+  assert.equal(preserved.profile?.nickname, "기존 사용자");
+  assert.equal(preserved.subscriptions?.[0]?.id, "private-existing-sub");
 }
 
 async function verifyOcrFailureState(browser) {
