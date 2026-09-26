@@ -310,6 +310,24 @@ async function runCancellationExample(page) {
   await page.locator('[data-contest-target="cancel-primary"]').click();
   await page.getByRole("dialog", { name: "구독 해지 가이드" }).waitFor();
   await page.locator('[data-contest-target="cancel-open-site"]').waitFor();
+  await page.waitForFunction(() => {
+    const target = document.querySelector('[data-contest-target="cancel-open-site"]')?.getBoundingClientRect();
+    const spotlight = document.querySelector('.contest-guide-spotlight')?.getBoundingClientRect();
+    const panel = document.querySelector('.contest-guide-panel')?.getBoundingClientRect();
+    return target && spotlight && panel && Math.abs(target.top - spotlight.top) < 14 && target.bottom <= panel.top + 2;
+  });
+  const guidePlacement = await page.evaluate(() => {
+    const target = document.querySelector('[data-contest-target="cancel-open-site"]')?.getBoundingClientRect();
+    const spotlight = document.querySelector('.contest-guide-spotlight')?.getBoundingClientRect();
+    const panel = document.querySelector('.contest-guide-panel')?.getBoundingClientRect();
+    return target && spotlight && panel ? {
+      targetY: target.top, spotlightY: spotlight.top,
+      targetBottom: target.bottom, panelTop: panel.top,
+    } : null;
+  });
+  assert.ok(guidePlacement, "cancellation CTA must have a visible spotlight");
+  assert.ok(Math.abs(guidePlacement.targetY - guidePlacement.spotlightY) < 14, "spotlight must follow the actual cancellation CTA");
+  assert.ok(guidePlacement.targetBottom <= guidePlacement.panelTop + 2, "concierge must not cover the cancellation CTA");
   await page.getByText("꾸독에서 실제 해지 완료로 표시하지 않습니다.", { exact: false }).waitFor();
   assert.equal(await page.getByRole("button", { name: "이미 해지 완료하셨나요? 목록에서 정리" }).count(), 0);
   flow = await readContestFlow(page);

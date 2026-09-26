@@ -144,7 +144,7 @@ const GUIDE = {
     target: "cancel-primary",
     eyebrow: "별도 체험 · 2/3",
     title: "해지 방법을 직접 선택해주세요.",
-    body: "네이버플러스 멤버십 상세에서 ‘웹사이트에서 해지하기’를 눌러 안내를 확인하세요.",
+    body: "네이버플러스 멤버십 상세에서 ‘해지 방법 보기’를 눌러 안내를 확인하세요.",
   },
   C3: {
     target: "cancel-open-site",

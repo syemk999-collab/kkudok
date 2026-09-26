@@ -419,7 +419,7 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
         </ol>
       </section>
 
-      <div className="mt-6 rounded-2xl border border-[#E5E8EB] bg-[#F9FAFB] p-4"><div className="flex gap-2.5"><ShieldCheck className="shrink-0 text-[#6B7684]" size={18} /><p className="text-[12px] leading-relaxed text-[#6B7684]">꾸독은 해지를 대행하지 않아요. 해지 완료 여부는 서비스 화면에서 확인한 뒤 아래 버튼을 눌러주세요.</p></div></div>
+      <div className="mt-6 rounded-2xl border border-[#E5E8EB] bg-[#F9FAFB] p-4"><div className="flex gap-2.5"><ShieldCheck className="shrink-0 text-[#6B7684]" size={18} /><p className="text-[12px] leading-relaxed text-[#6B7684]">{tutorialOnly ? "꾸독은 해지를 대행하지 않아요. 실제 해지 여부와 완료 화면은 공식 사이트에서 직접 확인해주세요." : "꾸독은 해지를 대행하지 않아요. 해지 완료 여부는 서비스 화면에서 확인한 뒤 아래 버튼을 눌러주세요."}</p></div></div>
       {!tutorialOnly && <Button size="large" fullWidth variant="secondary" className="mt-4" onClick={complete}>해지 완료했습니다</Button>}
     </BottomSheet>
   );

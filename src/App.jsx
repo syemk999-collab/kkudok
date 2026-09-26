@@ -278,8 +278,6 @@ export default function App() {
   const {
     notifications,
     setNotifications,
-    activeBanner,
-    setActiveBanner,
     notificationCenterOpen,
     setNotificationCenterOpen,
     notificationPermission,
@@ -586,6 +584,10 @@ export default function App() {
   }, [contestFlow.step, setContestStep, setNotificationCenterOpen]);
 
   const triggerContestReminder = useCallback(() => {
+    if (contestFlow.step !== "A8") {
+      handleTriggerTestNotification(null, notify);
+      return;
+    }
     const registered = subscriptions.find((subscription) => subscription.subscriptionId === contestFlow.addedSubscriptionId);
     if (!registered) {
       notify("등록한 구독을 찾지 못했어요. 체험을 다시 시작해 주세요.");

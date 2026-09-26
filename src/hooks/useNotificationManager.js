@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { createMockSubscriptions } from "../data/subscriptionData";
 import {
   generateSubscriptionAlerts,
   createTestNotification,
@@ -86,7 +85,7 @@ export function useNotificationManager({ subscriptions = [], persist = true } = 
   );
 
   const handleTriggerTestNotification = useCallback((targetSub = null, notify = null, forcedType = "auto") => {
-    const sub = targetSub || subscriptions.find((s) => s.id === "spotify") || subscriptions.find((s) => s.id === "netflix") || subscriptions[0];
+    const sub = targetSub || subscriptions[0];
     if (!sub) {
       notify?.("등록된 구독이 없어 알림을 생성할 수 없습니다.");
       return null;
@@ -144,8 +143,6 @@ export function useNotificationManager({ subscriptions = [], persist = true } = 
   return {
     notifications,
     setNotifications,
-    activeBanner: null,
-    setActiveBanner: () => {},
     notificationCenterOpen,
     setNotificationCenterOpen,
     notificationPermission,
