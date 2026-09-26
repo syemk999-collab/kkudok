@@ -884,7 +884,7 @@ export default function App() {
       {contestFlowActive && !(
         screen.route === "contest" &&
         ["A1", "B1", "B2"].includes(contestFlow.step)
-      ) && (
+      ) && !(contestFlow.step === "B10" && cancelSubscription) && (
         <ContestGuideOverlay
           flow={contestFlow}
           onStep={setContestStep}
