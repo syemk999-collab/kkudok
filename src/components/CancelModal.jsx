@@ -5,6 +5,8 @@ import { App } from "@capacitor/app";
 import { BottomSheet, Button, ServiceMark } from "./ui";
 import { CancelBrowserModal } from "./CancelBrowserModal";
 import { serviceCatalog } from "../data/subscriptionData";
+import { NAVER_PLUS_CANCEL_STEPS, getCancelUrl, isNaverPlusSubscription, usesNaverPlusCancelEntry } from "../lib/naverPlusCancelGuide";
+import { getProviderCancellation, identifyCancellationProvider } from "../lib/providerCancellation";
 import {
   openCancelBrowser,
   checkOverlayPermission,
@@ -20,6 +22,8 @@ const baseSteps = [
 ];
 
 export function CancelModal({ subscription: rawSub, promotion, autoOpen = false, onClose, onComplete, onToast, onExternalOpen }) {
+  const providerId = identifyCancellationProvider(rawSub);
+  const [purchaseSource, setPurchaseSource] = useState("unknown");
   // DB 구독 데이터에 guideSteps나 cancelUrl이 누락되어도 serviceCatalog에서 100% 매칭 보강
   const subscription = useMemo(() => {
     const targetName = (rawSub.name || "").toLowerCase().replace(/\s+/g, "");
@@ -30,19 +34,28 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
       return sId === targetId || sName === targetName || targetId.includes(sId) || targetName.includes(sName);
     });
 
+    const providerGuide = getProviderCancellation(rawSub, purchaseSource);
     return {
       ...rawSub,
-      cancelUrl: rawSub.cancelUrl || matched?.cancelUrl || "",
-      guideSteps: (rawSub.guideSteps && rawSub.guideSteps.length > 0) ? rawSub.guideSteps : (matched?.guideSteps || []),
+      cancelUrl: providerGuide ? providerGuide.cancelUrl
+        : getCancelUrl({ ...rawSub, cancelUrl: rawSub.cancelUrl || matched?.cancelUrl || "" }),
+      guideSteps: providerGuide ? providerGuide.guideSteps : usesNaverPlusCancelEntry(rawSub)
+        ? NAVER_PLUS_CANCEL_STEPS
+        : isNaverPlusSubscription(rawSub) ? []
+        : (rawSub.guideSteps && rawSub.guideSteps.length > 0) ? rawSub.guideSteps : (matched?.guideSteps || []),
+      cancellationProvider: providerGuide?.id || null,
+      cancellationPurchaseSource: providerGuide?.purchaseSource || null,
+      cancellationNotice: providerGuide?.notice || "",
+      cancellationHelpUrl: providerGuide?.helpUrl || "",
     };
-  }, [rawSub]);
+  }, [rawSub, purchaseSource]);
 
   const steps = (subscription.guideSteps && subscription.guideSteps.length > 0)
     ? subscription.guideSteps.map((s) => ({ title: s.title, description: s.description }))
     : baseSteps.map((s) => ({ title: "", description: s }));
   const [checked, setChecked] = useState(() => new Array(steps.length).fill(false));
   const [celebrating, setCelebrating] = useState(false);
-  const [showBrowserModal, setShowBrowserModal] = useState(() => Boolean(autoOpen && rawSub.cancelUrl));
+  const [showBrowserModal, setShowBrowserModal] = useState(() => Boolean(!providerId && autoOpen && getCancelUrl(rawSub)));
   const [showPermissionPrompt, setShowPermissionPrompt] = useState(false);
   const [cancelSessionActive, setCancelSessionActive] = useState(false);
 
@@ -65,6 +78,11 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
 
     onExternalOpen?.(subscription);
     setCancelSessionActive(true);
+    if (providerId && purchaseSource !== "web") {
+      // Store-billed subscriptions cannot be inspected in Kkudok's WebView.
+      window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
     if (!Capacitor.isNativePlatform()) {
       window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
       setShowBrowserModal(true);
@@ -72,7 +90,7 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
     }
 
     const res = await openCancelBrowser({
-      serviceId: subscription.id,
+      serviceId: providerId || subscription.id,
       serviceName: subscription.name,
       cancelUrl: subscription.cancelUrl,
       guideSteps: subscription.guideSteps,
@@ -89,7 +107,9 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
       return;
     }
 
-    setChecked((current) => [true, ...current.slice(1)]);
+    if (!usesNaverPlusCancelEntry(subscription) && !providerId) {
+      setChecked((current) => [true, ...current.slice(1)]);
+    }
   };
 
   const openInSystemBrowser = () => {
@@ -97,14 +117,16 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
     setCancelSessionActive(true);
     window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
     onToast?.(`${subscription.name} 해지 페이지를 기본 브라우저(Chrome)에서 열었어요.`);
-    setChecked((current) => [true, ...current.slice(1)]);
+    if (!usesNaverPlusCancelEntry(subscription) && !providerId) {
+      setChecked((current) => [true, ...current.slice(1)]);
+    }
   };
 
   const proceedWithoutOverlay = async () => {
     setShowPermissionPrompt(false);
     setCancelSessionActive(true);
     const res = await openCancelBrowser({
-      serviceId: subscription.id,
+      serviceId: providerId || subscription.id,
       serviceName: subscription.name,
       cancelUrl: subscription.cancelUrl,
       guideSteps: subscription.guideSteps,
@@ -119,7 +141,9 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
     }
     window.open(subscription.cancelUrl, "_blank", "noopener,noreferrer");
     onToast?.(`${subscription.name} 해지 페이지를 브라우저에서 열었어요.`);
-    setChecked((current) => [true, ...current.slice(1)]);
+    if (!usesNaverPlusCancelEntry(subscription)) {
+      setChecked((current) => [true, ...current.slice(1)]);
+    }
   };
 
   const handleRequestPermission = async () => {
@@ -246,7 +270,39 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
         <p className="mt-1 text-[12px] leading-relaxed text-[#6B7684]">
           결제 중단 시점과 환불 여부는 서비스마다 달라요. 공식 사이트에서 조건을 확인하고 직접 결정해주세요.
         </p>
+        {usesNaverPlusCancelEntry(subscription) && (
+          <p className="mt-2 text-[12px] leading-relaxed text-[#6B7684]">
+            가입 계정으로 로그인하면 네이버 해지 화면으로 이동해요. 다른 화면이 나오면 마이 멤버십 → 설정 → 네이버플러스 멤버십 관리 → 멤버십 해지하기 순서로 찾아가세요.
+          </p>
+        )}
       </div>
+
+      {providerId && (
+        <section className="mt-4 rounded-2xl border border-[#D9E7F8] bg-[#F7FBFF] p-4" aria-label="결제 경로 선택">
+          <h3 className="text-[14px] font-bold text-[#191F28]">어디에서 결제하셨나요?</h3>
+          <p className="mt-1 text-[12px] leading-5 text-[#4E5968]">영수증에 표시된 결제처를 선택해야 정확한 해지 경로를 열 수 있어요.</p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            {[
+              ["web", "서비스 웹사이트"],
+              ["google-play", "Google Play"],
+              ["app-store", "App Store"],
+              ["unknown", "아직 모르겠어요"],
+            ].map(([source, label]) => (
+              <button key={source} type="button" aria-pressed={purchaseSource === source}
+                onClick={() => {
+                  setPurchaseSource(source);
+                  setChecked(new Array(getProviderCancellation(rawSub, source)?.guideSteps.length || 0).fill(false));
+                  setCancelSessionActive(false);
+                }}
+                className={`min-h-11 rounded-xl border px-2 py-2 text-[12px] font-semibold ${purchaseSource === source ? "border-[#315976] bg-[#E5F2F9] text-[#254862]" : "border-[#D9E7F8] bg-white text-[#4E5968]"}`}>
+                {label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-3 text-[11px] leading-5 text-[#4E5968]">{subscription.cancellationNotice}</p>
+          <a href={subscription.cancellationHelpUrl} target="_blank" rel="noreferrer" className="mt-2 inline-block text-[11px] font-semibold text-[#315976] underline">공식 해지 안내 확인하기 ↗</a>
+        </section>
+      )}
 
       {promotion && (
         <div className="mt-4 flex items-center justify-between rounded-2xl border border-[#FFD8A8] bg-[#FFF9F2] p-3.5 shadow-2xs">
@@ -299,7 +355,7 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
               onClick={goToCancel}
               prefixIcon={<ExternalLink size={17} />}
             >
-              {subscription.cancelUrl ? "해지 페이지로 바로 이동 (가이드 포함)" : "해지 링크를 찾지 못했어요"}
+              {subscription.cancelUrl ? providerId && purchaseSource !== "web" ? "결제처의 공식 경로 열기" : "해지 페이지로 바로 이동 (가이드 포함)" : providerId ? "결제처를 먼저 선택해주세요" : "해지 링크를 찾지 못했어요"}
             </Button>
           </div>
           <Button
@@ -312,9 +368,9 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
           </Button>
         </div>
       )}
-      {!subscription.cancelUrl && <p className="mt-2 text-center text-[12px] font-medium text-[#FF4D4D]">이 서비스의 해지 URL이 DB에 등록되어 있지 않습니다.</p>}
+      {!subscription.cancelUrl && !providerId && <p className="mt-2 text-center text-[12px] font-medium text-[#FF4D4D]">이 서비스의 해지 URL이 DB에 등록되어 있지 않습니다.</p>}
 
-      {subscription.cancelUrl && (
+      {subscription.cancelUrl && (!providerId || purchaseSource === "web") && (
         <button
           type="button"
           onClick={openInSystemBrowser}

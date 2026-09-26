@@ -18,6 +18,7 @@ import com.submate.app.webguide.target.GuideStep;
 import com.submate.app.webguide.target.TargetResolution;
 import com.submate.app.webguide.target.TargetResolutionStatus;
 import com.submate.app.webguide.target.TargetResolver;
+import com.submate.app.webguide.target.TargetVerificationStatus;
 
 import java.util.Arrays;
 
@@ -38,11 +39,14 @@ public final class KkudokNaverGuideController {
     private boolean paused = false;
     private boolean destroyed = false;
     private boolean manualGuideRequested = false;
+    private boolean directGuideShown = false;
     private Runnable pendingEvaluate;
+    private Runnable pendingSettledEvaluate;
     private Runnable pendingRetry;
     private PageState lastPageState;
     private String lastPresentedStepId;
     private RectF lastPresentedRect;
+    private String autoScrolledStepId;
 
     public KkudokNaverGuideController(
             WebView webView,
@@ -66,6 +70,7 @@ public final class KkudokNaverGuideController {
         lastPageState = null;
         lastPresentedStepId = null;
         lastPresentedRect = null;
+        autoScrolledStepId = null;
         overlay.onPageLoading();
         applyManualGuidePreference();
         stepDescription.setText("공식 페이지를 확인하고 있어요.");
@@ -73,21 +78,26 @@ public final class KkudokNaverGuideController {
 
     public void onPageFinished() {
         scheduleEvaluate(80L);
+        scheduleSettledEvaluate(650L);
     }
 
     public void onUserInteraction() {
         invalidatePending();
         scheduleEvaluate(DEBOUNCE_MS);
+        // The final button appears after the NAVER accordion has finished updating.
+        scheduleSettledEvaluate(650L);
     }
 
     public void onScroll() {
         invalidatePending();
         scheduleEvaluate(DEBOUNCE_MS);
+        scheduleSettledEvaluate(650L);
     }
 
     public void onLayoutChanged() {
         invalidatePending();
         scheduleEvaluate(DEBOUNCE_MS);
+        scheduleSettledEvaluate(650L);
     }
 
     public void onPopupOpened() {
@@ -141,8 +151,18 @@ public final class KkudokNaverGuideController {
         generation++;
         if (pendingEvaluate != null) handler.removeCallbacks(pendingEvaluate);
         if (pendingRetry != null) handler.removeCallbacks(pendingRetry);
+        if (pendingSettledEvaluate != null) handler.removeCallbacks(pendingSettledEvaluate);
         pendingEvaluate = null;
         pendingRetry = null;
+        pendingSettledEvaluate = null;
+    }
+
+    private void scheduleSettledEvaluate(long delayMs) {
+        pendingSettledEvaluate = () -> {
+            pendingSettledEvaluate = null;
+            scheduleEvaluate(0L);
+        };
+        handler.postDelayed(pendingSettledEvaluate, delayMs);
     }
 
     private void evaluateCurrentState() {
@@ -173,9 +193,21 @@ public final class KkudokNaverGuideController {
         }
 
         int stepNumber = stepNumber(step.getStepId());
-        if (stepNumber > 0) stepBadge.setText(stepNumber + "/5단계");
+        boolean directStep = NaverMonthlyCancelRoute.STEP_RECURRING_CANCEL.equals(step.getStepId())
+                || NaverMonthlyCancelRoute.STEP_FINAL_CONFIRM.equals(step.getStepId());
+        if (directStep && !directGuideShown) {
+            directGuideShown = true;
+            manualGuideRequested = true;
+        }
+        if (stepNumber > 0) stepBadge.setText(stepNumber + "/" + (directStep ? 2 : 5) + "단계");
         stepDescription.setText(step.getInstruction());
         applyManualGuidePreference();
+        if (step.getVerificationStatus() != TargetVerificationStatus.LIVE_VERIFIED) {
+            overlay.setVisibility(View.GONE);
+            lastPresentedStepId = null;
+            lastPresentedRect = null;
+            return;
+        }
         resolveTarget(requestGeneration, requestUrl, step, 0);
     }
 
@@ -232,7 +264,10 @@ public final class KkudokNaverGuideController {
         if (status == TargetResolutionStatus.FOUND_OFFSCREEN) {
             applyManualGuidePreference();
             overlay.showTargetStatus(step, status, resolution.getRect());
-            stepDescription.setText("버튼이 화면 밖에 있어요. 안내 방향으로 스크롤해주세요.");
+            stepDescription.setText("버튼이 화면 밖에 있어요. 위치를 맞추고 있어요.");
+            lastPresentedStepId = null;
+            lastPresentedRect = null;
+            scrollVerifiedCancelTargetIntoView(requestGeneration, requestUrl, step);
             return;
         }
         if (status == TargetResolutionStatus.NOT_FOUND
@@ -254,6 +289,36 @@ public final class KkudokNaverGuideController {
         } else {
             showManualFallback("자동 위치 안내를 사용할 수 없어 수동 안내로 전환했어요.");
         }
+    }
+
+    private void scrollVerifiedCancelTargetIntoView(long requestGeneration, String requestUrl, GuideStep step) {
+        if (!isCurrent(requestGeneration, requestUrl)
+                || step.getVerificationStatus() != TargetVerificationStatus.LIVE_VERIFIED) return;
+        String stepId = step.getStepId();
+        String targetId;
+        if (NaverMonthlyCancelRoute.STEP_RECURRING_CANCEL.equals(stepId)) {
+            targetId = "cancelFoldBtn";
+        } else if (NaverMonthlyCancelRoute.STEP_FINAL_CONFIRM.equals(stepId)) {
+            targetId = "cancelBtn";
+        } else {
+            return;
+        }
+        if (stepId.equals(autoScrolledStepId)) return;
+        autoScrolledStepId = stepId;
+
+        // Only move the viewport for the two verified targets. Never invoke a
+        // click, submit, or navigation on the member's behalf.
+        String script = "(function(){var e=document.getElementById('" + targetId + "');"
+                + "if(!e)return false;e.scrollIntoView({block:'center',inline:'nearest',behavior:'instant'});"
+                + "return true;})()";
+        webView.evaluateJavascript(script, result -> {
+            if (!isCurrent(requestGeneration, requestUrl)) return;
+            if (!"true".equals(result)) {
+                autoScrolledStepId = null;
+                return;
+            }
+            scheduleEvaluate(220L);
+        });
     }
 
     private void showManualFallback(String message) {
@@ -289,8 +354,8 @@ public final class KkudokNaverGuideController {
         if (NaverMonthlyCancelRoute.STEP_SETTINGS.equals(stepId)) return 1;
         if (NaverMonthlyCancelRoute.STEP_MANAGE.equals(stepId)) return 2;
         if (NaverMonthlyCancelRoute.STEP_CANCEL_ENTRY.equals(stepId)) return 3;
-        if (NaverMonthlyCancelRoute.STEP_RECURRING_CANCEL.equals(stepId)) return 4;
-        if (NaverMonthlyCancelRoute.STEP_FINAL_CONFIRM.equals(stepId)) return 5;
+        if (NaverMonthlyCancelRoute.STEP_RECURRING_CANCEL.equals(stepId)) return 1;
+        if (NaverMonthlyCancelRoute.STEP_FINAL_CONFIRM.equals(stepId)) return 2;
         return 0;
     }
 }

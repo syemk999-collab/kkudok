@@ -1489,7 +1489,7 @@ export function AddModal({
         </div>
 
         {error && (
-          <div className="mt-4 flex items-start gap-2.5 rounded-xl bg-[#FFF4F2] px-3.5 py-3 text-[12px] leading-5 text-[#B42318]">
+          <div role="alert" className="mt-4 flex items-start gap-2.5 rounded-xl bg-[#FFF4F2] px-3.5 py-3 text-[12px] leading-5 text-[#B42318]">
             <AlertTriangle
               size={16}
               className="mt-0.5 shrink-0"
@@ -1546,7 +1546,7 @@ export function AddModal({
               ) : (
                 <>
                   <UploadCloud size={18} />
-                  영수증 · 결제 화면 불러오기
+                  {error ? "이미지 다시 선택하기" : "영수증 · 결제 화면 불러오기"}
                 </>
               )}
             </button>

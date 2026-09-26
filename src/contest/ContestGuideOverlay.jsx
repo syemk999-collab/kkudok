@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { DEFAULT_CHARACTER_SRC } from "../lib/characterAsset";
+import { CONTEST_CANCELLATION_SUBSCRIPTION_ID } from "./contestSubscriptions";
 
 const GUIDE = {
   A1: {
@@ -62,7 +63,7 @@ const GUIDE = {
     target: "contest-b-sample",
     eyebrow: "체험 B · 1/9",
     title: "이번에는 알림을 놓친 결제가 있다고 가정해볼게요.",
-    body: "Netflix 결제 캡처를 저장해 직접 선택합니다. 등록 후에는 기존 Spotify 구독의 해지 방법을 살펴봅니다.",
+    body: "Netflix 결제 캡처를 저장해 직접 선택합니다. 등록 후에는 체험용 네이버플러스 멤버십의 해지 안내를 살펴봅니다.",
   },
   B2: {
     target: "contest-b-upload-start",
@@ -88,7 +89,7 @@ const GUIDE = {
     target: "contest-add-save",
     eyebrow: "체험 B · 5/9",
     title: "확인한 정보를 실제 구독으로 등록해주세요.",
-    body: "등록이 끝나면 기존 Spotify 구독을 선택해 해지 가이드까지 이어갑니다.",
+    body: "등록이 끝나면 체험용 네이버플러스 멤버십을 선택해 해지 안내까지 이어갑니다.",
   },
   B6: {
     target: "nav-subscriptions",
@@ -97,9 +98,9 @@ const GUIDE = {
     body: "하단 ‘구독’ 탭을 눌러주세요.",
   },
   B7: {
-    target: "subscription-seed-spotify",
+    target: `subscription-${CONTEST_CANCELLATION_SUBSCRIPTION_ID}`,
     eyebrow: "체험 B · 7/9",
-    title: "예시로 Spotify 구독을 선택해주세요.",
+    title: "체험용 네이버플러스 멤버십을 선택해주세요.",
     body: "실제 구독 상세 화면에서 해지 경로를 확인합니다.",
   },
   B8: {
@@ -112,7 +113,7 @@ const GUIDE = {
     target: "cancel-open-site",
     eyebrow: "체험 B · 9/9",
     title: "공식 해지 페이지로 이동해 안내를 확인해보세요.",
-    body: "웹에서는 공식 페이지를 새 탭으로 열고, 안드로이드 앱에서는 앱 안의 해지 안내를 사용할 수 있습니다.",
+    body: "웹에서는 꾸독의 단계별 안내를 보며 공식 페이지를 새 탭으로 엽니다. 안드로이드 앱에서는 현재 화면의 버튼을 확인할 수 있을 때 강조하고, 확인할 수 없으면 수동 안내로 전환합니다. 로그인과 최종 해지는 직접 진행하세요.",
   },
   B10: {
     eyebrow: "체험 B · 완료",

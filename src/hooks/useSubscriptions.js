@@ -5,6 +5,7 @@ import { clearStoredValue, readStoredValue, removeDemoSubscriptions, storageKeys
 import { readHash } from "./useNavigation";
 import { upsertDbSubscription, deleteDbSubscription, fetchUserSubscriptions } from "../lib/supabase";
 import { isDuplicateSubscription } from "../lib/subscriptionAdd";
+import { createContestSubscriptions } from "../contest/contestSubscriptions.js";
 
 export const createSubscription = (service, index = 0) => ({
   ...service,
@@ -17,7 +18,7 @@ export const createSubscription = (service, index = 0) => ({
   renewalPending: false,
 });
 
-export function useSubscriptions({ currentRoute = "home", contestMode = currentRoute === "contest" } = {}) {
+export function useSubscriptions({ currentRoute = "home", contestMode = currentRoute === "contest", contestScenario = null } = {}) {
   const isContestSession = contestMode;
   const previousContestMode = useRef(contestMode);
   const previousUserState = useRef(null);
@@ -42,9 +43,7 @@ export function useSubscriptions({ currentRoute = "home", contestMode = currentR
   const [profile, setProfile] = useState(effectiveProfile);
   const [subscriptions, setSubscriptions] = useState(() => {
     if (isContestSession) {
-      return createMockSubscriptions().filter((subscription) =>
-        (subscription.serviceId || subscription.id) !== "netflix"
-      );
+      return createContestSubscriptions(contestScenario);
     }
     const saved = readStoredValue(storageKeys.subscriptions, null);
     if (Array.isArray(saved) && saved.length > 0) {
@@ -71,9 +70,7 @@ export function useSubscriptions({ currentRoute = "home", contestMode = currentR
     if (contestMode) {
       previousUserState.current = { profile, subscriptions, onboardingComplete, savedAmount };
       setProfile({ nickname: "체험 사용자", provider: "Contest", guest: true, notificationsAllowed: true });
-      setSubscriptions(createMockSubscriptions().filter((subscription) =>
-        (subscription.serviceId || subscription.id) !== "netflix"
-      ));
+      setSubscriptions(createContestSubscriptions(contestScenario));
       setOnboardingComplete(true);
       setSavedAmount(0);
     } else if (previousUserState.current) {

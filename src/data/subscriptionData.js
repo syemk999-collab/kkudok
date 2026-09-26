@@ -4089,7 +4089,7 @@ export const serviceCatalog = [
     ],
     "dueDay": 15,
     "paymentMethod": "신용카드",
-    "cancelUrl": "https://nid.naver.com/membership/my",
+    "cancelUrl": "https://nid.naver.com/membership/subscribe?m=checkCancel",
     "guideSteps": [
       {
         "stepNumber": 1,

@@ -1,4 +1,5 @@
 import { parseReceiptText } from "./_lib/receiptParser.js";
+import { randomUUID } from "node:crypto";
 
 export const config = {
   api: {
@@ -19,6 +20,13 @@ const readBody = (request) => {
 };
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const GEMINI_TOTAL_TIMEOUT_MS = 28_000;
+const GEMINI_ATTEMPT_TIMEOUT_MS = 12_000;
+
+// Never log the image, recognized text, provider response body, URL, or API key.
+const logOcr = (requestId, event, details) => {
+  console.info("[ocr]", { requestId, event, ...details });
+};
 
 const isHighDemandOrOverloaded = (status, message = "") => {
   const lower = String(message).toLowerCase();
@@ -71,9 +79,10 @@ const callSingleGeminiModel = async ({ model, imageBase64, mimeType, apiKey, sig
   return candidate?.text || "";
 };
 
-const callGeminiVision = async ({ imageBase64, mimeType, apiKey }) => {
+const callGeminiVision = async ({ imageBase64, mimeType, apiKey, requestId }) => {
   const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), 28_000);
+  const startedAt = Date.now();
+  const timer = setTimeout(() => controller.abort(), GEMINI_TOTAL_TIMEOUT_MS);
   const defaultModel = process.env.GEMINI_MODEL || "gemini-3.5-flash-lite";
   const candidateModels = Array.from(new Set([
     defaultModel,
@@ -87,24 +96,39 @@ const callGeminiVision = async ({ imageBase64, mimeType, apiKey }) => {
   let lastError = null;
   try {
     for (const model of candidateModels) {
+      const attemptStartedAt = Date.now();
+      const remainingMs = GEMINI_TOTAL_TIMEOUT_MS - (attemptStartedAt - startedAt);
+      if (remainingMs <= 0) break;
       try {
-        return await callSingleGeminiModel({
+        const rawText = await callSingleGeminiModel({
           model,
           imageBase64,
           mimeType,
           apiKey,
-          signal: controller.signal,
+          signal: AbortSignal.any([
+            controller.signal,
+            AbortSignal.timeout(Math.min(GEMINI_ATTEMPT_TIMEOUT_MS, remainingMs)),
+          ]),
         });
+        logOcr(requestId, "provider_attempt", { provider: "gemini", model, outcome: "success", elapsedMs: Date.now() - attemptStartedAt });
+        return rawText;
       } catch (err) {
         lastError = err;
-        if (controller.signal.aborted) throw err;
-        const lower = String(err.message || "").toLowerCase();
-        if (err.status === 401 || (err.status === 403 && lower.includes("api_key_invalid"))) {
-          throw err;
+        const status = Number(err.status) || null;
+        const timedOut = err.name === "TimeoutError" || err.name === "AbortError";
+        logOcr(requestId, "provider_attempt", {
+          provider: "gemini", model, outcome: timedOut ? "timeout" : "error",
+          status, elapsedMs: Date.now() - attemptStartedAt,
+        });
+        if (controller.signal.aborted) throw new DOMException("Gemini OCR timed out", "AbortError");
+        // Changing models cannot fix invalid credentials, payment, or malformed requests.
+        if ([400, 401, 402, 403].includes(status)) throw err;
+        if (status === 429 || status === 408 || (status !== null && status >= 500)) {
+          await sleep(500);
         }
-        await sleep(500);
       }
     }
+    if (controller.signal.aborted) throw new DOMException("Gemini OCR timed out", "AbortError");
     if (lastError && isHighDemandOrOverloaded(lastError.status, lastError.message)) {
       const err = new Error("AI 모델 서비스에 일시적인 트래픽이 몰려 지연되고 있습니다. 잠시 후 다시 시도해 주시거나 결제 문자로 입력해 주세요.");
       err.isHighDemand = true;
@@ -116,9 +140,10 @@ const callGeminiVision = async ({ imageBase64, mimeType, apiKey }) => {
   }
 };
 
-const callGoogleVision = async ({ imageBase64, apiKey }) => {
+const callGoogleVision = async ({ imageBase64, apiKey, requestId }) => {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 25_000);
+  const startedAt = Date.now();
   try {
     const response = await fetch(`https://vision.googleapis.com/v1/images:annotate?key=${encodeURIComponent(apiKey)}`, {
       method: "POST",
@@ -135,9 +160,18 @@ const callGoogleVision = async ({ imageBase64, apiKey }) => {
     const payload = await response.json();
     if (!response.ok || payload.responses?.[0]?.error) {
       const message = payload.responses?.[0]?.error?.message || payload.error?.message || "OCR 서비스 호출에 실패했습니다.";
-      throw new Error(message);
+      const error = new Error(message);
+      error.status = response.status || 500;
+      throw error;
     }
+    logOcr(requestId, "provider_attempt", { provider: "google-vision", outcome: "success", elapsedMs: Date.now() - startedAt });
     return payload.responses?.[0]?.fullTextAnnotation?.text || payload.responses?.[0]?.textAnnotations?.[0]?.description || "";
+  } catch (error) {
+    logOcr(requestId, "provider_attempt", {
+      provider: "google-vision", outcome: error.name === "AbortError" ? "timeout" : "error",
+      status: Number(error.status) || null, elapsedMs: Date.now() - startedAt,
+    });
+    throw error;
   } finally {
     clearTimeout(timer);
   }
@@ -191,36 +225,50 @@ export default async function handler(request, response) {
 
   const geminiKey = process.env.GEMINI_API_KEY;
   const visionKey = process.env.GOOGLE_VISION_API_KEY;
+  const requestId = randomUUID();
+  response.setHeader("X-Kkudok-Ocr-Request-Id", requestId);
+  response.setHeader("Access-Control-Expose-Headers", "X-Kkudok-Ocr-Request-Id");
   if (!geminiKey && !visionKey) {
+    logOcr(requestId, "complete", { outcome: "not_configured" });
     return send(response, 503, { ok: false, code: "OCR_NOT_CONFIGURED", message: "OCR 환경변수가 설정되지 않았습니다." });
   }
 
+  const startedAt = Date.now();
   try {
     const normalizedMimeType = mimeType === "image/jpg" ? "image/jpeg" : mimeType;
     let rawText = "";
     if (geminiKey) {
       try {
-        rawText = await callGeminiVision({ imageBase64, mimeType: normalizedMimeType, apiKey: geminiKey });
+        rawText = await callGeminiVision({ imageBase64, mimeType: normalizedMimeType, apiKey: geminiKey, requestId });
       } catch (geminiError) {
         if (visionKey && !geminiError.name?.includes("Abort")) {
-          rawText = await callGoogleVision({ imageBase64, apiKey: visionKey });
+          rawText = await callGoogleVision({ imageBase64, apiKey: visionKey, requestId });
         } else {
           throw geminiError;
         }
       }
     } else {
-      rawText = await callGoogleVision({ imageBase64, apiKey: visionKey });
+      rawText = await callGoogleVision({ imageBase64, apiKey: visionKey, requestId });
     }
     const parsed = parseReceiptText(rawText);
+    logOcr(requestId, "complete", { outcome: parsed.ok ? "success" : "unrecognized", elapsedMs: Date.now() - startedAt });
     return send(response, parsed.ok ? 200 : 422, parsed);
   } catch (error) {
-    const timedOut = error?.name === "AbortError";
-    return send(response, timedOut ? 504 : 502, {
+    const timedOut = error?.name === "AbortError" || error?.name === "TimeoutError";
+    const providerStatus = Number(error?.status) || null;
+    const configurationError = [401, 402, 403].includes(providerStatus);
+    const code = timedOut ? "OCR_TIMEOUT" : configurationError ? "OCR_PROVIDER_CONFIGURATION" : "OCR_PROVIDER_ERROR";
+    logOcr(requestId, "complete", { outcome: code, providerStatus, elapsedMs: Date.now() - startedAt });
+    return send(response, timedOut ? 504 : configurationError ? 503 : 502, {
       ok: false,
-      code: timedOut ? "OCR_TIMEOUT" : "OCR_PROVIDER_ERROR",
+      code,
       message: timedOut
-        ? "이미지 인식 시간이 초과되었습니다. 다시 시도해 주세요."
-        : (error?.message || "이미지 인식 서비스에 연결하지 못했습니다."),
+        ? "이미지 인식 시간이 초과되었습니다. 다시 시도하거나 직접 입력해 주세요."
+        : configurationError
+          ? "이미지 인식 서비스 설정을 확인해야 합니다. 직접 입력을 이용해 주세요."
+          : error?.isHighDemand
+            ? error.message
+            : "이미지 인식을 완료하지 못했습니다. 다시 시도하거나 직접 입력해 주세요.",
     });
   }
 }

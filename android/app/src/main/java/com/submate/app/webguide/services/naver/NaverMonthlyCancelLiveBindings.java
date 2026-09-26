@@ -4,8 +4,9 @@ import com.submate.app.webguide.target.GuideTargetSpec;
 import com.submate.app.webguide.target.TargetVerificationStatus;
 
 /**
- * Production NAVER bindings for Route 1.
- * Subscriber-only targets remain unbound until live DOM verification.
+ * NAVER guide bindings. The recurring-payment fold and final button were
+ * observed in a subscriber browser on 2026-09-26. Earlier fallback pages
+ * still need live DOM verification before their selectors can be trusted.
  */
 public final class NaverMonthlyCancelLiveBindings {
     private NaverMonthlyCancelLiveBindings() {}
@@ -71,10 +72,7 @@ public final class NaverMonthlyCancelLiveBindings {
         return null;
     }
     public static TargetVerificationStatus statusFor(String stepId) {
-        if (NaverMonthlyCancelRoute.STEP_SETTINGS.equals(stepId)
-                || NaverMonthlyCancelRoute.STEP_MANAGE.equals(stepId)
-                || NaverMonthlyCancelRoute.STEP_CANCEL_ENTRY.equals(stepId)
-                || NaverMonthlyCancelRoute.STEP_RECURRING_CANCEL.equals(stepId)
+        if (NaverMonthlyCancelRoute.STEP_RECURRING_CANCEL.equals(stepId)
                 || NaverMonthlyCancelRoute.STEP_FINAL_CONFIRM.equals(stepId)) {
             return TargetVerificationStatus.LIVE_VERIFIED;
         }
