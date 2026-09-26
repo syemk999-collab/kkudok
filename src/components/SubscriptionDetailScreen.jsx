@@ -217,6 +217,20 @@ export function SubscriptionDetailScreen({
     );
   }
 
+  if (contestMode) {
+    return (
+      <main className="mx-auto max-w-xl px-5 pb-12 pt-5">
+        <button type="button" onClick={onBack} className="min-h-11 text-[14px] font-semibold text-[#315976]">← 체험으로 돌아가기</button>
+        <section className="mt-5 rounded-2xl border border-[#D9E7F8] bg-[#F7FBFF] p-5">
+          <span className="text-[11px] font-bold text-[#315976]">별도 체험 · 해지 안내</span>
+          <h1 className="mt-2 text-[24px] font-bold text-[#191F28]">{subscription.name}</h1>
+          <p className="mt-3 text-[13px] leading-6 text-[#4E5968]">해지 안내를 보여주기 위한 체험용 구독입니다. 실제 결제액·다음 결제일·계정 상태는 포함하지 않습니다.</p>
+          <button type="button" data-contest-target="cancel-primary" onClick={() => onStartCancel(subscription.subscriptionId, null, { autoOpen: false })} className="mt-5 min-h-12 w-full rounded-xl bg-[#153D2E] px-4 text-[15px] font-bold text-white">해지 방법 보기</button>
+        </section>
+      </main>
+    );
+  }
+
   const save = () => {
     setEditError("");
     const amount = Number(draft.amount);

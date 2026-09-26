@@ -110,6 +110,7 @@ async function enterContest(page) {
   assert.equal(preserved.profile?.nickname, "기존 사용자");
   assert.equal(preserved.profile?.provider, "Local");
   assert.equal(preserved.subscriptions?.[0]?.id, "private-existing-sub");
+  assert.deepEqual(await page.evaluate(() => JSON.parse(sessionStorage.getItem("kkudok-contest-flow-v2") || "null")?.scenario || null), null);
 }
 
 async function runScenarioA(page) {
@@ -147,8 +148,10 @@ async function runScenarioA(page) {
   flow = await readContestFlow(page);
   assert.equal(flow?.step, "A5");
   assert.ok(flow?.addedSubscriptionId, "Scenario A must store the actually created subscription id");
+  await page.getByText("ChatGPT Plus", { exact: true }).waitFor({ state: "hidden" });
+  await page.locator('[data-contest-target="contest-view-detail"]').waitFor();
 
-  await page.locator('[data-contest-target="nav-promotions"]').click();
+  await page.locator('[data-contest-target="contest-view-benefits"]').click();
   await page.waitForURL(/#\/promotions$/);
   await page.getByText("등록한 Netflix 기준으로 확인할 수 있는 혜택이에요.", { exact: true }).waitFor();
   await page.getByText("네이버플러스 X Netflix", { exact: true }).first().waitFor();
@@ -215,8 +218,15 @@ async function runScenarioB(page) {
   const uploadButton = page.locator('[data-contest-target="contest-image-upload"]');
   await uploadButton.waitFor();
 
+  let localMockRequests = 0;
   if (!verifyRealOcr) {
-    return;
+    await page.route("**/api/ocr", async (route) => {
+      localMockRequests += 1;
+      assert.equal(route.request().method(), "POST");
+      await route.fulfill({ status: 200, contentType: "application/json", headers: { "x-kkudok-ocr-request-id": "local-fixture" }, body: JSON.stringify({
+        ok: true, data: { name: "Netflix", serviceId: "netflix", plan: "프리미엄", amount: 17000, dueDay: 15, billingCycle: "매월", paymentMethod: "신한카드" }, warnings: [],
+      }) });
+    });
   }
 
   const input = page.locator('input[type="file"][accept*="image/png"]').first();
@@ -234,6 +244,7 @@ async function runScenarioB(page) {
   assert.equal(ocrPayload?.ok, true);
   assert.equal(ocrPayload?.data?.name, "Netflix");
   assert.ok(Number(ocrPayload?.data?.amount) > 0);
+  if (!verifyRealOcr) assert.equal(localMockRequests, 1, "local fixture must still exercise the real file picker and POST boundary");
 
   await page.getByRole("heading", { name: "구독 정보 확인" }).waitFor({ timeout: 60000 });
   await page.getByText("Netflix", { exact: true }).first().waitFor();
@@ -254,40 +265,23 @@ async function runScenarioB(page) {
   await page.waitForURL(/#\/home$/);
   flow = await readContestFlow(page);
   assert.equal(flow?.step, "B6");
+  await page.locator('[data-contest-target="contest-view-detail"]').waitFor();
 
-  await page.locator('[data-contest-target="nav-subscriptions"]').click();
-  await page.waitForURL(/#\/subscriptions$/);
+  await page.locator('[data-contest-target="contest-view-benefits"]').click();
+  await page.waitForURL(/#\/promotions$/);
   flow = await readContestFlow(page);
   assert.equal(flow?.step, "B7");
+  await page.getByText("등록한 Netflix 기준으로 확인할 수 있는 혜택이에요.", { exact: true }).waitFor();
+  await page.getByText("개인 예상 금액을 아직 계산할 수 없어요.", { exact: true }).waitFor();
 
-  await page.locator('[data-contest-target="subscription-seed-naverplus"]').click();
-  await page.waitForURL(/#\/detail\/seed-naverplus$/);
-  await page.getByText("네이버플러스 멤버십", { exact: true }).first().waitFor();
-  flow = await readContestFlow(page);
-  assert.equal(flow?.step, "B8");
-
-  await page.locator('[data-contest-target="cancel-primary"]').click();
-  await page.getByRole("dialog", { name: "구독 해지 가이드" }).waitFor();
-  await page.locator('[data-contest-target="cancel-open-site"]').waitFor();
-  flow = await readContestFlow(page);
-  assert.equal(flow?.step, "B9");
-
-  const cancelSite = page.locator('[data-contest-target="cancel-open-site"] button').first();
-  await cancelSite.waitFor();
+  const source = page.locator('[data-contest-target="contest-benefit-source"]');
   const popupPromise = page.waitForEvent("popup", { timeout: 5000 }).catch(() => null);
-  await cancelSite.click();
+  await source.click();
   const popup = await popupPromise;
   if (popup) await popup.close();
 
   flow = await readContestFlow(page);
-  assert.equal(flow?.step, "B10");
-  await page.getByText("웹에서는 별도 네이버 탭의 버튼 위치를 읽을 수 없어요.", { exact: false }).waitFor();
-  await page.getByText("네이버 해지 화면 열기", { exact: true }).waitFor();
-  await page.getByRole("button", { name: "다음" }).click();
-  await page.getByText("2/2", { exact: true }).first().waitFor();
-  await page.screenshot({ path: "artifacts/contest/scenario-b-naver-guide.png", fullPage: true });
-  await page.getByRole("button", { name: "닫기", exact: true }).click();
-  await page.locator(".sheet-backdrop").click({ position: { x: 2, y: 2 } });
+  assert.equal(flow?.step, "B8");
   await page.getByText("체험 B · 완료", { exact: true }).waitFor();
 
   const preserved = await page.evaluate(() => ({
@@ -298,6 +292,29 @@ async function runScenarioB(page) {
   assert.equal(preserved.subscriptions?.[0]?.id, "private-existing-sub");
 
   await page.screenshot({ path: "artifacts/contest/scenario-b-complete.png", fullPage: true });
+  if (!verifyRealOcr) await page.unroute("**/api/ocr");
+}
+
+async function runCancellationExample(page) {
+  await resetToContestPicker(page);
+  await page.getByRole("button", { name: "네이버플러스 해지 안내 체험" }).click();
+  await page.getByRole("heading", { name: "네이버플러스 멤버십 해지 방법 확인" }).waitFor();
+  let flow = await readContestFlow(page);
+  assert.equal(flow?.step, "C1");
+  await page.locator('[data-contest-target="contest-cancel-example-start"]').click();
+  await page.waitForURL(/#\/detail\/seed-naverplus$/);
+  await page.getByText("실제 결제액·다음 결제일·계정 상태는 포함하지 않습니다.", { exact: false }).waitFor();
+  assert.equal(await page.getByText("4,900원", { exact: false }).count(), 0);
+  flow = await readContestFlow(page);
+  assert.equal(flow?.step, "C2");
+  await page.locator('[data-contest-target="cancel-primary"]').click();
+  await page.getByRole("dialog", { name: "구독 해지 가이드" }).waitFor();
+  await page.locator('[data-contest-target="cancel-open-site"]').waitFor();
+  await page.getByText("꾸독에서 실제 해지 완료로 표시하지 않습니다.", { exact: false }).waitFor();
+  assert.equal(await page.getByRole("button", { name: "이미 해지 완료하셨나요? 목록에서 정리" }).count(), 0);
+  flow = await readContestFlow(page);
+  assert.equal(flow?.step, "C3");
+  await page.screenshot({ path: "artifacts/contest/scenario-c-naver-guide.png", fullPage: true });
 }
 
 async function verifyOcrFailureState(browser) {
@@ -392,6 +409,7 @@ async function verifyProviderCancellation(browser) {
     await runScenarioA(flowPage);
     await resetToContestPicker(flowPage);
     await runScenarioB(flowPage);
+    await runCancellationExample(flowPage);
 
     await assertNoHorizontalOverflow(flowPage, "contest mobile flow");
     await verifyOcrFailureState(browser);

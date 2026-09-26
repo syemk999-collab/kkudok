@@ -15,7 +15,7 @@ function readInitial() {
   if (typeof window === "undefined") return EMPTY_FLOW;
   try {
     const saved = JSON.parse(sessionStorage.getItem(STORAGE_KEY) || "null");
-    if (saved && (saved.scenario === "A" || saved.scenario === "B")) {
+    if (saved && ["A", "B", "C"].includes(saved.scenario)) {
       return { ...EMPTY_FLOW, ...saved };
     }
   } catch {}
@@ -68,7 +68,7 @@ export function useContestFlow() {
     const next = {
       ...EMPTY_FLOW,
       scenario,
-      step: scenario === "A" ? "A1" : "B1",
+      step: `${scenario}1`,
     };
     if (typeof window !== "undefined" && window.location.hash.startsWith("#/contest")) {
       const previous = window.history.state;

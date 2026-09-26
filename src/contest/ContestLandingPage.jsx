@@ -35,10 +35,6 @@ const HERO_FEATURES = [
   },
 ];
 
-function formatWon(value) {
-  return Number(value || 0).toLocaleString("ko-KR") + "원";
-}
-
 function HeroPhoneDemo({ onPlay, videoRef, started, onStarted }) {
   return (
     <div className="contest-hero-device-wrap" id="full-demo">
@@ -266,10 +262,11 @@ export default function ContestLandingPage() {
             <ScenarioSummary
               label="체험 B · 지난 결제"
               title="놓친 결제가 있다면"
-              description="Netflix 결제 캡처를 직접 선택해 분석 결과를 확인·수정하고 등록합니다. 이어서 체험용 네이버플러스 멤버십의 해지 안내를 살펴봅니다."
-              steps={["결제 캡처 저장", "직접 이미지 선택", "실제 이미지 글자 인식", "사용자 확인 후 등록", "꾸독이 해지 안내"]}
+              description="Netflix 결제 캡처를 직접 선택해 분석 결과를 확인하고, 틀린 값만 수정해 등록합니다. 이어서 등록한 구독의 혜택 후보나 상세 정보를 직접 선택합니다."
+              steps={["결제 캡처 저장", "직접 이미지 선택", "실제 이미지 글자 인식", "사용자 확인 후 등록", "다음 행동 직접 선택"]}
             />
           </div>
+          <p className="contest-scenario-note">네이버플러스 멤버십의 해지 안내는 체험 화면에서 별도 예시로 선택할 수 있습니다. Netflix 결제 등록과 자동으로 연결되지 않습니다.</p>
           <p className="contest-scenario-note">*OCR : 이미지에 담긴 글자를 읽어 결제 정보로 정리하는 기술입니다. 직접 선택한 이미지를 실제 분석 기능으로 처리합니다.</p>
           <div className="contest-scenario-sample">
             <img src="/sample_receipt_netflix.png" alt="체험 B에서 직접 선택해 분석할 수 있는 Netflix 결제 캡처 예시" loading="lazy" />
@@ -294,7 +291,7 @@ export default function ContestLandingPage() {
             <>
             <div className="contest-benefit-checks" aria-label="혜택을 확인하는 순서">
               <div><span>01 · 연결 이유</span><strong>등록한 Netflix와 연결되는 혜택</strong></div>
-              <div><span>02 · 적용 조건</span><strong>{verifiedBenefit.campaignPeriod}</strong></div>
+              <div><span>02 · 적용 조건</span><strong>내 계정의 조건과 최신 기간 확인</strong></div>
               <a href={verifiedBenefit.link} target="_blank" rel="noreferrer" aria-label={`공식 출처 ${sourceHost}에서 혜택 조건 확인하기 (새 탭)`}>
                 <span>03 · 공식 출처 ↗</span><strong>{sourceHost || "공식 안내 페이지"}에서 조건 확인</strong>
               </a>
@@ -307,17 +304,17 @@ export default function ContestLandingPage() {
                 </div>
                 <h3>{verifiedBenefit.title}</h3>
                 <strong>{verifiedBenefit.subtitle}</strong>
-                <p>{verifiedBenefit.description}</p>
+                <p>Netflix와 연결될 수 있는 혜택 후보입니다. 가입 자격과 실제 가격·기간은 공식 안내에서 확인해주세요.</p>
                 <dl>
-                  <div><dt>적용 조건</dt><dd>{verifiedBenefit.campaignPeriod}</dd></div>
-                  <div><dt>혜택 기간</dt><dd>{verifiedBenefit.benefitPeriod}</dd></div>
-                  <div><dt>광고형 상품 별도 가격</dt><dd>{formatWon(verifiedBenefit.originalPrice)} / 월</dd></div>
-                  <div><dt>네이버플러스 이용료</dt><dd>{formatWon(verifiedBenefit.membershipMonthlyPrice)} / 월</dd></div>
+                  <div><dt>적용 조건</dt><dd>계정별 가입 자격 확인 필요</dd></div>
+                  <div><dt>혜택 기간</dt><dd>공식 페이지에서 현재 기간 확인 필요</dd></div>
+                  <div><dt>상품 별도 가격</dt><dd>공식 페이지에서 최신 가격 확인 필요</dd></div>
+                  <div><dt>네이버플러스 이용료</dt><dd>기존 가입 여부와 최신 이용료 확인 필요</dd></div>
                   <div><dt>공식 출처</dt><dd>{sourceHost}</dd></div>
                 </dl>
                 <small className="contest-benefit-caution">
-                  *별도 가격 : 넷플릭스에서 광고형 스탠다드를 단독 구독할 때의 가격입니다. 네이버플러스에서는 회차마다 디지털 콘텐츠 중 하나를 선택합니다.
-                  현재 프리미엄 요금제로 이용 중이라면 광고형 스탠다드로 전환되며, 실제 절약액은 기존 멤버십 보유 여부와 선택 상품에 따라 달라집니다.
+                  *상품 별도 가격 : 멤버십 없이 상품만 이용할 때의 가격입니다. 요금제가 달라지면 광고·화질·이용 조건도 함께 달라질 수 있습니다.
+                  실제 지출 차이는 현재 요금제·기존 멤버십 보유 여부·선택 상품에 따라 달라집니다.
                 </small>
                 <a href={verifiedBenefit.link} target="_blank" rel="noreferrer">공식 출처에서 조건 확인하기 →</a>
                 {verifiedBenefit.priceSourceUrl && <a href={verifiedBenefit.priceSourceUrl} target="_blank" rel="noreferrer">넷플릭스 별도 요금 확인하기 →</a>}

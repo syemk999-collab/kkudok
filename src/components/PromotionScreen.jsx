@@ -392,7 +392,7 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
               {contestDirectPromotion.subtitle || contestDirectPromotion.kind}
             </p>
             <p className="mt-2 text-[12px] leading-5 text-[#4E5968]">
-              {contestDirectPromotion.description}
+              등록한 구독과 관련될 수 있는 제휴 혜택입니다. 최신 요금·혜택 기간·가입 자격은 공식 안내에서 직접 확인해야 합니다.
             </p>
 
             {Number(contestMatchedSubscription?.amount) > 0 && (
@@ -405,24 +405,22 @@ export function PromotionScreen({ subscriptions = [], promotions = [], onOpenPro
             <dl className="mt-4 overflow-hidden rounded-2xl border border-[#E5E8EB] bg-white text-[11px]">
               <div className="grid grid-cols-[84px_1fr] gap-3 border-b border-[#F2F4F6] px-3.5 py-3">
                 <dt className="font-semibold text-[#8B95A1]">적용 조건</dt>
-                <dd className="m-0 font-semibold leading-5 text-[#333D4B]">{contestDirectPromotion.campaignPeriod || "공식 페이지에서 확인 필요"}</dd>
+                <dd className="m-0 font-semibold leading-5 text-[#333D4B]">공식 페이지에서 현재 조건 확인 필요</dd>
               </div>
               <div className="grid grid-cols-[84px_1fr] gap-3 border-b border-[#F2F4F6] px-3.5 py-3">
                 <dt className="font-semibold text-[#8B95A1]">혜택 기간</dt>
-                <dd className="m-0 font-semibold leading-5 text-[#333D4B]">{contestDirectPromotion.benefitPeriod || "공식 페이지에서 확인 필요"}</dd>
+                <dd className="m-0 font-semibold leading-5 text-[#333D4B]">공식 페이지에서 현재 기간 확인 필요</dd>
               </div>
               <div className="grid grid-cols-[84px_1fr] gap-3 px-3.5 py-3">
                 <dt className="font-semibold text-[#8B95A1]">{contestDirectPromotion.membershipRequired ? "상품 별도 가격" : "혜택 가치"}</dt>
                 <dd className="m-0 font-semibold leading-5 text-[#333D4B]">
-                  {Number(contestDirectPromotion.originalPrice) > 0
-                    ? `${Number(contestDirectPromotion.originalPrice).toLocaleString("ko-KR")}원 / 월`
-                    : "조건 확인 필요"}
+                  공식 페이지에서 최신 가격 확인 필요
                 </dd>
               </div>
               {contestDirectPromotion.membershipRequired && (
                 <div className="grid grid-cols-[84px_1fr] gap-3 border-t border-[#F2F4F6] px-3.5 py-3">
                   <dt className="font-semibold text-[#8B95A1]">멤버십 이용료</dt>
-                  <dd className="m-0 font-semibold leading-5 text-[#333D4B]">{Number(contestDirectPromotion.membershipMonthlyPrice) > 0 ? `${Number(contestDirectPromotion.membershipMonthlyPrice).toLocaleString("ko-KR")}원 / 월` : "공식 안내에서 확인 필요"}</dd>
+                  <dd className="m-0 font-semibold leading-5 text-[#333D4B]">기존 가입 여부와 최신 이용료 확인 필요</dd>
                 </div>
               )}
             </dl>

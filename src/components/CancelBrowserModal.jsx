@@ -71,179 +71,39 @@ function NaverPlusStepUiIllustration({ stepNumber, large = false }) {
   );
 }
 
-function StepUiIllustration({ stepNumber, title, serviceName, large = false, isNaverPlus = false, isProvider = false }) {
-  if (isNaverPlus) {
-    return <NaverPlusStepUiIllustration stepNumber={stepNumber} large={large} />;
-  }
-  if (isProvider) {
-    return (
-      <div className={`flex h-full w-full flex-col justify-center bg-[#F7F8FA] text-[#191F28] ${large ? "gap-3 px-5" : "gap-1 px-2"}`}>
-        <span className={`font-bold text-[#315976] ${large ? "text-[12px]" : "text-[9px]"}`}>{serviceName} · {stepNumber}단계</span>
-        <strong className={`break-keep leading-snug ${large ? "text-[18px]" : "text-[10px]"}`}>{title}</strong>
-        {large && <span className="text-[12px] text-[#4E5968]">공식 경로에서 직접 확인할 단계입니다. 실제 화면을 그대로 재현한 그림은 아닙니다.</span>}
-      </div>
-    );
-  }
-
-  if (stepNumber === 1) {
-    return (
-      <div className={`h-full w-full bg-[#111827] text-white p-3.5 flex flex-col justify-between select-none ${large ? "p-6" : ""}`}>
-        <div className="flex items-center justify-between border-b border-white/10 pb-2">
-          <span className={`font-bold tracking-wider text-white/60 uppercase ${large ? "text-[12px]" : "text-[9px]"}`}>
-            {serviceName}
-          </span>
-          <span className="h-2 w-2 rounded-full bg-emerald-400" />
-        </div>
-        <div className={`space-y-2 my-auto ${large ? "max-w-xs mx-auto w-full space-y-3" : ""}`}>
-          <div className={`rounded bg-white/10 px-2.5 flex items-center text-white/50 border border-white/5 ${large ? "h-9 text-[12px]" : "h-5 text-[8px]"}`}>
-            user@email.com
-          </div>
-          <div className={`rounded bg-white/10 px-2.5 flex items-center text-white/50 border border-white/5 ${large ? "h-9 text-[12px]" : "h-5 text-[8px]"}`}>
-            ••••••••
-          </div>
-          <div className={`rounded bg-[#3182F6] font-bold flex items-center justify-center text-white shadow-xs ${large ? "h-10 text-[13px]" : "h-6 text-[9px]"}`}>
-            로그인
-          </div>
-        </div>
-        <span className={`text-white/40 text-center ${large ? "text-[12px]" : "text-[8px]"}`}>
-          공식 회원 계정 로그인 단계
-        </span>
-      </div>
-    );
-  }
-
-  if (stepNumber === 2) {
-    return (
-      <div className={`h-full w-full bg-[#111827] text-white p-3.5 flex flex-col justify-between select-none ${large ? "p-6" : ""}`}>
-        <div className="flex items-center justify-between border-b border-white/10 pb-2">
-          <span className={`font-bold text-white/60 ${large ? "text-[12px]" : "text-[9px]"}`}>
-            설정 / 프로필 메뉴
-          </span>
-          <span className={`text-blue-400 font-semibold ${large ? "text-[11px]" : "text-[8px]"}`}>
-            선택 필요
-          </span>
-        </div>
-        <div className={`space-y-1.5 my-auto ${large ? "max-w-xs mx-auto w-full space-y-2.5" : ""}`}>
-          <div className={`rounded bg-white/5 px-2.5 flex items-center text-white/40 ${large ? "h-8 text-[11px]" : "h-4 text-[8px]"}`}>
-            개인정보 설정
-          </div>
-          <div className={`rounded bg-blue-500/20 border border-blue-400 px-2.5 font-bold flex items-center justify-between text-white ${large ? "h-10 text-[13px]" : "h-5 text-[8px]"}`}>
-            <span>계정 및 멤버십 관리</span>
-            <span>▶</span>
-          </div>
-          <div className={`rounded bg-white/5 px-2.5 flex items-center text-white/40 ${large ? "h-8 text-[11px]" : "h-4 text-[8px]"}`}>
-            결제 수단 관리
-          </div>
-        </div>
-        <span className={`text-white/40 text-center ${large ? "text-[12px]" : "text-[8px]"}`}>
-          멤버십 / 계정 관리 메뉴 선택
-        </span>
-      </div>
-    );
-  }
-
-  if (stepNumber === 3) {
-    return (
-      <div className={`h-full w-full bg-[#111827] text-white p-3.5 flex flex-col justify-between select-none ${large ? "p-6" : ""}`}>
-        <div className="flex items-center justify-between border-b border-white/10 pb-2">
-          <span className={`font-bold text-white/60 ${large ? "text-[12px]" : "text-[9px]"}`}>
-            구독 플랜 상세
-          </span>
-          <span className={`text-amber-400 font-semibold ${large ? "text-[11px]" : "text-[8px]"}`}>
-            이용 중
-          </span>
-        </div>
-        <div className={`space-y-2 my-auto ${large ? "max-w-xs mx-auto w-full space-y-3" : ""}`}>
-          <div className={`rounded bg-white/5 p-2 text-white/70 border border-white/5 ${large ? "text-[11px]" : "text-[8px]"}`}>
-            <span className="block font-bold">현재 이용 요금제</span>
-            <span className="text-white/50">다음 결제일에 자동 결제 예정</span>
-          </div>
-          <div className={`rounded bg-red-600 font-bold flex items-center justify-center text-white shadow-xs ${large ? "h-10 text-[13px]" : "h-6 text-[9px]"}`}>
-            멤버십 해지하기
-          </div>
-        </div>
-        <span className={`text-red-300 text-center font-medium ${large ? "text-[12px]" : "text-[8px]"}`}>
-          해지 / 정기결제 취소 버튼 클릭
-        </span>
-      </div>
-    );
-  }
-
+function StepUiIllustration({ stepNumber, title, serviceName, large = false, isNaverPlus = false }) {
+  if (isNaverPlus) return <NaverPlusStepUiIllustration stepNumber={stepNumber} large={large} />;
   return (
-    <div className={`h-full w-full bg-[#111827] text-white p-3.5 flex flex-col justify-between select-none ${large ? "p-6" : ""}`}>
-      <div className="flex items-center justify-between border-b border-white/10 pb-2">
-        <span className={`font-bold text-emerald-400 ${large ? "text-[12px]" : "text-[9px]"}`}>
-          해지 처리 확인
-        </span>
-        <span className="h-2 w-2 rounded-full bg-emerald-400" />
-      </div>
-      <div className="text-center my-auto py-2">
-        <div className={`mx-auto grid place-items-center rounded-full bg-emerald-500/20 text-emerald-400 mb-2 ${large ? "h-10 w-10 text-[18px]" : "h-6 w-6 text-[12px]"}`}>
-          ✓
-        </div>
-        <span className={`block font-bold text-white ${large ? "text-[14px]" : "text-[9px]"}`}>
-          해지 신청이 완료되었습니다
-        </span>
-        <span className={`block text-white/60 mt-0.5 ${large ? "text-[11px]" : "text-[7px]"}`}>
-          다음 결제일에 추가 청구되지 않습니다
-        </span>
-      </div>
-      <span className={`text-emerald-300 text-center font-medium ${large ? "text-[12px]" : "text-[8px]"}`}>
-        해지 완료 화면 확인
-      </span>
+    <div className={`flex h-full w-full flex-col justify-center gap-3 bg-[#F7F8FA] text-[#191F28] ${large ? "px-5" : "px-2"}`}>
+      <span className={`font-bold text-[#315976] ${large ? "text-[12px]" : "text-[9px]"}`}>{serviceName} · {stepNumber}단계</span>
+      <strong className={`break-keep leading-snug ${large ? "text-[18px]" : "text-[10px]"}`}>{title}</strong>
+      {large && <span className="text-[12px] text-[#4E5968]">실제 화면을 재현한 그림이 아닙니다. 공식 사이트에서 버튼과 경로를 확인해주세요.</span>}
     </div>
   );
 }
-
-const TUTORIAL_HINTS = [
-  {
-    locationBadge: "📍 목표 위치: 화면 중앙 로그인 창",
-    dialogue: (name) => `${name} 공식 사이트가 열렸어! 먼저 계정으로 로그인해줘. 이미 로그인되어 있다면 바로 2단계로 넘어가자!`,
-    tip: "소셜 로그인(Google, 카카오 등)을 사용하는 경우 해당 소셜 계정으로 로그인하세요.",
-  },
-  {
-    locationBadge: "📍 목표 위치: 화면 우측 상단 프로필 / 메뉴 (↗)",
-    dialogue: () => `화면 우측 상단(↗)에 있는 프로필 아이콘이나 메뉴(☰)를 눌러서 [계정] 또는 [멤버십 관리] 메뉴를 찾아봐!`,
-    tip: "대부분의 서비스는 우측 상단 프로필 > 계정/설정에 구독 관리 메뉴가 위치해 있어요.",
-  },
-  {
-    locationBadge: "📍 목표 위치: 페이지 하단 스크롤 영역 (⬇)",
-    dialogue: () => `페이지를 아래(⬇)로 쭉 스크롤해봐! 찾기 어렵게 회색 작은 글씨나 링크로 [멤버십 해지]나 [구독 취소]가 숨겨져 있어. 과감하게 눌러줘!`,
-    tip: "해지 버튼은 종종 '혜택 유지' 버튼보다 눈에 덜 띄는 텍스트나 하단 구석에 배치되어 있어요.",
-  },
-  {
-    locationBadge: "📍 목표 위치: 혜택 제안 넘긴 후 최종 완료 팝업 (✓)",
-    dialogue: () => `할인해 주겠다며 붙잡는 혜택 제안들을 넘기고 최종 [해지 완료] 메시지를 확인하면 완벽해! 다 했으면 아래 [해지 완료했습니다]를 눌러줘!`,
-    tip: "공식 사이트에서 완료 여부를 확인한 뒤 꾸독의 구독 목록을 정리해주세요.",
-  },
-];
 
 export function CancelBrowserModal({
   subscription,
   onClose,
   onComplete,
+  tutorialOnly = false,
   autoOpened = false,
 }) {
   const defaultSteps = [
     {
       stepNumber: 1,
-      title: "계정 로그인",
-      description: `${subscription.name} 공식 사이트에서 계정으로 로그인하세요.`,
+      title: "결제처 확인",
+      description: `${subscription.name} 영수증이나 계정 설정에서 실제 결제처를 확인하세요.`,
     },
     {
       stepNumber: 2,
-      title: "멤버십 관리",
-      description: "우측 상단 프로필 > [계정] 또는 [멤버십 관리] 메뉴를 선택하세요.",
+      title: "공식 안내 확인",
+      description: "서비스 또는 결제처의 공식 구독 관리 안내에서 내 계정에 해당하는 경로를 찾으세요.",
     },
     {
       stepNumber: 3,
-      title: "멤버십 해지",
-      description: "스크롤을 내려 [멤버십 해지] 또는 [구독 취소]를 클릭하세요.",
-    },
-    {
-      stepNumber: 4,
-      title: "해지 완료",
-      description: "혜택 유지 제안을 넘기고 최종 해지 완료를 확인하세요.",
+      title: "조건과 완료 여부 확인",
+      description: "종료 시점·환불 조건을 확인한 뒤 직접 결정하고, 공식 완료 화면을 확인하세요.",
     },
   ];
 
@@ -256,12 +116,12 @@ export function CancelBrowserModal({
       ? subscription.guideSteps
       : defaultSteps;
 
-  const tutorialHints = isNaverPlus ? NAVER_PLUS_TUTORIAL_HINTS : isProvider
-    ? steps.map((step) => ({
+  const tutorialHints = isNaverPlus ? NAVER_PLUS_TUTORIAL_HINTS
+    : steps.map((step) => ({
         locationBadge: "공식 안내 단계 · 버튼 위치는 아직 실기기에서 확인하지 않았어요",
         dialogue: () => step.description,
         tip: "결제한 곳과 계정을 확인하세요. 꾸독은 해지 버튼을 대신 누르지 않습니다.",
-      })) : TUTORIAL_HINTS;
+      }));
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [minimized, setMinimized] = useState(false);
   const scrollContainerRef = useRef(null);
@@ -289,7 +149,7 @@ export function CancelBrowserModal({
         cancelUrl: subscription.cancelUrl,
         guideSteps: steps,
       });
-      if (result?.action === "COMPLETED") {
+      if (result?.action === "COMPLETED" && !tutorialOnly) {
         onComplete?.();
       }
       if (result?.action !== "FALLBACK_WEB") return;
@@ -410,7 +270,7 @@ export function CancelBrowserModal({
             <Minimize2 size={13} />
             <span className="hidden sm:inline">최소화</span>
           </button>
-          {!isNaverPlus && !isProvider && (
+          {!tutorialOnly && !isNaverPlus && !isProvider && (
             <button
               type="button"
               onClick={onComplete}
@@ -503,7 +363,7 @@ export function CancelBrowserModal({
             </p>
           )}
 
-          {/* 위치 예시. 실제 페이지의 버튼 위치 표시는 Android WebView에서만 가능하다. */}
+          {/* 실제 사이트를 복제하지 않는 단계별 안내 그림. */}
           <div className="w-full h-40 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
             <StepUiIllustration
               stepNumber={currentStep.stepNumber}
@@ -519,11 +379,11 @@ export function CancelBrowserModal({
           <div className="w-full rounded-xl bg-gray-100/90 px-3 py-2 border border-gray-200/60 flex items-center gap-2">
             <ShieldCheck size={16} className="text-gray-500 shrink-0" />
             <p className="text-[10px] text-gray-600 leading-tight">
-              <span className="font-bold text-gray-800">화면 안내:</span> {isProvider
-                ? "이 경로의 버튼 좌표는 아직 확인되지 않았어요. 공식 화면에서 직접 찾아주세요."
-                : Capacitor.getPlatform() === "android"
-                ? "앱 안에서는 버튼 위치를 찾아 안내해요. 로그인 정보는 꾸독이 읽거나 저장하지 않아요."
-                : "별도 탭의 네이버 화면은 꾸독이 확인할 수 없어요. 실제 버튼과 이용 조건을 직접 확인해주세요."}
+              <span className="font-bold text-gray-800">화면 안내:</span> {isNaverPlus
+                ? Capacitor.getPlatform() === "android"
+                  ? "Android 앱에서는 확인 가능한 네이버 버튼만 강조해요. 로그인 정보는 저장하지 않아요."
+                  : "별도 탭의 네이버 화면은 꾸독이 확인할 수 없어요. 실제 버튼과 이용 조건을 직접 확인해주세요."
+                : "이 서비스의 버튼 위치는 확인되지 않았어요. 공식 화면에서 직접 찾아주세요."}
             </p>
           </div>
 
@@ -544,7 +404,7 @@ export function CancelBrowserModal({
               <ExternalLink size={14} />
             </button>
 
-            {isFinalStep && !isNaverPlus && !isProvider && (
+            {!tutorialOnly && isFinalStep && !isNaverPlus && !isProvider && (
               <button
                 type="button"
                 onClick={onComplete}

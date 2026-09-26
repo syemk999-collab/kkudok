@@ -7,21 +7,24 @@ import {
 } from "../src/contest/contestSubscriptions.js";
 import { NAVER_PLUS_CANCEL_STEPS, NAVER_PLUS_CANCEL_URL, getCancelUrl, isNaverPlusSubscription, usesNaverPlusCancelEntry } from "../src/lib/naverPlusCancelGuide.js";
 
-test("NaverPlus cancellation example exists only in contest scenario B", () => {
+test("A/B start empty; only the separately chosen cancellation tutorial has an example subscription", () => {
   const ordinary = createMockSubscriptions();
   const scenarioA = createContestSubscriptions("A");
   const scenarioB = createContestSubscriptions("B");
+  const cancellationTutorial = createContestSubscriptions("C");
 
   assert.equal(ordinary.some(({ id }) => id === "naverplus"), false);
-  assert.equal(scenarioA.some(({ id }) => id === "naverplus"), false);
-  assert.equal(scenarioB.some(({ id }) => id === "netflix"), false);
+  assert.deepEqual(scenarioA, []);
+  assert.deepEqual(scenarioB, []);
+  assert.deepEqual(createContestSubscriptions(), []);
 
-  const naverPlus = scenarioB.find(({ subscriptionId }) => subscriptionId === CONTEST_CANCELLATION_SUBSCRIPTION_ID);
+  const naverPlus = cancellationTutorial.find(({ subscriptionId }) => subscriptionId === CONTEST_CANCELLATION_SUBSCRIPTION_ID);
+  assert.equal(cancellationTutorial.length, 1);
   assert.equal(naverPlus?.id, "naverplus");
   assert.equal(naverPlus?.cancelUrl, NAVER_PLUS_CANCEL_URL);
-  assert.equal(naverPlus?.paymentMethod, "체험용 예시");
+  assert.equal(naverPlus?.amount, null);
+  assert.equal(naverPlus?.status, "example");
   assert.equal(naverPlus?.alertEnabled, false);
-  assert.equal(scenarioB.find(({ id }) => id === "spotify")?.subscriptionId, "seed-spotify");
 });
 
 test("NaverPlus uses its official recurring-payment path and leaves completion to the user", () => {

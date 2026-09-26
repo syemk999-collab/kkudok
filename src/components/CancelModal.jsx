@@ -21,7 +21,7 @@ const baseSteps = [
   "해지 신청 후 완료 화면 확인하기",
 ];
 
-export function CancelModal({ subscription: rawSub, promotion, autoOpen = false, onClose, onComplete, onToast, onExternalOpen }) {
+export function CancelModal({ subscription: rawSub, promotion, autoOpen = false, tutorialOnly = false, onClose, onComplete, onToast, onExternalOpen }) {
   const providerId = identifyCancellationProvider(rawSub);
   const [purchaseSource, setPurchaseSource] = useState("unknown");
   // DB 구독 데이터에 guideSteps나 cancelUrl이 누락되어도 serviceCatalog에서 100% 매칭 보강
@@ -63,7 +63,7 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
     let listenerPromise;
     if (Capacitor.isNativePlatform()) {
       listenerPromise = App.addListener("appStateChange", (state) => {
-        if (state.isActive && cancelSessionActive) {
+        if (state.isActive && cancelSessionActive && !tutorialOnly) {
           onToast?.("해지를 완료하셨다면 아래 '해지 완료했습니다' 버튼을 눌러주세요.");
         }
       });
@@ -71,7 +71,7 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
     return () => {
       listenerPromise?.then((h) => h.remove());
     };
-  }, [cancelSessionActive, onToast]);
+  }, [cancelSessionActive, onToast, tutorialOnly]);
 
   const goToCancel = async () => {
     if (!subscription.cancelUrl) return;
@@ -96,7 +96,7 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
       guideSteps: subscription.guideSteps,
     });
 
-    if (res?.action === "COMPLETED") {
+    if (res?.action === "COMPLETED" && !tutorialOnly) {
       complete();
       return;
     }
@@ -131,7 +131,7 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
       cancelUrl: subscription.cancelUrl,
       guideSteps: subscription.guideSteps,
     });
-    if (res?.action === "COMPLETED") {
+    if (res?.action === "COMPLETED" && !tutorialOnly) {
       complete();
       return;
     }
@@ -241,10 +241,11 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
     return (
       <CancelBrowserModal
         subscription={subscription}
+        tutorialOnly={tutorialOnly}
         autoOpened={autoOpen}
         onClose={() => {
           setShowBrowserModal(false);
-          onToast("해지 화면을 닫았어요. 해지를 완료하셨다면 아래 완료 버튼을 눌러주세요.");
+          if (!tutorialOnly) onToast("해지 화면을 닫았어요. 해지를 완료하셨다면 아래 완료 버튼을 눌러주세요.");
         }}
         onComplete={complete}
       />
@@ -325,7 +326,16 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
         </div>
       )}
 
-      {cancelSessionActive ? (
+      {tutorialOnly ? (
+        <div className="mt-5 space-y-3">
+          <p className="rounded-xl bg-[#F1F6F3] p-3 text-[12px] leading-5 text-[#315976]">이 화면은 해지 경로를 살펴보는 체험입니다. 꾸독에서 실제 해지 완료로 표시하지 않습니다.</p>
+          <div data-contest-target="cancel-open-site">
+            <Button size="large" fullWidth disabled={!subscription.cancelUrl} onClick={goToCancel} prefixIcon={<ExternalLink size={17} />}>
+              {cancelSessionActive ? "해지 안내 다시 열기" : "공식 해지 경로 열기 (가이드 포함)"}
+            </Button>
+          </div>
+        </div>
+      ) : cancelSessionActive ? (
         <div className="mt-5 space-y-2">
           <Button
             size="large"
@@ -358,14 +368,14 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
               {subscription.cancelUrl ? providerId && purchaseSource !== "web" ? "결제처의 공식 경로 열기" : "해지 페이지로 바로 이동 (가이드 포함)" : providerId ? "결제처를 먼저 선택해주세요" : "해지 링크를 찾지 못했어요"}
             </Button>
           </div>
-          <Button
+          {!tutorialOnly && <Button
             size="large"
             fullWidth
             variant="secondary"
             onClick={complete}
           >
             이미 해지 완료하셨나요? 목록에서 정리
-          </Button>
+          </Button>}
         </div>
       )}
       {!subscription.cancelUrl && !providerId && <p className="mt-2 text-center text-[12px] font-medium text-[#FF4D4D]">이 서비스의 해지 URL이 DB에 등록되어 있지 않습니다.</p>}
@@ -410,7 +420,7 @@ export function CancelModal({ subscription: rawSub, promotion, autoOpen = false,
       </section>
 
       <div className="mt-6 rounded-2xl border border-[#E5E8EB] bg-[#F9FAFB] p-4"><div className="flex gap-2.5"><ShieldCheck className="shrink-0 text-[#6B7684]" size={18} /><p className="text-[12px] leading-relaxed text-[#6B7684]">꾸독은 해지를 대행하지 않아요. 해지 완료 여부는 서비스 화면에서 확인한 뒤 아래 버튼을 눌러주세요.</p></div></div>
-      <Button size="large" fullWidth variant="secondary" className="mt-4" onClick={complete}>해지 완료했습니다</Button>
+      {!tutorialOnly && <Button size="large" fullWidth variant="secondary" className="mt-4" onClick={complete}>해지 완료했습니다</Button>}
     </BottomSheet>
   );
 }

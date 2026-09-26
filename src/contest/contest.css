@@ -1213,6 +1213,40 @@
   backdrop-filter: blur(18px);
 }
 
+.contest-next-action,
+.contest-cancel-entry {
+  width: min(680px, calc(100% - 28px));
+  margin: 18px auto;
+  padding: 20px;
+  border: 1px solid #cddbd3;
+  border-radius: 18px;
+  background: #f4faf6;
+  color: #18372a;
+  box-shadow: 0 10px 25px rgba(23, 61, 46, .08);
+}
+.contest-next-action > span,
+.contest-cancel-entry span { font-size: 12px; font-weight: 800; color: #326347; }
+.contest-next-action h2,
+.contest-cancel-entry h2 { margin: 6px 0 0; font-size: clamp(18px, 4.5vw, 23px); line-height: 1.35; }
+.contest-next-action p,
+.contest-cancel-entry p { margin: 8px 0 0; font-size: 13px; line-height: 1.6; }
+.contest-next-action-buttons { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
+.contest-next-action-buttons button,
+.contest-cancel-entry button {
+  min-height: 44px;
+  padding: 9px 14px;
+  border: 1px solid #153d2e;
+  border-radius: 10px;
+  background: #153d2e;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.contest-next-action-buttons button + button { background: white; color: #153d2e; }
+.contest-cancel-entry { width: 100%; margin: 18px 0 0; }
+.contest-cancel-entry button { margin-top: 16px; }
+
 .contest-guide-panel.is-top {
   top: max(16px, calc(env(safe-area-inset-top, 0px) + 12px));
   bottom: auto;

@@ -1,4 +1,4 @@
-import { useMemo, useState, useRef } from "react";
+import { useMemo, useState } from "react";
 import {
   ChevronRight,
   Inbox,
@@ -47,162 +47,12 @@ function EmptyState({ onAdd, onScan, onLogout, onOpenAccount, profile }) {
   );
 }
 
-function VisualPromoCarousel({ promotions, onOpenPromotion }) {
-  const [activeIndex, setActiveIndex] = useState(0);
-  const scrollRef = useRef(null);
-
-  const naverPromo = promotions.find((p) => p.id === "naverplus-netflix");
-  const youtubePromo = promotions.find((p) => p.id === "youtube-promo") || promotions[1] || promotions[0];
-  const heroPromo = promotions.find((p) => p.id === "tving-naver" || p.id === "naverplus-netflix") || promotions[0];
-
-  const slides = [
-    {
-      id: "naver-netflix",
-      promo: naverPromo,
-      tag: "네이버플러스 멤버십 제휴",
-      tagBg: "bg-[#DCFCE7] text-[#15803D]",
-      title: "네이버플러스 회원이라면\n넷플릭스 선택 가능",
-      desc: "월 4,900원 멤버십 · 광고형 스탠다드",
-      bgGradient: "from-[#F0FDF4] via-white to-[#E8F9EF] border-[#DCFCE7]",
-      visual: (
-        <div className="relative h-20 w-28 shrink-0 flex items-center justify-center select-none">
-          <div className="absolute top-3 right-9 w-[50px] h-[34px] rounded-xl bg-[#03C75A] text-white shadow-md -rotate-12 flex items-center justify-center font-black text-[13px] border-[1.5px] border-white">
-            N+
-          </div>
-          <div className="absolute top-7 right-1 w-[60px] h-[36px] rounded-xl bg-[#141414] text-[#E50914] shadow-md rotate-6 flex items-center justify-center font-black text-[11px] tracking-wider border-[1.5px] border-white">
-            NETFLIX
-          </div>
-          <div className="absolute top-1 right-2.5 h-[30px] w-[30px] rounded-full bg-[#22C55E] text-white flex items-center justify-center shadow-md text-[10px] font-black border-2 border-white">
-            선택
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: "youtube-promo",
-      promo: youtubePromo,
-      tag: "우주패스 전용 프로모션",
-      tagBg: "bg-[#FFE4E6] text-[#BE123C]",
-      title: "유튜브 프리미엄\n우주패스 결합 특가!",
-      desc: "요금제별 최대 특별 할인 지원",
-      bgGradient: "from-[#FFF1F2] via-white to-[#FFE4E6] border-[#FEE2E2]",
-      visual: (
-        <div className="relative h-20 w-28 shrink-0 flex items-center justify-center select-none">
-          <div className="absolute top-3 right-9 w-[52px] h-[34px] rounded-xl bg-[#2563EB] text-white shadow-md -rotate-12 flex items-center justify-center font-black text-[11px] border-[1.5px] border-white">
-            T우주
-          </div>
-          <div className="absolute top-7 right-1 w-[62px] h-[36px] rounded-xl bg-[#FF0000] text-white shadow-md rotate-6 flex items-center justify-center font-black text-[11px] tracking-tight border-[1.5px] border-white">
-            YouTube
-          </div>
-          <div className="absolute top-1 right-2.5 h-[30px] w-[30px] rounded-full bg-[#F59E0B] text-white flex items-center justify-center shadow-md text-[10px] font-black border-2 border-white">
-            특가
-          </div>
-        </div>
-      ),
-    },
-    {
-      id: "lgu-nerget",
-      promo: heroPromo,
-      tag: "유독 OTT 정기구독 혜택",
-      tagBg: "bg-[#DBEAFE] text-[#1D4ED8]",
-      title: "티빙 월 4,950원~\n디즈니+ 최대 할인!",
-      desc: "유독 단독 할인 & 너겟 요금제 결합",
-      bgGradient: "from-[#EFF6FF] via-white to-[#E0F2FE] border-[#DBEAFE]",
-      visual: (
-        <div className="relative h-20 w-28 shrink-0 flex items-center justify-center select-none">
-          <div style={{ backgroundColor: "#001D38" }} className="absolute top-3 right-9 w-[54px] h-[34px] rounded-xl text-[#60A5FA] shadow-md -rotate-12 flex items-center justify-center font-black text-[11px] border-[1.5px] border-white">
-            Disney+
-          </div>
-          <div style={{ backgroundColor: "#FF153C" }} className="absolute top-7 right-1 w-[60px] h-[36px] rounded-xl text-white shadow-md rotate-6 flex items-center justify-center font-black text-[12px] border-[1.5px] border-white">
-            TVING
-          </div>
-          <div className="absolute top-1 right-2.5 h-[30px] w-[30px] rounded-full bg-[#38BDF8] text-[#0A1E3F] flex items-center justify-center shadow-md text-[10px] font-black border-2 border-white">
-            할인
-          </div>
-        </div>
-      ),
-    },
-  ].filter((slide) => slide.promo);
-
-  const handleScroll = () => {
-    if (!scrollRef.current) return;
-    const scrollLeft = scrollRef.current.scrollLeft;
-    const width = scrollRef.current.clientWidth;
-    if (width > 0) {
-      const newIdx = Math.round(scrollLeft / width);
-      setActiveIndex(newIdx);
-    }
-  };
-
-  const scrollToSlide = (idx) => {
-    if (!scrollRef.current) return;
-    const width = scrollRef.current.clientWidth;
-    scrollRef.current.scrollTo({
-      left: idx * width,
-      behavior: "smooth",
-    });
-    setActiveIndex(idx);
-  };
-
-  return (
-    <div className="w-full">
-      <div
-        ref={scrollRef}
-        onScroll={handleScroll}
-        className="flex overflow-x-auto snap-x snap-mandatory scrollbar-none rounded-[20px]"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-      >
-        {slides.map((s) => (
-          <div
-            key={s.id}
-            onClick={() => onOpenPromotion?.(s.promo)}
-            className={`w-full shrink-0 snap-center rounded-[20px] border bg-gradient-to-br ${s.bgGradient} px-4 py-3.5 flex items-center justify-between shadow-xs cursor-pointer active:scale-[0.98] transition-all`}
-            style={{ minHeight: "108px" }}
-            role="button"
-            tabIndex={0}
-            aria-label={`${s.tag} - ${s.title}`}
-          >
-            <div className="flex-1 pr-2 min-w-0">
-              <span className={`inline-block text-[10.5px] font-bold px-2 py-0.5 rounded-md tracking-tight mb-1.5 ${s.tagBg}`}>
-                {s.tag}
-              </span>
-              <h3 className="text-[14px] font-bold text-[#191F28] tracking-tight leading-[1.3] whitespace-pre-line">
-                {s.title}
-              </h3>
-              <p className="text-[11px] font-medium text-[#4E5968] mt-1 truncate">
-                {s.desc}
-              </p>
-            </div>
-            {s.visual}
-          </div>
-        ))}
-      </div>
-
-      <div className="flex items-center justify-center gap-1.5 mt-2.5">
-        {slides.map((_, idx) => (
-          <button
-            key={idx}
-            type="button"
-            onClick={() => scrollToSlide(idx)}
-            className={`h-1.5 rounded-full transition-all cursor-pointer ${
-              activeIndex === idx ? "w-4.5 bg-[#3182F6]" : "w-1.5 bg-[#E5E8EB]"
-            }`}
-            aria-label={`슬라이드 ${idx + 1}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export function HomeScreen({
   subscriptions,
-  promotions = [],
   profile,
   notificationDenied,
   onOpenSubscription,
   onShowAll,
-  onOpenPromotion,
   onExplorePromotions,
   onAdd,
   onScan,
@@ -381,12 +231,12 @@ export function HomeScreen({
         </div>
       </section>
 
-      {/* 4. 스마트 절약 · 혜택 (하단 30~40% 영역을 차지하는 시각화 스와이프 캐러셀) */}
+      {/* Offer details are evaluated in the benefits tab; do not tease catalog prices here. */}
       <section className="mt-9">
         <div className="flex items-center justify-between pb-2 border-b border-gray-100/80 mb-3.5">
           <h2 className="text-[14px] font-bold text-gray-800 tracking-tight flex items-center gap-1.5">
             <Sparkles size={16} className="text-[#3182F6]" />
-            스마트 절약 추천 · 혜택
+            내 구독과 관련된 혜택 후보
           </h2>
           {onExplorePromotions && (
             <button
@@ -399,11 +249,12 @@ export function HomeScreen({
           )}
         </div>
 
-        {/* 시각화 스와이프 캐러셀 (글자 목록 없이 단독 스와이프 배너) */}
-        <VisualPromoCarousel
-          promotions={promotions}
-          onOpenPromotion={onOpenPromotion}
-        />
+        <p className="text-[13px] leading-6 text-[#4E5968]">등록한 구독을 기준으로 혜택 후보를 찾고, 적용 조건과 공식 출처를 확인해보세요. 내 계정에 적용되는지는 직접 확인해야 합니다.</p>
+        {onExplorePromotions && (
+          <button type="button" onClick={onExplorePromotions} className="mt-3 min-h-11 rounded-xl border border-[#C7D9CE] bg-[#F1F8F3] px-4 text-[13px] font-bold text-[#153D2E]">
+            혜택 후보 살펴보기
+          </button>
+        )}
       </section>
 
       {/* 5. Legal & Footer */}

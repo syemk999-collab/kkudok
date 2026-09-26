@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { FilterX, RefreshCw, Search, SlidersHorizontal, PlusCircle } from "lucide-react";
-import { Button, IconButton, SubscriptionCard } from "./ui";
+import { FilterX, Search, SlidersHorizontal, PlusCircle } from "lucide-react";
+import { Button, SubscriptionCard } from "./ui";
 import { daysUntilCharge, formatWon } from "../lib/dates";
 
-export function SubscriptionListScreen({ subscriptions, onOpen, onAdd, onStartCancel, onMute, onRefresh, onTogglePin }) {
+export function SubscriptionListScreen({ subscriptions, onOpen, onAdd, onStartCancel, onMute, onTogglePin }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("all");
   const [sort, setSort] = useState("due");
@@ -31,7 +31,6 @@ export function SubscriptionListScreen({ subscriptions, onOpen, onAdd, onStartCa
           <Search className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B95A1]" size={18} />
           <input className="w-full rounded-xl border border-[#E5E8EB] bg-[#F9FAFB] py-3 pl-10 pr-3 text-[14px] text-[#191F28] outline-none placeholder:text-[#8B95A1] transition-colors focus:border-[#191F28] focus:bg-white" placeholder="서비스 또는 요금제 검색" value={query} onChange={(event) => setQuery(event.target.value)} />
         </label>
-        <IconButton variant="weak" size="large" onClick={onRefresh} aria-label="목록 새로고침"><RefreshCw size={18} className="text-[#4E5968]" /></IconButton>
       </div>
 
       <div className="mt-4 flex gap-2">

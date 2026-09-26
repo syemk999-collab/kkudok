@@ -1,27 +1,22 @@
-import { createMockSubscriptions } from "../data/subscriptionData.js";
-
 export const CONTEST_CANCELLATION_SUBSCRIPTION_ID = "seed-naverplus";
 
-// The cancellation example belongs only to the isolated contest profile.
-// The price is illustrative; the experience does not compare or promise savings from it.
+// A/B begin empty: the only subscription in either flow must come from the
+// user's confirmed parser/OCR result. The optional cancellation example is
+// created only when the user explicitly chooses that separate tutorial.
 export function createContestSubscriptions(scenario = null) {
-  const subscriptions = createMockSubscriptions().filter((subscription) => subscription.id !== "netflix");
-  if (scenario !== "B") return subscriptions;
+  if (scenario !== "C") return [];
 
   return [
-    ...subscriptions,
     {
       id: "naverplus",
       subscriptionId: CONTEST_CANCELLATION_SUBSCRIPTION_ID,
       name: "네이버플러스 멤버십",
       monogram: "네",
       category: "쇼핑",
-      plan: "월간 · 체험용 예시",
-      amount: 4900,
-      paymentMethod: "체험용 예시",
-      billingCycle: "매월",
-      status: "active",
-      dueDay: 15,
+      plan: "해지 경로 체험용",
+      amount: null,
+      billingCycle: "정보 없음",
+      status: "example",
       cancelUrl: "https://nid.naver.com/membership/subscribe?m=checkCancel",
       alertD1: false,
       alertD3: false,

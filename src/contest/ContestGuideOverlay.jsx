@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import { DEFAULT_CHARACTER_SRC } from "../lib/characterAsset";
-import { CONTEST_CANCELLATION_SUBSCRIPTION_ID } from "./contestSubscriptions";
 
 const GUIDE = {
   A1: {
@@ -30,10 +29,10 @@ const GUIDE = {
     body: "‘내 구독에 추가’를 누르면 이 구독을 기준으로 혜택을 연결할 수 있습니다.",
   },
   A5: {
-    target: "nav-promotions",
+    target: "contest-view-benefits",
     eyebrow: "체험 A · 5/8",
-    title: "이제 방금 등록한 구독의 혜택을 확인해볼게요.",
-    body: "하단의 ‘혜택’을 눌러주세요. 꾸독은 단순 지출 목록이 아니라, 등록된 구독을 기준으로 검증된 선택지를 연결하는 것을 목표로 합니다.",
+    title: "등록한 구독에서 다음에 확인할 일을 골라보세요.",
+    body: "관련 혜택 후보를 살펴보거나 등록한 구독의 상세 정보를 확인할 수 있어요. 두 선택 모두 방금 등록한 구독에서 시작합니다.",
   },
   A6: {
     target: "contest-benefit-source",
@@ -59,66 +58,104 @@ const GUIDE = {
     body: "결제 발견 → 구조화 → 등록 → 혜택 검토 → 리마인더가 하나의 흐름으로 연결됩니다.",
     complete: true,
   },
+  A10: {
+    eyebrow: "체험 A · 등록 완료",
+    title: "방금 등록한 구독의 상세 화면입니다.",
+    body: "요금과 결제일을 다시 확인할 수 있어요. 해지 방법이 필요할 때는 사용자가 직접 선택합니다.",
+    complete: true,
+  },
+  A11: {
+    target: "registered-subscription",
+    eyebrow: "체험 A · 구독 목록",
+    title: "방금 등록한 구독을 선택해보세요.",
+    body: "목록에서 등록한 구독의 요금과 결제일을 확인할 수 있습니다.",
+  },
   B1: {
     target: "contest-b-sample",
-    eyebrow: "체험 B · 1/9",
+    eyebrow: "체험 B · 1/7",
     title: "이번에는 알림을 놓친 결제가 있다고 가정해볼게요.",
-    body: "Netflix 결제 캡처를 저장해 직접 선택합니다. 등록 후에는 체험용 네이버플러스 멤버십의 해지 안내를 살펴봅니다.",
+    body: "Netflix 결제 캡처를 저장해 직접 선택합니다. 등록한 뒤 필요한 다음 행동을 고릅니다.",
   },
   B2: {
     target: "contest-b-upload-start",
-    eyebrow: "체험 B · 2/9",
+    eyebrow: "체험 B · 2/7",
     title: "저장한 이미지를 직접 AI 등록 화면에 넣어보세요.",
     body: "버튼을 누르면 꾸독의 실제 이미지 등록 화면이 열립니다. 결과를 미리 주입하지 않습니다.",
   },
   B3: {
     target: "contest-image-upload",
-    eyebrow: "체험 B · 3/9",
+    eyebrow: "체험 B · 3/7",
     title: "결제 캡처를 선택해주세요.",
     body: "이미지를 실제로 분석합니다. 결과를 확인해주세요. *OCR : 이미지 속 글자를 읽는 기술입니다.",
   },
   B4: {
     target: "contest-add-review",
-    eyebrow: "체험 B · 4/9",
+    eyebrow: "체험 B · 4/7",
     title: "분석된 내용을 확인해 주세요.",
-    body: "서비스명·금액·결제일·결제수단을 살펴보고, 누락되거나 틀린 값은 직접 수정해주세요.",
+    body: "서비스명·금액·결제일·결제수단을 살펴보세요. 맞으면 그대로 확인하고, 누락되거나 틀린 값만 수정해주세요.",
     continueLabel: "등록 단계로",
     next: "B5",
   },
   B5: {
     target: "contest-add-save",
-    eyebrow: "체험 B · 5/9",
+    eyebrow: "체험 B · 5/7",
     title: "확인한 정보를 실제 구독으로 등록해주세요.",
-    body: "등록이 끝나면 체험용 네이버플러스 멤버십을 선택해 해지 안내까지 이어갑니다.",
+    body: "등록이 끝나면 방금 등록한 구독에서 혜택 후보나 상세 정보를 직접 선택할 수 있습니다.",
   },
   B6: {
-    target: "nav-subscriptions",
-    eyebrow: "체험 B · 6/9",
-    title: "이번에는 관리 중인 구독을 정리해볼게요.",
-    body: "하단 ‘구독’ 탭을 눌러주세요.",
+    target: "contest-view-benefits",
+    eyebrow: "체험 B · 6/7",
+    title: "등록한 Netflix에서 다음에 확인할 일을 골라보세요.",
+    body: "혜택 후보의 조건을 살펴보거나 구독 상세에서 등록한 값을 다시 볼 수 있어요. 분석값을 일부러 수정할 필요는 없습니다.",
   },
   B7: {
-    target: `subscription-${CONTEST_CANCELLATION_SUBSCRIPTION_ID}`,
-    eyebrow: "체험 B · 7/9",
-    title: "체험용 네이버플러스 멤버십을 선택해주세요.",
-    body: "실제 구독 상세 화면에서 해지 경로를 확인합니다.",
+    target: "contest-benefit-source",
+    eyebrow: "체험 B · 7/7",
+    title: "연결된 혜택의 조건과 공식 출처를 살펴보세요.",
+    body: "구독이 연결돼도 내 계정에 혜택이 적용됐다는 뜻은 아닙니다. 비용·상품 변경·공식 조건을 확인하고 판단하세요. 관련 후보가 없다면 목록에서 확인할 수 있어요.",
+    continueLabel: "체험 마치기",
+    next: "B8",
   },
   B8: {
-    target: "cancel-primary",
-    eyebrow: "체험 B · 8/9",
-    title: "이제 실제 해지 가이드를 시작해주세요.",
-    body: "꾸독은 해지를 대신하지 않습니다. 공식 해지 페이지와 필요한 단계를 안내해 사용자가 직접 결정하고 완료하도록 돕습니다.",
+    eyebrow: "체험 B · 완료",
+    title: "등록한 구독의 혜택 목록을 살펴봤습니다.",
+    body: "관련 후보가 없을 수도 있고, 이미지 분석에 실패했다면 직접 입력으로 등록했을 수도 있습니다. 가격 정보가 부족하면 개인 예상 금액을 보여주지 않습니다.",
+    complete: true,
   },
   B9: {
-    target: "cancel-open-site",
-    eyebrow: "체험 B · 9/9",
-    title: "공식 해지 페이지로 이동해 안내를 확인해보세요.",
-    body: "웹에서는 꾸독의 단계별 안내를 보며 공식 페이지를 새 탭으로 엽니다. 안드로이드 앱에서는 현재 화면의 버튼을 확인할 수 있을 때 강조하고, 확인할 수 없으면 수동 안내로 전환합니다. 로그인과 최종 해지는 직접 진행하세요.",
+    eyebrow: "체험 B · 등록 완료",
+    title: "등록한 구독의 상세 화면입니다.",
+    body: "추출된 요금과 결제일을 다시 확인할 수 있어요. 해지 방법이 필요해지면 사용자가 직접 선택합니다.",
+    complete: true,
   },
   B10: {
-    eyebrow: "체험 B · 완료",
-    title: "놓친 결제를 복원하고 정리하는 흐름을 확인했습니다.",
-    body: "이미지 → 실제 AI 인식 → 사용자 확인 → 등록 → 해지 가이드까지 하나의 관리 흐름으로 연결됩니다.",
+    target: "registered-subscription",
+    eyebrow: "체험 B · 구독 목록",
+    title: "방금 등록한 구독을 선택해보세요.",
+    body: "분석한 값을 확인하거나 수정한 뒤 등록한 구독이 목록에 나타납니다.",
+  },
+  C1: {
+    target: "contest-cancel-example-start",
+    eyebrow: "별도 체험 · 1/3",
+    title: "네이버플러스 멤버십 해지 안내를 살펴볼게요.",
+    body: "이 구독은 해지 안내를 보여주기 위한 체험용 예시입니다. 실제 사용자의 구독이나 계정이 아닙니다.",
+  },
+  C2: {
+    target: "cancel-primary",
+    eyebrow: "별도 체험 · 2/3",
+    title: "해지 방법을 직접 선택해주세요.",
+    body: "네이버플러스 멤버십 상세에서 ‘웹사이트에서 해지하기’를 눌러 안내를 확인하세요.",
+  },
+  C3: {
+    target: "cancel-open-site",
+    eyebrow: "별도 체험 · 3/3",
+    title: "공식 페이지의 해지 경로를 확인해보세요.",
+    body: "웹에서는 단계별 방법과 공식 링크를 제공합니다. 안드로이드 앱에서는 확인 가능한 버튼만 강조하며, 최종 해지는 사용자가 직접 선택합니다.",
+  },
+  C4: {
+    eyebrow: "별도 체험 · 완료",
+    title: "네이버플러스 멤버십 해지 경로를 확인했습니다.",
+    body: "공식 사이트에서 실제로 해지를 완료했는지는 꾸독이 대신 판단하지 않습니다.",
     complete: true,
   },
 };
@@ -139,6 +176,8 @@ function measureTarget(targetName) {
 
 export function ContestGuideOverlay({ flow, onStep, onExit }) {
   const guide = flow?.step ? GUIDE[flow.step] : null;
+  const target = guide?.target === "registered-subscription"
+    ? `subscription-${flow?.addedSubscriptionId}` : guide?.target;
   const [rect, setRect] = useState(null);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -147,7 +186,7 @@ export function ContestGuideOverlay({ flow, onStep, onExit }) {
   }, [flow?.step]);
 
   useEffect(() => {
-    if (!guide?.target) {
+    if (!target) {
       setRect(null);
       return;
     }
@@ -158,7 +197,7 @@ export function ContestGuideOverlay({ flow, onStep, onExit }) {
 
     const update = () => {
       frame = requestAnimationFrame(() => {
-        const element = document.querySelector(`[data-contest-target="${guide.target}"]`);
+        const element = document.querySelector(`[data-contest-target="${target}"]`);
         if (element && !hasAutoScrolled) {
           const bounds = element.getBoundingClientRect();
           const topSafe = 72;
@@ -167,13 +206,13 @@ export function ContestGuideOverlay({ flow, onStep, onExit }) {
             hasAutoScrolled = true;
             element.scrollIntoView({ behavior: "smooth", block: "center", inline: "nearest" });
             scrollTimer = window.setTimeout(() => {
-              setRect(measureTarget(guide.target));
+              setRect(measureTarget(target));
             }, 280);
           } else {
             hasAutoScrolled = true;
           }
         }
-        setRect(measureTarget(guide.target));
+        setRect(measureTarget(target));
       });
     };
 
@@ -190,7 +229,7 @@ export function ContestGuideOverlay({ flow, onStep, onExit }) {
       window.removeEventListener("resize", update);
       window.removeEventListener("scroll", update, true);
     };
-  }, [guide?.target, flow?.step]);
+  }, [target, flow?.step]);
 
   const targetExists = useMemo(() => Boolean(rect), [rect]);
   const placement = useMemo(() => {
@@ -226,7 +265,7 @@ export function ContestGuideOverlay({ flow, onStep, onExit }) {
             <span>{guide.eyebrow}</span>
             <strong>{guide.title}</strong>
             <p>{guide.body}</p>
-            {guide.target && !targetExists && (
+            {target && !targetExists && (
               <small>안내할 화면을 불러오는 중이에요.</small>
             )}
             <div className="contest-guide-actions">

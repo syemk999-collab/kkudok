@@ -8,6 +8,7 @@ import { SplashScreen, LandingScreen } from "./components/LandingScreen";
 import { ContestExperienceScreen } from "./contest/ContestExperienceScreen";
 import { ContestGuideOverlay } from "./contest/ContestGuideOverlay";
 import { ContestPaymentHeadsUp } from "./contest/ContestPaymentHeadsUp";
+import { ContestNextAction } from "./contest/ContestNextAction";
 import { useContestFlow } from "./contest/useContestFlow";
 import { AddModal } from "./components/AddModal";
 import { AccountModal } from "./components/AccountModal";
@@ -527,6 +528,8 @@ export default function App() {
   const handlePromotion = useCallback((promotion) => {
     if (contestFlow.step === "A6") {
       setContestStep("A7");
+    } else if (contestFlow.step === "B7") {
+      setContestStep("B8");
     }
 
     if (promotion?.link) {
@@ -563,14 +566,17 @@ export default function App() {
   ]);
 
   const navigateFromContest = useCallback((targetRoute) => {
-    if (contestFlow.step === "A5" && targetRoute === "promotions") {
-      setContestStep("A6");
-    } else if (contestFlow.step === "B6" && targetRoute === "subscriptions") {
-      setContestStep("B7");
+    if (["A5", "B6"].includes(contestFlow.step)) {
+      if (targetRoute === "promotions") {
+        const added = subscriptions.find((subscription) => subscription.subscriptionId === contestFlow.addedSubscriptionId);
+        setContestStep(contestFlow.scenario === "A" ? "A6" : (added?.serviceId === "netflix" || added?.id === "netflix") ? "B7" : "B8");
+      } else if (targetRoute === "subscriptions") {
+        setContestStep(contestFlow.scenario === "A" ? "A11" : "B10");
+      }
     }
     setHighlightCancelId(null);
     navigate(targetRoute);
-  }, [contestFlow.step, navigate, setContestStep, setHighlightCancelId]);
+  }, [contestFlow.addedSubscriptionId, contestFlow.scenario, contestFlow.step, navigate, setContestStep, setHighlightCancelId, subscriptions]);
 
   const openNotificationCenter = useCallback(() => {
     if (contestFlow.step === "A7") {
@@ -580,12 +586,30 @@ export default function App() {
   }, [contestFlow.step, setContestStep, setNotificationCenterOpen]);
 
   const triggerContestReminder = useCallback(() => {
-    const spotify = subscriptions.find((subscription) => (subscription.serviceId || subscription.id) === "spotify");
-    const result = handleTriggerTestNotification(spotify, notify, "billing_d1");
+    const registered = subscriptions.find((subscription) => subscription.subscriptionId === contestFlow.addedSubscriptionId);
+    if (!registered) {
+      notify("등록한 구독을 찾지 못했어요. 체험을 다시 시작해 주세요.");
+      return;
+    }
+    const result = handleTriggerTestNotification(registered, notify, "billing_d1");
     if (result && contestFlow.step === "A8") {
       setContestStep("A9");
     }
-  }, [contestFlow.step, handleTriggerTestNotification, notify, setContestStep, subscriptions]);
+  }, [contestFlow.addedSubscriptionId, contestFlow.step, handleTriggerTestNotification, notify, setContestStep, subscriptions]);
+
+  const contestAddedSubscription = subscriptions.find((subscription) =>
+    subscription.subscriptionId === contestFlow.addedSubscriptionId
+  );
+
+  const chooseContestAction = useCallback((action) => {
+    const next = contestFlow.scenario === "A"
+      ? action === "benefits" ? "A6" : "A10"
+      : action === "benefits"
+        ? contestAddedSubscription?.serviceId === "netflix" || contestAddedSubscription?.id === "netflix" ? "B7" : "B8"
+        : "B9";
+    setContestStep(next);
+    navigate(action === "benefits" ? "promotions" : "detail", action === "detail" ? contestFlow.addedSubscriptionId : null);
+  }, [contestAddedSubscription, contestFlow.addedSubscriptionId, contestFlow.scenario, navigate, setContestStep]);
 
   let content;
   if (screen.route === "landing") {
@@ -611,6 +635,10 @@ export default function App() {
           setAddOpen(true);
           setContestStep("B3");
         }}
+        onOpenCancellationExample={() => {
+          setContestStep("C2");
+          navigate("detail", CONTEST_CANCELLATION_SUBSCRIPTION_ID);
+        }}
         onReset={resetContestExperience}
       />
     );
@@ -628,13 +656,19 @@ export default function App() {
     content = (
       <HomeScreen
         subscriptions={subscriptions}
-        promotions={promotionCatalog}
         profile={profile}
         notificationDenied={profile?.notificationsAllowed === false}
-        onOpenSubscription={(id) => navigate("detail", id)}
+        onOpenSubscription={(id) => {
+          if (["A5", "B6"].includes(contestFlow.step) && id === contestFlow.addedSubscriptionId) {
+            setContestStep(contestFlow.scenario === "A" ? "A10" : "B9");
+          }
+          navigate("detail", id);
+        }}
         onShowAll={() => navigate("subscriptions")}
-        onOpenPromotion={handlePromotion}
-        onExplorePromotions={() => navigate("promotions")}
+        onExplorePromotions={() => {
+          if (["A5", "B6"].includes(contestFlow.step)) chooseContestAction("benefits");
+          else navigate("promotions");
+        }}
         onAdd={() => { setAddInitialMode("manual"); setAddOpen(true); }}
         onScan={() => { setAddInitialMode("ai"); setAddOpen(true); }}
         onStartOnboarding={() => navigate("onboarding")}
@@ -659,15 +693,17 @@ export default function App() {
       <SubscriptionListScreen
         subscriptions={subscriptions}
         onOpen={(id) => {
-          if (contestFlow.step === "B7" && id === CONTEST_CANCELLATION_SUBSCRIPTION_ID) {
-            setContestStep("B8");
+          if (["A11", "B10"].includes(contestFlow.step) && id === contestFlow.addedSubscriptionId) {
+            setContestStep(contestFlow.scenario === "A" ? "A10" : "B9");
+          }
+          if (contestFlow.step === "C1" && id === CONTEST_CANCELLATION_SUBSCRIPTION_ID) {
+            setContestStep("C2");
           }
           navigate("detail", id);
         }}
         onAdd={() => { setAddInitialMode("manual"); setAddOpen(true); }}
         onStartCancel={startCancellation}
         onMute={(id) => muteSubscription(id, notify)}
-        onRefresh={() => notify("최신 구독 목록을 확인했어요.")}
         onTogglePin={(id) => togglePinSubscription(id, notify)}
       />
     );
@@ -679,7 +715,7 @@ export default function App() {
         subscriptions={subscriptions}
         promotions={promotionCatalog}
         onOpenPromotion={handlePromotion}
-        contestMode={contestFlow.scenario === "A"}
+        contestMode={["A", "B"].includes(contestFlow.scenario)}
       />
     );
   } else if (screen.route === "detail") {
@@ -690,13 +726,14 @@ export default function App() {
         onUpdate={(id, update) => updateSubscription(id, update, notify)}
         onStartCancel={(id, promotion, options) => {
           startCancellation(id, promotion, options);
-          if (contestFlow.step === "B8") {
-            setContestStep("B9");
+          if (contestFlow.step === "C2") {
+            setContestStep("C3");
           }
         }}
         onBack={() => {
           setHighlightCancelId(null);
-          navigate("subscriptions");
+          if (contestFlow.scenario === "C") setContestStep("C1");
+          navigate(contestFlow.scenario === "C" ? "contest" : "subscriptions");
         }}
         onDelete={(id) => {
           deleteSubscription(id);
@@ -707,7 +744,7 @@ export default function App() {
         promotion={promotionCatalog.find((p) => p.sourceServiceIds?.includes(selectedSubscription?.id))}
         onTriggerNotification={(sub) => handleTriggerTestNotification(sub, notify)}
         highlightCancel={highlightCancelId === selectedSubscription?.subscriptionId}
-        contestMode={contestFlow.scenario === "B"}
+        contestMode={contestFlow.scenario === "C"}
       />
     );
   } else {
@@ -758,6 +795,15 @@ export default function App() {
           }
         />
       )}
+      {screen.route === "home" && ["A5", "B6"].includes(contestFlow.step) && (
+        <ContestNextAction
+          scenario={contestFlow.scenario}
+          subscription={contestAddedSubscription}
+          ocrRecognized={Boolean(contestFlow.ocrResult)}
+          onBenefits={() => chooseContestAction("benefits")}
+          onDetail={() => chooseContestAction("detail")}
+        />
+      )}
       {content}
       {hasAppChrome && screen.route !== "detail" && (
         <BottomNavigation
@@ -801,7 +847,7 @@ export default function App() {
             if (contestFlow.scenario === "A" && ["A3", "A4"].includes(contestFlow.step)) {
               setContestStep("A5", { addedSubscriptionId: created.subscriptionId });
               navigate("home");
-            } else if (contestFlow.scenario === "B" && ["B4", "B5"].includes(contestFlow.step)) {
+            } else if (contestFlow.scenario === "B" && ["B3", "B4", "B5"].includes(contestFlow.step)) {
               setContestStep("B6", { addedSubscriptionId: created.subscriptionId });
               navigate("home");
             }
@@ -812,16 +858,20 @@ export default function App() {
       {cancelSubscription && (
         <CancelModal
           subscription={cancelSubscription}
+          tutorialOnly={contestFlow.scenario === "C"}
           promotion={cancelTarget?.promotion}
           autoOpen={cancelTarget?.autoOpen}
-          onClose={closeCancellation}
+          onClose={() => {
+            closeCancellation();
+            if (contestFlow.scenario === "C" && contestFlow.step === "C3") setContestStep("C2");
+          }}
           onComplete={(id, saved) => finishCancellation(id, saved, () => {
             if (screen.route === "detail") navigate("subscriptions");
           })}
           onToast={notify}
           onExternalOpen={() => {
-            if (contestFlow.step === "B9") {
-              setContestStep("B10");
+            if (contestFlow.step === "C3") {
+              setContestStep("C4");
             }
           }}
         />
@@ -884,7 +934,7 @@ export default function App() {
       {contestFlowActive && !(
         screen.route === "contest" &&
         ["A1", "B1", "B2"].includes(contestFlow.step)
-      ) && !(contestFlow.step === "B10" && cancelSubscription) && (
+      ) && !(contestFlow.step === "C4" && cancelSubscription) && (
         <ContestGuideOverlay
           flow={contestFlow}
           onStep={setContestStep}

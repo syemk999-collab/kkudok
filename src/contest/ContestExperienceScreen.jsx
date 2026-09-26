@@ -6,6 +6,7 @@ export function ContestExperienceScreen({
   onRunPayment,
   onSampleReady,
   onOpenImageRegistration,
+  onOpenCancellationExample,
   onReset,
 }) {
   const scenario = flow?.scenario;
@@ -45,9 +46,18 @@ export function ContestExperienceScreen({
           <button type="button" onClick={() => onStartScenario?.("B")}>
             <span>체험 B · 지난 결제</span>
             <strong>놓친 결제가 있다면</strong>
-            <p>Netflix 캡처 선택·등록 → 네이버플러스 멤버십 해지 안내</p>
-            <small>지난 결제 등록과 기존 구독 정리</small>
+            <p>Netflix 캡처 선택·분석 → 확인 후 등록 → 다음 행동 선택</p>
+            <small>지난 결제 등록과 관련 혜택 후보 확인</small>
           </button>
+        </section>
+
+        <section className="contest-cancel-entry" aria-labelledby="contest-cancel-entry-title">
+          <div>
+            <span>별도 체험 · 해지 안내</span>
+            <h2 id="contest-cancel-entry-title">네이버플러스 멤버십 해지 방법이 궁금하다면</h2>
+            <p>체험용 구독 한 건으로 꾸독이의 해지 안내를 살펴봅니다. A/B에서 등록한 Netflix와는 별개의 예시입니다.</p>
+          </div>
+          <button type="button" onClick={() => onStartScenario?.("C")}>네이버플러스 해지 안내 체험</button>
         </section>
 
         <div className="contest-experience-glossary">
@@ -122,18 +132,18 @@ export function ContestExperienceScreen({
           <img className="contest-focus-character-small" src={DEFAULT_CHARACTER_SRC} alt="꾸독이" />
           <div className="contest-focus-copy">
             <span>꾸독 컨시어지</span>
-            <h2>{ready ? "이제 저장한 이미지를 직접 선택해주세요." : "먼저 실제 결제 캡처를 준비해주세요."}</h2>
+            <h2>{ready ? "이제 저장한 이미지를 직접 선택해주세요." : "먼저 체험용 결제 캡처를 준비해주세요."}</h2>
             <p>
-              Netflix 샘플 이미지를 직접 선택해 분석한 뒤 결과를 확인·수정하고 등록합니다.
-              마지막에는 체험용 네이버플러스 멤버십의 해지 안내를 살펴봅니다.
+              Netflix 샘플 이미지를 직접 선택해 분석한 뒤 결과를 확인하고 등록합니다.
+              잘못 읽힌 값만 수정하세요. 등록 후에는 혜택 후보와 구독 상세 중 다음 행동을 선택합니다.
             </p>
             <p>*OCR : 사진이나 캡처에 담긴 글자를 읽는 기술입니다. 직접 선택한 이미지를 실제 분석 기능으로 처리합니다.</p>
 
             <div className="contest-sample-receipt">
               <img src="/sample_receipt_netflix.png" alt="체험 B용 Netflix 결제 캡처 샘플" />
               <div>
-                <strong>공모전용 실제 입력 이미지</strong>
-                <span>PNG · 이미 분석된 결과가 아닌 이미지 원본</span>
+                <strong>체험용 입력 이미지</strong>
+                <span>PNG · 분석 결과를 미리 넣지 않은 이미지 파일</span>
               </div>
             </div>
 
@@ -157,6 +167,26 @@ export function ContestExperienceScreen({
                 AI 캡처 등록 화면 열기
               </button>
             )}
+          </div>
+        </section>
+      </main>
+    );
+  }
+
+  if (scenario === "C" && step === "C1") {
+    return (
+      <main className="contest-experience-shell contest-experience-focus">
+        <header className="contest-experience-header">
+          <div><span>별도 체험 · 해지 안내</span><h1>네이버플러스 멤버십 해지 방법 확인</h1></div>
+          <button type="button" onClick={onReset}>처음으로</button>
+        </header>
+        <section className="contest-focus-card">
+          <img src={DEFAULT_CHARACTER_SRC} alt="꾸독이" />
+          <div className="contest-focus-copy">
+            <span>꾸독 컨시어지</span>
+            <h2>체험용 네이버플러스 멤버십의 공식 해지 경로를 안내할게요.</h2>
+            <p>실제 계정의 해지를 대신하지 않습니다. 공식 화면에서 최종 버튼을 누를지는 사용자가 결정합니다.</p>
+            <button type="button" className="contest-focus-primary" data-contest-target="contest-cancel-example-start" onClick={onOpenCancellationExample}>체험용 구독 상세 보기</button>
           </div>
         </section>
       </main>
