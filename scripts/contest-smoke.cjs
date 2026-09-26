@@ -297,6 +297,40 @@ async function runScenarioB(page) {
   await page.screenshot({ path: "artifacts/contest/scenario-b-complete.png", fullPage: true });
 }
 
+async function verifyProviderCancellation(browser) {
+  // Isolated guest fixture: no user account or external subscription is changed.
+  for (const [id, name] of [["chatgpt", "ChatGPT Plus"], ["claude-pro", "Claude Pro"]]) {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    const sub = {
+      subscriptionId: `demo-${id}`, id, name, amount: 10000, plan: "테스트 요금제",
+      billingCycle: "매월", status: "active", dueDay: 15,
+    };
+    await page.addInitScript((subscription) => {
+      localStorage.setItem("submate-mvp:subscriptions", JSON.stringify([subscription]));
+    }, sub);
+    await page.goto(`${baseURL}/#/detail/${sub.subscriptionId}?guest=1`, { waitUntil: "networkidle" });
+    await page.getByText(name, { exact: true }).first().waitFor();
+    await page.locator('[data-contest-target="cancel-primary"]').click();
+    const dialog = page.getByRole("dialog", { name: "구독 해지 가이드" });
+    await dialog.waitFor();
+    await dialog.getByRole("button", { name: "결제처를 먼저 선택해주세요" }).waitFor();
+    assert.equal(await dialog.getByRole("button", { name: "결제처를 먼저 선택해주세요" }).isEnabled(), false);
+    await dialog.getByRole("heading", { name: "어디에서 결제하셨나요?" }).waitFor();
+
+    await dialog.getByRole("button", { name: "서비스 웹사이트" }).click();
+    await dialog.getByText("웹에서 직접 결제한 계정의 경로예요.", { exact: false }).waitFor();
+    assert.equal(await dialog.getByRole("button", { name: "해지 페이지로 바로 이동 (가이드 포함)" }).isEnabled(), true);
+    await dialog.getByRole("button", { name: "Google Play" }).click();
+    await dialog.getByText("Google Play에서 결제한 구독에만 적용됩니다.", { exact: false }).waitFor();
+    await dialog.getByRole("button", { name: "결제처의 공식 경로 열기" }).waitFor();
+    await dialog.getByRole("button", { name: "App Store" }).click();
+    await dialog.getByText("App Store 결제는 iPhone의 구독 설정에서 취소합니다.", { exact: false }).waitFor();
+    await assertNoHorizontalOverflow(page, `provider ${id}`);
+    await page.screenshot({ path: `artifacts/contest/cancel-${id}-billing-choice.png`, fullPage: true });
+    await page.close();
+  }
+}
+
 (async () => {
   const browser = await chromium.launch({ headless: true });
   try {
@@ -329,6 +363,7 @@ async function runScenarioB(page) {
     await runScenarioB(flowPage);
 
     await assertNoHorizontalOverflow(flowPage, "contest mobile flow");
+    await verifyProviderCancellation(browser);
 
     console.log(
       verifyRealOcr

@@ -18,6 +18,7 @@ import {
 } from "./ui";
 import { formatWon } from "../lib/dates";
 import { getCancelUrl } from "../lib/naverPlusCancelGuide";
+import { identifyCancellationProvider } from "../lib/providerCancellation";
 
 /**
  * 프리미엄 iOS/쿠퍼티노 스타일 스크롤 휠 드럼롤 컬럼
@@ -411,10 +412,10 @@ export function SubscriptionDetailScreen({
               type="button"
               data-contest-target="cancel-primary"
               onClick={() => {
-                if (!contestMode && getCancelUrl(subscription) && !Capacitor.isNativePlatform()) {
+                if (!contestMode && !identifyCancellationProvider(subscription) && getCancelUrl(subscription) && !Capacitor.isNativePlatform()) {
                   window.open(getCancelUrl(subscription), "_blank", "noopener,noreferrer");
                 }
-                onStartCancel(subscription.subscriptionId, promotion, { autoOpen: !contestMode });
+                onStartCancel(subscription.subscriptionId, promotion, { autoOpen: !contestMode && !identifyCancellationProvider(subscription) });
               }}
               className={`w-full rounded-2xl bg-[#111827] text-white font-bold py-4 text-[16px] text-center active:scale-[0.98] transition-all shadow-sm cursor-pointer hover:bg-black ${
                 highlightCancel ? "ring-2 ring-blue-500 ring-offset-2 animate-pulse" : ""

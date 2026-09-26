@@ -42,6 +42,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.submate.app.webguide.GuideOverlayContainer;
 import com.submate.app.webguide.KkudokNaverGuideController;
+import com.submate.app.character.CharacterAssetManager;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -82,6 +83,7 @@ public class CancelBrowserActivity extends AppCompatActivity {
     private String currentCancelUrl = "";
     private String serviceId = "";
     private boolean automaticGuideEnabled = false;
+    private boolean providerGuideEntry = false;
     private GuideOverlayContainer guideOverlay;
     private KkudokNaverGuideController naverGuideController;
     private TextView btnToggleManualGuide;
@@ -114,6 +116,7 @@ public class CancelBrowserActivity extends AppCompatActivity {
         currentCancelUrl = getIntent().getStringExtra("cancelUrl");
         automaticGuideEnabled = isNaverPlus(serviceId, serviceName)
                 && isNaverCancelEntry(currentCancelUrl);
+        providerGuideEntry = isSupportedProviderEntry(serviceId, currentCancelUrl);
         String stepsJson = getIntent().getStringExtra("guideStepsJson");
 
         TextView tvServiceName = findViewById(R.id.tvServiceName);
@@ -129,6 +132,10 @@ public class CancelBrowserActivity extends AppCompatActivity {
         guideOverlay = findViewById(R.id.guideOverlay);
         btnToggleManualGuide = findViewById(R.id.btnToggleManualGuide);
         webView = findViewById(R.id.webViewCancel);
+        ImageView dockCharacter = findViewById(R.id.ivDockCharacter);
+        if (dockCharacter != null) {
+            CharacterAssetManager.applyToImageView(this, dockCharacter);
+        }
 
         if (serviceName != null) {
             tvServiceName.setText(serviceName);
@@ -151,18 +158,18 @@ public class CancelBrowserActivity extends AppCompatActivity {
         if (btnComplete != null) {
             // The cancellation-entry page is not proof of a completed cancellation.
             // Keep the separate confirmation action in Kkudok's own guide instead.
-            if (automaticGuideEnabled) btnComplete.setVisibility(View.GONE);
+            if (automaticGuideEnabled || providerGuideEntry) btnComplete.setVisibility(View.GONE);
             btnComplete.setOnClickListener(v -> {
                 setResult(RESULT_OK);
                 finish();
             });
         }
 
-        // NAVER appends a session token to the WebView URL after login. Never
-        // forward that URL into another browser; reopen the original safe entry.
+        // Never forward a signed-in page URL or session token into another browser.
+        // Reopen the original verified entry for these guided services.
         if (btnOpenExternal != null) {
             btnOpenExternal.setOnClickListener(v -> {
-                String targetUrl = automaticGuideEnabled
+                String targetUrl = automaticGuideEnabled || providerGuideEntry
                     ? currentCancelUrl
                     : (webView != null && webView.getUrl() != null && !webView.getUrl().isEmpty())
                         ? webView.getUrl() : currentCancelUrl;
@@ -285,9 +292,9 @@ public class CancelBrowserActivity extends AppCompatActivity {
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
         settings.setDatabaseEnabled(true);
-        settings.setAllowFileAccess(!automaticGuideEnabled);
+        settings.setAllowFileAccess(!automaticGuideEnabled && !providerGuideEntry);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
-            settings.setAllowContentAccess(!automaticGuideEnabled);
+            settings.setAllowContentAccess(!automaticGuideEnabled && !providerGuideEntry);
         }
         settings.setLoadWithOverviewMode(true);
         settings.setUseWideViewPort(true);
@@ -297,7 +304,7 @@ public class CancelBrowserActivity extends AppCompatActivity {
         settings.setJavaScriptCanOpenWindowsAutomatically(true);
 
         // Mixed Content 허용
-        settings.setMixedContentMode(automaticGuideEnabled
+        settings.setMixedContentMode(automaticGuideEnabled || providerGuideEntry
                 ? WebSettings.MIXED_CONTENT_NEVER_ALLOW
                 : WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
 
@@ -382,11 +389,11 @@ public class CancelBrowserActivity extends AppCompatActivity {
                 newSettings.setSupportMultipleWindows(true);
                 newSettings.setJavaScriptCanOpenWindowsAutomatically(true);
                 newSettings.setUserAgentString(cleanUA);
-                newSettings.setMixedContentMode(automaticGuideEnabled
+                newSettings.setMixedContentMode(automaticGuideEnabled || providerGuideEntry
                         ? WebSettings.MIXED_CONTENT_NEVER_ALLOW
                         : WebSettings.MIXED_CONTENT_ALWAYS_ALLOW);
-                newSettings.setAllowFileAccess(!automaticGuideEnabled);
-                newSettings.setAllowContentAccess(!automaticGuideEnabled);
+                newSettings.setAllowFileAccess(!automaticGuideEnabled && !providerGuideEntry);
+                newSettings.setAllowContentAccess(!automaticGuideEnabled && !providerGuideEntry);
 
                 CookieManager.getInstance().setAcceptThirdPartyCookies(newWebView, true);
 
@@ -446,6 +453,20 @@ public class CancelBrowserActivity extends AppCompatActivity {
                     && "nid.naver.com".equalsIgnoreCase(uri.getHost())
                     && "/membership/subscribe".equals(uri.getPath())
                     && "checkCancel".equals(uri.getQueryParameter("m"));
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private boolean isSupportedProviderEntry(String id, String url) {
+        if (id == null || url == null) return false;
+        try {
+            Uri uri = Uri.parse(url);
+            if (!"https".equalsIgnoreCase(uri.getScheme())) return false;
+            String sid = id.toLowerCase(java.util.Locale.ROOT);
+            return ("chatgpt".equals(sid) && "chatgpt.com".equalsIgnoreCase(uri.getHost()))
+                    || (("claude-pro".equals(sid) || "claude".equals(sid))
+                    && "claude.ai".equalsIgnoreCase(uri.getHost()));
         } catch (Exception ignored) {
             return false;
         }

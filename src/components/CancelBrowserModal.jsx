@@ -3,6 +3,7 @@ import { Capacitor } from "@capacitor/core";
 import { openCancelBrowser } from "../lib/cancelBrowser";
 import { DEFAULT_CHARACTER_SRC } from "../lib/characterAsset";
 import { NAVER_PLUS_CANCEL_STEPS, usesNaverPlusCancelEntry } from "../lib/naverPlusCancelGuide";
+import { identifyCancellationProvider } from "../lib/providerCancellation";
 import {
   Lock,
   X,
@@ -70,9 +71,18 @@ function NaverPlusStepUiIllustration({ stepNumber, large = false }) {
   );
 }
 
-function StepUiIllustration({ stepNumber, title, serviceName, large = false, isNaverPlus = false }) {
+function StepUiIllustration({ stepNumber, title, serviceName, large = false, isNaverPlus = false, isProvider = false }) {
   if (isNaverPlus) {
     return <NaverPlusStepUiIllustration stepNumber={stepNumber} large={large} />;
+  }
+  if (isProvider) {
+    return (
+      <div className={`flex h-full w-full flex-col justify-center bg-[#F7F8FA] text-[#191F28] ${large ? "gap-3 px-5" : "gap-1 px-2"}`}>
+        <span className={`font-bold text-[#315976] ${large ? "text-[12px]" : "text-[9px]"}`}>{serviceName} · {stepNumber}단계</span>
+        <strong className={`break-keep leading-snug ${large ? "text-[18px]" : "text-[10px]"}`}>{title}</strong>
+        {large && <span className="text-[12px] text-[#4E5968]">공식 경로에서 직접 확인할 단계입니다. 실제 화면을 그대로 재현한 그림은 아닙니다.</span>}
+      </div>
+    );
   }
 
   if (stepNumber === 1) {
@@ -238,6 +248,7 @@ export function CancelBrowserModal({
   ];
 
   const isNaverPlus = usesNaverPlusCancelEntry(subscription);
+  const isProvider = Boolean(identifyCancellationProvider(subscription));
 
   const steps = isNaverPlus
     ? NAVER_PLUS_CANCEL_STEPS
@@ -245,7 +256,12 @@ export function CancelBrowserModal({
       ? subscription.guideSteps
       : defaultSteps;
 
-  const tutorialHints = isNaverPlus ? NAVER_PLUS_TUTORIAL_HINTS : TUTORIAL_HINTS;
+  const tutorialHints = isNaverPlus ? NAVER_PLUS_TUTORIAL_HINTS : isProvider
+    ? steps.map((step) => ({
+        locationBadge: "공식 안내 단계 · 버튼 위치는 아직 실기기에서 확인하지 않았어요",
+        dialogue: () => step.description,
+        tip: "결제한 곳과 계정을 확인하세요. 꾸독은 해지 버튼을 대신 누르지 않습니다.",
+      })) : TUTORIAL_HINTS;
   const [activeStepIndex, setActiveStepIndex] = useState(0);
   const [minimized, setMinimized] = useState(false);
   const scrollContainerRef = useRef(null);
@@ -268,7 +284,7 @@ export function CancelBrowserModal({
 
     if (Capacitor.isNativePlatform()) {
       const result = await openCancelBrowser({
-        serviceId: subscription.id,
+        serviceId: identifyCancellationProvider(subscription) || subscription.id,
         serviceName: subscription.name,
         cancelUrl: subscription.cancelUrl,
         guideSteps: steps,
@@ -394,7 +410,7 @@ export function CancelBrowserModal({
             <Minimize2 size={13} />
             <span className="hidden sm:inline">최소화</span>
           </button>
-          {!isNaverPlus && (
+          {!isNaverPlus && !isProvider && (
             <button
               type="button"
               onClick={onComplete}
@@ -481,6 +497,11 @@ export function CancelBrowserModal({
                 : "웹에서는 별도 네이버 탭의 버튼 위치를 읽을 수 없어요. 아래는 찾을 버튼의 단계 예시이며, 실제 네이버 화면에서 직접 확인해주세요."}
             </p>
           )}
+          {isProvider && (
+            <p className="w-full rounded-xl border border-blue-100 bg-blue-50 px-3 py-2 text-[12px] leading-relaxed text-blue-900">
+              공식 안내에 따른 단계입니다. 로그인한 화면의 버튼 위치는 아직 검증하지 않았으므로 테두리 안내를 표시하지 않아요. 마지막 해지 여부는 직접 결정해주세요.
+            </p>
+          )}
 
           {/* 위치 예시. 실제 페이지의 버튼 위치 표시는 Android WebView에서만 가능하다. */}
           <div className="w-full h-40 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
@@ -490,6 +511,7 @@ export function CancelBrowserModal({
               serviceName={subscription.name}
               large
               isNaverPlus={isNaverPlus}
+              isProvider={isProvider}
             />
           </div>
 
@@ -497,7 +519,9 @@ export function CancelBrowserModal({
           <div className="w-full rounded-xl bg-gray-100/90 px-3 py-2 border border-gray-200/60 flex items-center gap-2">
             <ShieldCheck size={16} className="text-gray-500 shrink-0" />
             <p className="text-[10px] text-gray-600 leading-tight">
-              <span className="font-bold text-gray-800">화면 안내:</span> {Capacitor.getPlatform() === "android"
+              <span className="font-bold text-gray-800">화면 안내:</span> {isProvider
+                ? "이 경로의 버튼 좌표는 아직 확인되지 않았어요. 공식 화면에서 직접 찾아주세요."
+                : Capacitor.getPlatform() === "android"
                 ? "앱 안에서는 버튼 위치를 찾아 안내해요. 로그인 정보는 꾸독이 읽거나 저장하지 않아요."
                 : "별도 탭의 네이버 화면은 꾸독이 확인할 수 없어요. 실제 버튼과 이용 조건을 직접 확인해주세요."}
             </p>
@@ -516,11 +540,11 @@ export function CancelBrowserModal({
               onClick={openWebsite}
               className="w-full flex items-center justify-center gap-2 rounded-xl bg-[#191F28] py-3 text-[13px] font-bold text-white shadow-xs hover:bg-black active:scale-98 transition-all cursor-pointer"
             >
-              <span>{isNaverPlus ? "네이버 해지 화면 열기" : `${subscription.name} 공식 웹사이트 열기`}</span>
+              <span>{isNaverPlus ? "네이버 해지 화면 열기" : `${subscription.name} 공식 결제 화면 열기`}</span>
               <ExternalLink size={14} />
             </button>
 
-            {isFinalStep && !isNaverPlus && (
+            {isFinalStep && !isNaverPlus && !isProvider && (
               <button
                 type="button"
                 onClick={onComplete}
@@ -591,6 +615,7 @@ export function CancelBrowserModal({
                   title={step.title}
                   serviceName={subscription.name}
                   isNaverPlus={isNaverPlus}
+                  isProvider={isProvider}
                 />
                 <div className="absolute top-1 left-1 grid h-4 w-4 place-items-center rounded-full bg-black/70 text-[9px] font-bold text-white">
                   {step.stepNumber}
