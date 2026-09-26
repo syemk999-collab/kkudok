@@ -198,8 +198,6 @@ export function NotificationCenterModal({
   onTriggerTest,
   notificationPermission,
   onRequestPermission,
-  onTestPaymentDetection,
-  onRequestPaymentCapture,
   onOpenTerms,
 }) {
   return (

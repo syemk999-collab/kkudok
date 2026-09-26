@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { isAppRouteHash, readHash } from "../src/hooks/useNavigation.js";
 import { readStoredValue, storageKeys, saveUser, findUser, getStoredUsers } from "../src/lib/storage.js";
-import { createMockSubscriptions } from "../src/data/subscriptionData.js";
 
 test("URL 해시가 없거나 비어있을 때 readHash는 빈 문자열 라우트를 반환한다", () => {
   global.window = { location: { hash: "" } };
@@ -91,14 +90,9 @@ test("미인증 상태에서는 민수 프로필이나 더미 구독을 자동 �
   };
 
   const storedProfile = readStoredValue(storageKeys.profile, null);
-  const initialHash = readHash();
-  const isGuestParam = !storedProfile && initialHash.params?.get("guest") === "1";
-  const effectiveProfile = storedProfile || (isGuestParam ? { nickname: "민수", provider: "Guest", guest: true, notificationsAllowed: true } : null);
-
-  assert.equal(effectiveProfile, null);
-
-  const subscriptions = effectiveProfile?.guest || isGuestParam ? createMockSubscriptions() : [];
-  assert.equal(subscriptions.length, 0);
+  assert.equal(storedProfile, null);
+  assert.equal(readHash().route, "");
+  assert.equal(mockStorage.has(storageKeys.subscriptions), false);
 });
 
 test("과거 데모/게스트('민수') 프로필이 스토리지에 남아있더라도 자동 정리하고 login(시작화면)으로 진입한다", () => {

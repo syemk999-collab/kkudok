@@ -1,8 +1,7 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from "react";
-import { createMockSubscriptions, serviceCatalog } from "../data/subscriptionData";
+import { serviceCatalog } from "../data/subscriptionData";
 import { getMonthKey, isPastDueThisCycle } from "../lib/dates";
 import { clearStoredValue, readStoredValue, removeDemoSubscriptions, storageKeys, writeStoredValue } from "../lib/storage";
-import { readHash } from "./useNavigation";
 import { upsertDbSubscription, deleteDbSubscription, fetchUserSubscriptions } from "../lib/supabase";
 import { isDuplicateSubscription } from "../lib/subscriptionAdd";
 import { createContestSubscriptions } from "../contest/contestSubscriptions.js";
@@ -33,12 +32,10 @@ export function useSubscriptions({ currentRoute = "home", contestMode = currentR
     }
     return raw;
   }, [isContestSession]);
-  const initialHash = useMemo(() => readHash(), []);
-  const isGuestParam = !storedProfile && initialHash.params?.get("guest") === "1";
   const contestProfile = isContestSession
     ? { nickname: "체험 사용자", provider: "Contest", guest: true, notificationsAllowed: true }
     : null;
-  const effectiveProfile = contestProfile || storedProfile || (isGuestParam ? { nickname: "체험 사용자", provider: "Guest", guest: true, notificationsAllowed: true } : null);
+  const effectiveProfile = contestProfile || storedProfile;
 
   const [profile, setProfile] = useState(effectiveProfile);
   const [subscriptions, setSubscriptions] = useState(() => {
@@ -49,7 +46,7 @@ export function useSubscriptions({ currentRoute = "home", contestMode = currentR
     if (Array.isArray(saved) && saved.length > 0) {
       return effectiveProfile?.guest ? saved : removeDemoSubscriptions(saved);
     }
-    return effectiveProfile?.guest || isGuestParam ? createMockSubscriptions() : [];
+    return [];
   });
 
   const [onboardingComplete, setOnboardingComplete] = useState(() =>

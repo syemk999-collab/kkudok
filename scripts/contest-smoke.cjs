@@ -364,7 +364,7 @@ async function verifyOcrFailureState(browser) {
 }
 
 async function verifyProviderCancellation(browser) {
-  // Isolated guest fixture: no user account or external subscription is changed.
+  // Browser-context fixture: a local profile and subscription only, no external account.
   for (const [id, name] of [["chatgpt", "ChatGPT Plus"], ["claude-pro", "Claude Pro"]]) {
     const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
     const sub = {
@@ -372,9 +372,10 @@ async function verifyProviderCancellation(browser) {
       billingCycle: "매월", status: "active", dueDay: 15,
     };
     await page.addInitScript((subscription) => {
+      localStorage.setItem("submate-mvp:profile", JSON.stringify({ nickname: "검증 사용자", provider: "Local", guest: false }));
       localStorage.setItem("submate-mvp:subscriptions", JSON.stringify([subscription]));
     }, sub);
-    await page.goto(`${baseURL}/#/detail/${sub.subscriptionId}?guest=1`, { waitUntil: "networkidle" });
+    await page.goto(`${baseURL}/#/detail/${sub.subscriptionId}`, { waitUntil: "networkidle" });
     await page.getByText(name, { exact: true }).first().waitFor();
     await page.locator('[data-contest-target="cancel-primary"]').click();
     const dialog = page.getByRole("dialog", { name: "구독 해지 가이드" });

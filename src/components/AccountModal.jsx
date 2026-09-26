@@ -1,14 +1,7 @@
-import { useEffect, useState } from "react";
-import { LogOut, Check, X, AlertCircle, ChevronRight, ImagePlus, RotateCcw } from "lucide-react";
+import { useState } from "react";
+import { Capacitor } from "@capacitor/core";
+import { LogOut, Check, X, AlertCircle } from "lucide-react";
 import { BottomSheet, Button } from "./ui";
-import {
-  DEFAULT_CHARACTER_SRC,
-  applyPendingCharacter,
-  discardPendingCharacter,
-  getCharacterAsset,
-  pickCharacterPng,
-  resetCharacterAsset,
-} from "../lib/characterAsset";
 
 function GoogleIcon({ className = "h-4 w-4 shrink-0" }) {
   return (
@@ -45,27 +38,8 @@ export function AccountModal({
   const [nicknameInput, setNicknameInput] = useState(currentNickname);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
-  const [characterOpen, setCharacterOpen] = useState(false);
-  const [characterAsset, setCharacterAsset] = useState({
-    mode: "DEFAULT",
-    hasCustom: false,
-    src: DEFAULT_CHARACTER_SRC,
-  });
-  const [pendingCharacter, setPendingCharacter] = useState(null);
-  const [characterError, setCharacterError] = useState("");
-  const [characterBusy, setCharacterBusy] = useState(false);
-
   const isGoogle = profile?.provider === "Google";
-
-  useEffect(() => {
-    let active = true;
-    getCharacterAsset().then((asset) => {
-      if (active) setCharacterAsset(asset);
-    });
-    return () => {
-      active = false;
-    };
-  }, []);
+  const isNative = Capacitor.isNativePlatform();
 
   const handleNicknameChange = (e) => {
     setNicknameInput(e.target.value);
@@ -94,66 +68,7 @@ export function AccountModal({
   const isValidNickname = /^[가-힣a-zA-Z0-9\s]{2,12}$/.test(nicknameInput.trim());
   const canSave = isValidNickname && nicknameInput.trim() !== currentNickname;
 
-  const handlePickCharacter = async () => {
-    setCharacterBusy(true);
-    setCharacterError("");
-    const result = await pickCharacterPng();
-    setCharacterBusy(false);
-    if (result?.status === "READY") {
-      setPendingCharacter(result);
-      return;
-    }
-    if (result?.status && result.status !== "CANCELLED") {
-      setCharacterError(result.message || "이미지를 불러오지 못했어요. 다시 시도해주세요.");
-    }
-  };
-
-  const handleApplyCharacter = async () => {
-    setCharacterBusy(true);
-    setCharacterError("");
-    const result = await applyPendingCharacter();
-    setCharacterBusy(false);
-    if (result?.status === "APPLIED") {
-      setCharacterAsset(result);
-      setPendingCharacter(null);
-      setCharacterOpen(false);
-      return;
-    }
-    setCharacterError(result?.message || "이미지를 적용하지 못했어요. 다시 시도해주세요.");
-  };
-
-  const handleResetCharacter = async () => {
-    setCharacterBusy(true);
-    setCharacterError("");
-    const result = await resetCharacterAsset();
-    setCharacterBusy(false);
-    if (result?.status === "RESET") {
-      setCharacterAsset(result);
-      setPendingCharacter(null);
-      setCharacterOpen(false);
-      return;
-    }
-    setCharacterError(result?.message || "기본 캐릭터로 되돌리지 못했어요.");
-  };
-
-  const closeCharacterPanel = async () => {
-    if (pendingCharacter) await discardPendingCharacter();
-    setPendingCharacter(null);
-    setCharacterError("");
-    setCharacterOpen(false);
-  };
-
-  const handleAccountClose = () => {
-    if (pendingCharacter) discardPendingCharacter();
-    setPendingCharacter(null);
-    onClose();
-  };
-
-  const previewFallback = (event) => {
-    if (event.currentTarget.getAttribute("data-fallback") === "1") return;
-    event.currentTarget.setAttribute("data-fallback", "1");
-    event.currentTarget.src = DEFAULT_CHARACTER_SRC;
-  };
+  const handleAccountClose = () => onClose();
 
   return (
     <BottomSheet onClose={handleAccountClose} label="계정 설정">
@@ -193,139 +108,6 @@ export function AccountModal({
           </p>
         </div>
       </div>
-
-      {/* 캐릭터 설정: 기존 설정 행과 같은 밀도로 유지 */}
-      <button
-        type="button"
-        onClick={() => {
-          setCharacterError("");
-          setPendingCharacter(null);
-          setCharacterOpen(true);
-        }}
-        className="mt-3 flex min-h-[56px] w-full items-center justify-between rounded-2xl border border-[#E5E8EB] bg-white px-3.5 py-2.5 text-left shadow-2xs transition-colors hover:bg-[#F9FAFB] active:bg-[#F2F4F6]"
-      >
-        <span className="text-[13px] font-bold text-[#191F28]">캐릭터</span>
-        <span className="flex items-center gap-2">
-          <span className="grid h-9 w-9 place-items-center overflow-hidden rounded-xl bg-[#F2F4F6] p-1">
-            <img
-              src={characterAsset.src || DEFAULT_CHARACTER_SRC}
-              onError={previewFallback}
-              alt="현재 캐릭터"
-              className="h-full w-full object-contain"
-            />
-          </span>
-          <span className="text-[12px] font-semibold text-[#6B7684]">변경</span>
-          <ChevronRight size={14} className="text-[#B0B8C1]" />
-        </span>
-      </button>
-
-      {characterOpen && (
-        <div className="fixed inset-0 z-[120] flex items-end justify-center bg-black/20 px-4 pb-[max(18px,env(safe-area-inset-bottom,0px))] sm:items-center sm:pb-0">
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="캐릭터 이미지 변경"
-            className="w-full max-w-[340px] rounded-[22px] border border-[#E5E8EB] bg-white p-4 shadow-2xl"
-          >
-            <div className="flex items-center justify-between">
-              <strong className="text-[15px] font-bold text-[#191F28]">캐릭터 변경</strong>
-              <button
-                type="button"
-                onClick={closeCharacterPanel}
-                className="grid h-8 w-8 place-items-center rounded-full text-[#8B95A1] hover:bg-[#F2F4F6]"
-                aria-label="캐릭터 변경 닫기"
-              >
-                <X size={16} />
-              </button>
-            </div>
-
-            <div className="mt-3 flex items-center justify-center gap-3">
-              <div className="text-center">
-                <span className="mx-auto grid h-14 w-14 place-items-center overflow-hidden rounded-2xl bg-[#F2F4F6] p-1.5">
-                  <img
-                    src={characterAsset.src || DEFAULT_CHARACTER_SRC}
-                    onError={previewFallback}
-                    alt="현재 캐릭터 미리보기"
-                    className="h-full w-full object-contain"
-                  />
-                </span>
-                <span className="mt-1 block text-[10px] font-medium text-[#8B95A1]">현재</span>
-              </div>
-
-              {pendingCharacter && (
-                <>
-                  <ChevronRight size={15} className="text-[#B0B8C1]" />
-                  <div className="text-center">
-                    <span className="mx-auto grid h-14 w-14 place-items-center overflow-hidden rounded-2xl bg-[#F2F4F6] p-1.5 ring-1 ring-[#3182F6]/20">
-                      <img
-                        src={pendingCharacter.previewSrc}
-                        onError={previewFallback}
-                        alt="새 캐릭터 미리보기"
-                        className="h-full w-full object-contain"
-                      />
-                    </span>
-                    <span className="mt-1 block text-[10px] font-medium text-[#3182F6]">새 이미지</span>
-                  </div>
-                </>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={handlePickCharacter}
-              disabled={characterBusy}
-              className="mt-3 flex w-full items-center justify-center gap-1.5 rounded-xl border border-[#E5E8EB] bg-[#F9FAFB] px-3 py-2.5 text-[12px] font-bold text-[#333D4B] transition-colors hover:bg-[#F2F4F6] disabled:opacity-50"
-            >
-              <ImagePlus size={15} />
-              PNG 이미지 선택
-            </button>
-
-            <p className="mt-2 text-center text-[10.5px] leading-4 text-[#8B95A1]">
-              투명 배경 PNG를 권장해요.
-            </p>
-
-            {characterError && (
-              <p className="mt-2 flex items-start gap-1.5 rounded-lg bg-red-50 px-2.5 py-2 text-[11px] leading-4 text-[#E11D48]">
-                <AlertCircle size={13} className="mt-0.5 shrink-0" />
-                {characterError}
-              </p>
-            )}
-
-            {pendingCharacter ? (
-              <div className="mt-3 grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={closeCharacterPanel}
-                  disabled={characterBusy}
-                  className="rounded-xl border border-[#E5E8EB] px-3 py-2.5 text-[12px] font-bold text-[#4E5968] disabled:opacity-50"
-                >
-                  취소
-                </button>
-                <button
-                  type="button"
-                  onClick={handleApplyCharacter}
-                  disabled={characterBusy}
-                  className="rounded-xl bg-[#191F28] px-3 py-2.5 text-[12px] font-bold text-white disabled:opacity-50"
-                >
-                  적용
-                </button>
-              </div>
-            ) : (
-              characterAsset.hasCustom && (
-                <button
-                  type="button"
-                  onClick={handleResetCharacter}
-                  disabled={characterBusy}
-                  className="mt-3 flex w-full items-center justify-center gap-1.5 px-2 py-1.5 text-[11px] font-semibold text-[#6B7684] hover:text-[#191F28] disabled:opacity-50"
-                >
-                  <RotateCcw size={13} />
-                  기본 캐릭터로 되돌리기
-                </button>
-              )
-            )}
-          </div>
-        </div>
-      )}
 
       {/* 닉네임 변경 블록 */}
       <div className="mt-5 rounded-2xl border border-[#E5E8EB] p-4 bg-white shadow-2xs">
@@ -372,7 +154,7 @@ export function AccountModal({
         )}
       </div>
 
-      {/* 스마트 자동화 설정: 실시간 결제 자동 감지 (Beta) */}
+      {/* Web runs a parser demonstration; notification access exists only in the Android app. */}
       <div className="mt-5 rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4">
         <div className="flex items-center justify-between gap-2">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -381,11 +163,11 @@ export function AccountModal({
             </span>
             <div className="min-w-0">
               <div className="flex items-center gap-1.5">
-                <strong className="block text-[13px] font-bold text-emerald-950">실시간 결제 자동 감지</strong>
-                <span className="rounded bg-emerald-200/80 px-1 py-0.2 text-[9px] font-bold text-emerald-800">Beta</span>
+                <strong className="block text-[13px] font-bold text-emerald-950">{isNative ? "실시간 결제 알림 감지" : "결제 문장 읽기 체험"}</strong>
+                {isNative && <span className="rounded bg-emerald-200/80 px-1 py-0.2 text-[9px] font-bold text-emerald-800">Beta</span>}
               </div>
-              <span className="block text-[11px] text-emerald-700/80 truncate">
-                카드사 결제 문자/앱 알림 시 자동 등록 팝업
+              <span className="block text-[11px] leading-4 text-emerald-700/80 break-keep">
+                {isNative ? "허용한 결제 알림에서 구독 등록 제안" : "웹에서는 다른 앱 알림을 읽지 않고 테스트 문장만 분석해요"}
               </span>
             </div>
           </div>
@@ -400,7 +182,7 @@ export function AccountModal({
                 체험
               </Button>
             )}
-            {onRequestPaymentCapture && (
+            {isNative && onRequestPaymentCapture && (
               <Button
                 size="compact"
                 className="!py-1.5 !px-2.5 !text-[11px] !bg-emerald-600 !text-white hover:!bg-emerald-700 cursor-pointer"

@@ -50,7 +50,7 @@ export function useNavigation({ initialRoute, onHashParamAction } = {}) {
   const [highlightCancelId, setHighlightCancelId] = useState(() => {
     const initial = readHash();
     if (initial.params?.get("highlight") === "cancel") {
-      return initial.id || "seed-spotify";
+      return initial.id || null;
     }
     return null;
   });
@@ -79,7 +79,7 @@ export function useNavigation({ initialRoute, onHashParamAction } = {}) {
       }
 
       if (next.params?.get("highlight") === "cancel") {
-        setHighlightCancelId(next.id || "seed-spotify");
+        setHighlightCancelId(next.id || null);
       }
 
       if (actionRef.current) {

@@ -682,8 +682,6 @@ export default function App() {
           )
         }
         onOpenNotificationCenter={openNotificationCenter}
-        onTestPaymentDetection={handleTestPaymentDetection}
-        onRequestPaymentCapture={handleRequestPaymentCapture}
         onOpenTerms={handleOpenTerms}
         onLogout={handleLogout}
         onOpenAccount={() => setAccountOpen(true)}
@@ -905,8 +903,6 @@ export default function App() {
               notify
             )
           }
-          onTestPaymentDetection={handleTestPaymentDetection}
-          onRequestPaymentCapture={handleRequestPaymentCapture}
           onOpenTerms={handleOpenTerms}
         />
       )}
