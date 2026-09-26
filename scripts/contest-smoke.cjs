@@ -228,6 +228,7 @@ async function runScenarioB(page) {
   const ocrResponse = await responsePromise;
   const ocrPayload = await ocrResponse.json();
   const ocrRequestId = ocrResponse.headers()["x-kkudok-ocr-request-id"] || "absent";
+  assert.notEqual(ocrRequestId, "absent", "Preview OCR must include the new diagnostic request ID");
   assert.equal(ocrResponse.status(), 200,
     `real /api/ocr must succeed on Vercel preview; code=${ocrPayload?.code || "absent"}, requestId=${ocrRequestId}`);
   assert.equal(ocrPayload?.ok, true);
@@ -299,6 +300,34 @@ async function runScenarioB(page) {
   await page.screenshot({ path: "artifacts/contest/scenario-b-complete.png", fullPage: true });
 }
 
+async function verifyOcrFailureState(browser) {
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+  let requestCount = 0;
+  await page.route("**/api/ocr", async (route) => {
+    requestCount += 1;
+    await route.fulfill({
+      status: 504,
+      contentType: "application/json",
+      body: JSON.stringify({ ok: false, code: "OCR_TIMEOUT", message: "이미지 인식 시간이 초과되었습니다. 다시 시도하거나 직접 입력해 주세요." }),
+    });
+  });
+  await page.goto(baseURL, { waitUntil: "networkidle" });
+  await enterContest(page);
+  await page.locator(".contest-scenario-picker button").filter({ hasText: "체험 B · 지난 결제" }).click();
+  await page.locator('[data-contest-target="contest-b-sample"]').click();
+  await page.locator('[data-contest-target="contest-b-upload-start"]').click();
+  await page.getByRole("heading", { name: "구독 추가하기" }).waitFor();
+  await page.locator('input[type="file"][accept*="image/png"]').first()
+    .setInputFiles(path.join(process.cwd(), "public", "sample_receipt_netflix.png"));
+  await page.getByRole("alert").getByText("이미지 인식 시간이 초과되었습니다.", { exact: false }).waitFor();
+  await page.getByRole("button", { name: "이미지 다시 선택하기" }).waitFor();
+  assert.equal(requestCount, 1);
+  assert.equal((await readContestFlow(page))?.step, "B3", "OCR error must not register a subscription");
+  await assertNoHorizontalOverflow(page, "OCR failure mobile");
+  await page.screenshot({ path: "artifacts/contest/scenario-b-ocr-failure.png", fullPage: true });
+  await page.close();
+}
+
 async function verifyProviderCancellation(browser) {
   // Isolated guest fixture: no user account or external subscription is changed.
   for (const [id, name] of [["chatgpt", "ChatGPT Plus"], ["claude-pro", "Claude Pro"]]) {
@@ -365,6 +394,7 @@ async function verifyProviderCancellation(browser) {
     await runScenarioB(flowPage);
 
     await assertNoHorizontalOverflow(flowPage, "contest mobile flow");
+    await verifyOcrFailureState(browser);
     await verifyProviderCancellation(browser);
 
     console.log(
