@@ -101,6 +101,10 @@ export default function ContestLandingPage() {
   const demoVideoRef = useRef(null);
   const [demoStarted, setDemoStarted] = useState(false);
 
+  const startFreshExperience = () => {
+    sessionStorage.removeItem("kkudok-contest-flow-v2");
+  };
+
   const playFullDemo = (scrollToVideo = false) => {
     const video = demoVideoRef.current;
     if (!video) return;
@@ -201,7 +205,7 @@ export default function ContestLandingPage() {
                 <strong>휴대폰 카메라로 QR을 스캔해주세요.</strong>
                 <span>설치 없이 체험 A와 B를 직접 살펴볼 수 있어요.</span>
                 <span className="contest-mobile-open-hint">이 휴대폰에서 보고 있다면 아래 링크로 시작하세요.</span>
-                <a className="contest-browser-link" href={EXPERIENCE_URL}>이 기기에서 바로 체험하기 ↗</a>
+                <a className="contest-browser-link" href={EXPERIENCE_URL} onClick={startFreshExperience}>이 기기에서 바로 체험하기 ↗</a>
               </div>
             </div>
 
@@ -337,7 +341,7 @@ export default function ContestLandingPage() {
             <span>QR로 바로 시작하기</span>
             <h2 id="direct-heading">이번에는 직접 경험해보세요.</h2>
             <p>휴대폰 카메라로 QR을 스캔하면 체험 A와 B를 직접 살펴볼 수 있습니다. 결제 정보 확인부터 꾸독이의 해지 안내, 혜택의 공식 근거까지 확인해 보세요.</p>
-            <a className="contest-browser-link" href={EXPERIENCE_URL}>이 기기에서 바로 체험하기 ↗</a>
+            <a className="contest-browser-link" href={EXPERIENCE_URL} onClick={startFreshExperience}>이 기기에서 바로 체험하기 ↗</a>
           </div>
         </div>
       </section>

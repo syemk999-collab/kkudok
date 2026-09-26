@@ -350,6 +350,12 @@ async function runCancellationExample(page) {
   }));
   assert.equal(preserved.profile?.nickname, "기존 사용자");
   assert.equal(preserved.subscriptions?.[0]?.id, "private-existing-sub");
+  await page.goto(baseURL, { waitUntil: "networkidle" });
+  await page.locator('a[href="/#/contest"]').filter({ hasText: "이 기기에서 바로 체험하기" }).first().click();
+  await page.getByRole("heading", { name: "꾸독을 직접 경험해보세요." }).waitFor();
+  assert.equal((await readContestFlow(page))?.scenario || null, null, "landing CTA must start a fresh isolated experience");
+  await page.goBack();
+  await page.locator("#contest-hero-title").waitFor();
 }
 
 async function verifyOcrFailureState(browser) {
