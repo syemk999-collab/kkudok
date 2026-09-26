@@ -35,6 +35,18 @@ function NaverPlusStepUiIllustration({ stepNumber, large = false }) {
     2: { section: "이용 종료 예정일 확인", action: "해지하기", note: "사용자가 직접 선택" },
   }[stepNumber] || { section: "네이버플러스 멤버십", action: "다음 단계", note: "" };
 
+  if (!large) {
+    return (
+      <div className="flex h-full w-full flex-col justify-center gap-1 bg-[#F7F8FA] px-2 text-[#191F28]">
+        <span className="text-[9px] font-bold text-[#03C75A]">NAVER+ · {stepNumber}/2</span>
+        <strong className="text-[11px] leading-tight break-keep">{config.action}</strong>
+        <span className="text-[9px] leading-tight text-[#6B7684]">
+          {stepNumber === 1 ? "버튼 펼치기" : "직접 누르기"}
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div className={`h-full w-full bg-[#F7F8FA] p-3.5 flex flex-col justify-between select-none ${large ? "p-6" : ""}`}>
       <div className="flex items-center justify-between border-b border-gray-200 pb-2">
