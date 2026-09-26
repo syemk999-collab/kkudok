@@ -226,8 +226,10 @@ async function runScenarioB(page) {
   );
   await input.setInputFiles(path.join(process.cwd(), "public", "sample_receipt_netflix.png"));
   const ocrResponse = await responsePromise;
-  assert.equal(ocrResponse.status(), 200, "real /api/ocr request must succeed on Vercel preview");
   const ocrPayload = await ocrResponse.json();
+  const ocrRequestId = ocrResponse.headers()["x-kkudok-ocr-request-id"] || "absent";
+  assert.equal(ocrResponse.status(), 200,
+    `real /api/ocr must succeed on Vercel preview; code=${ocrPayload?.code || "absent"}, requestId=${ocrRequestId}`);
   assert.equal(ocrPayload?.ok, true);
   assert.equal(ocrPayload?.data?.name, "Netflix");
   assert.ok(Number(ocrPayload?.data?.amount) > 0);
