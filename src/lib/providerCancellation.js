@@ -3,12 +3,12 @@
 const PROVIDERS = {
   chatgpt: {
     name: "ChatGPT Plus",
-    webUrl: "https://chatgpt.com/",
+    webUrl: "https://chatgpt.com/settings/billing",
     helpUrl: "https://help.openai.com/en/articles/7232927-canceling-your-chatgpt-subscription",
     webSteps: [
       ["가입 계정으로 로그인", "ChatGPT를 결제한 계정으로 로그인하세요."],
-      ["설정 열기", "계정 메뉴에서 [설정]을 선택하세요."],
-      ["청구에서 요금제 취소", "[청구]의 [요금제 취소]에서 [취소]를 선택하세요. 마지막 결정은 직접 해주세요."],
+      ["결제 화면 확인", "[설정] → [결제]에서 현재 플랜을 확인하세요. 웹 결제 계정이라면 이 화면으로 바로 연결됩니다."],
+      ["플랜 취소 버튼 확인", "[플랜 취소] 카드의 [취소] 버튼을 확인하세요. 꾸독은 이 버튼이나 이후 확인 버튼을 대신 누르지 않습니다."],
       ["상태 확인", "갱신이 중단되었는지 공식 청구 화면에서 확인하세요."],
     ],
   },

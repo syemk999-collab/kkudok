@@ -17,9 +17,9 @@ test("결제처를 모르면 저장된 일반 링크로 건너뛰지 않고 먼�
 test("웹 결제는 각 서비스의 공식 경로와 확인 단계를 제공한다", () => {
   const gpt = getProviderCancellation(chatgpt, "web");
   const claudeGuide = getProviderCancellation(claude, "web");
-  assert.equal(gpt.cancelUrl, "https://chatgpt.com/");
+  assert.equal(gpt.cancelUrl, "https://chatgpt.com/settings/billing");
   assert.equal(claudeGuide.cancelUrl, "https://claude.ai/settings/billing");
-  assert.match(gpt.guideSteps[2].description, /청구.*요금제 취소/);
+  assert.match(gpt.guideSteps[2].description, /플랜 취소.*취소/);
   assert.match(claudeGuide.guideSteps[1].description, /설정.*청구/);
   assert.ok(gpt.guideSteps.every((step) => !/자동.*해지/.test(step.description)));
 });
